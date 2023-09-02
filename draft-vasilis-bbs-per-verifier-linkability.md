@@ -37,6 +37,13 @@ TODO Introduction
 
 {::boilerplate bcp14-tagged}
 
+# Scheme Definition
+
+## Signature Generation and Verification
+
+## Proof Presentation with per-Origin ID
+
+## Proof with per-Origin ID Verification
 
 # Security Considerations
 
