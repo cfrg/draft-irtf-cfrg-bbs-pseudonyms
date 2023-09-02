@@ -51,6 +51,5 @@ This document has no IANA actions.
 {backmatter}
 
 # Acknowledgments
-{:numbered="false"}
 
 TODO acknowledge.
