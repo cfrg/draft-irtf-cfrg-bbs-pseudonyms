@@ -141,7 +141,7 @@ Parameters:
 
 - api_id, the octet string ciphersuite_id || "H2G_HM2S_VERIFIER_ID_",
           where ciphersuite_id is defined by the ciphersuite and
-          "H2G_HM2S_VERIFIER_ID_" is an ASCII string comprised of 
+          "H2G_HM2S_VERIFIER_ID_" is an ASCII string comprised of
           9 bytes.
 
 Outputs:
@@ -346,7 +346,7 @@ Procedure:
 
 ## Core Proof Verify
 
-This operation validates a  
+This operation validates an extended BBS proof that also includes a pseudonym.
 
 ```
 result = CoreProofVerify(PK,
@@ -438,7 +438,7 @@ Inputs:
                        initializing the proof generation or verification
                        operations, consisting of 3 points of G1 and a
                        scalar value, in that order.
-- pseudonym_init_res (REQUIRED), vector representing the value returned 
+- pseudonym_init_res (REQUIRED), vector representing the value returned
                                  after initializing the pseudonym proof,
                                  consisting of 3 points of G1.
 - i_array (REQUIRED), array of non-negative integers (the indexes of
@@ -467,7 +467,7 @@ ABORT if:
 
 Procedure:
 
-1. c_arr = (Abar, Bbar, C, Pseudonym, OP, U, R, i1, ..., iR, 
+1. c_arr = (Abar, Bbar, C, Pseudonym, OP, U, R, i1, ..., iR,
                                             msg_i1, ..., msg_iR, domain)
 2. c_octs = serialize(c_array)
 3. return hash_to_scalar(c_octs || I2OSP(length(ph), 8) || ph)
