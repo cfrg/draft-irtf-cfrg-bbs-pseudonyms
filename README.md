@@ -2,10 +2,7 @@
 
 This is the working area for the individual Internet-Draft, "BBS per Verifier Linkability".
 
-* [Editor's Copy](https://github.com.github.io/BasileiosKal/#go.draft-vasilis-bbs-per-verifier-linkability.html)
-* [Datatracker Page](https://datatracker.ietf.org/doc/draft-vasilis-bbs-per-verifier-linkability)
-* [Individual Draft](https://datatracker.ietf.org/doc/html/draft-vasilis-bbs-per-verifier-linkability)
-* [Compare Editor's Copy to Individual Draft](https://github.com.github.io/BasileiosKal/#go.draft-vasilis-bbs-per-verifier-linkability.diff)
+* [Editor's Copy](https://basileioskal.github.io/bbs-per-verifier-id/draft-vasilis-bbs-per-verifier-linkability.html)
 
 
 ## Contributing
