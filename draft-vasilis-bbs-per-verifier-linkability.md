@@ -169,7 +169,24 @@ In addition, as we will see in the computation of a pseudonym, this value gets h
 
 The *pseudonym* is a cryptographic value computed by the prover based on the *pid* and the *verifier_id*. At a high level this is computed by hashing the *verifier_id* to the elliptic curve group G1 and then exponentiating by the *pid* value. See section (#calculate-pseudonym) for details. The *pseudonym* is sent to a verifier along with the proof.
 
-As mentioned above, the pseudonym value is defined as a point of the G1 group. Serialization and deserialization of the pseudonym point MUST be done using the `point_to_octets_g1` and `octets_to_point_g1` defined by the BBS ciphersuite used (see [Section 6](https://www.ietf.org/archive/id/draft-irtf-cfrg-bbs-signatures-03.html#name-ciphersuites) of [@!I-D.irtf-cfrg-bbs-signatures]).
+This document defines a pseudonym as point of the G1 group different from the Identity (`Identity_G1`) or the base point (`BP1`) of G1. A pseudonym remains constant for each Prover and Verifier pair, but is unique (and unlinkable) across different Provers or Verifiers. In other words, when the Prover presents multiple BBS proofs with a pseudonym to a Verifier, the pseudonym value will be constant across those presentations. When presenting a BBS proof with a pseudonym to another Verifier however, the pseudonym value will be different. Note that since pseudonyms are group points, their value will necessarily change if a different a ciphersuite with a different curve will be used. Serialization and deserialization of the pseudonym point MUST be done using the `point_to_octets_g1` and `octets_to_point_g1` defined by the BBS ciphersuite used (see [Section 6](https://www.ietf.org/archive/id/draft-irtf-cfrg-bbs-signatures-03.html#name-ciphersuites) of [@!I-D.irtf-cfrg-bbs-signatures]).
+
+This document specifies pseudonyms to be BBS Interface specific (see Section TBD of [@!I-D.irtf-cfrg-bbs-signatures] for the definition of the BBS Interface). It is outside the scope of this document to provide a procedure for "linking" the pseudonyms that are used by different Interfaces or that are based on different ciphersuites. An option is for the Prover to present both Pseudonyms with the relevant BBS proofs to the Verifier, and upon validation of both, the Verifier to internally link the 2 pseudonyms together.
+
+
+## Mapping Messages to Scalars
+
+Each BBS Interface defines an operation that will map the inputted messages to scalar values, required by the core BBS operations. Each Interface can use a different mapping procedure, as long as it comforts to the requirements outlined in TBD. For using BBS with pseudonyms, the mapping operation used by the interface is REQUIRED to additionally adhere the following rule;
+
+```
+For each set of messages and separate message msg',
+if C1 = messages_to_scalars(messages.push(msg')),
+and msg_prime_scalar = messages_to_scalars((msg')),
+and C2 = messages_to_scalars(messages).push(msg_prime_scalar),
+it will always hold that C1 == C2.
+```
+
+Informally, the above means that each message is mapped to a scalar independently from all the other messages. For example, if `a = messages_to_scalars((msg_1))` and `b = messages_to_scalars((msg_2))`, then `(a, b) = messages_to_scalars((msg_1, msg_2))`. Its trivial to see that the `messages_to_scalars` operation that is defined in Section TBD of [@!I-D.irtf-cfrg-bbs-signatures], has the required property. That operation will be used by the Interface defined in this document to map the messages to scalars. Note that the above operation (and hence the defined by this document Interface), only accepts messages that are octet strings.
 
 # High Level Procedures and Information Flows
 
@@ -194,65 +211,12 @@ To prevent forgeries in all cases all BBS messages are signed with the inclusion
 5. The prover generates a proof using *pid*, and *signature* based on the procedure of section TBD.
 6. The prover conveys the *proof* and *pseudonym* to the verifier. The verifier uses the procedure of section TBD BBS Pseudonym Proof Verification to verify the proof.
 
-# Previous Text Unaltered
 
-## Pseudonyms
+# General Procedures
 
-This document defines a pseudonym as point of the G1 group different from the Identity (`Identity_G1`) or the base point (`BP1`) of G1. A pseudonym remains constant for each Prover and Verifier pair, but is unique (and unlinkable) across different Provers or Verifiers. In other words, when the Prover presents multiple BBS proofs with a pseudonym to a Verifier, the pseudonym value will be constant across those presentations. When presenting a BBS proof with a pseudonym to another Verifier however, the pseudonym value will be different. Note that since pseudonyms are group points, their value will necessarily change if a different a ciphersuite with a different curve will be used. This document specifies pseudonyms to be BBS Interface specific (see Section TBD of [@!I-D.irtf-cfrg-bbs-signatures] for the definition of the BBS Interface). It is outside the scope of this document to provide a procedure for "linking" the pseudonyms that are used by different Interfaces or that are based on different ciphersuites. An option is for the Prover to present both Pseudonyms with the relevant BBS proofs to the Verifier, and upon validation of both, the Verifier to internally link the 2 pseudonyms together.
+This section defines general procedures that are independent of whether a signer provided pid or a prover hidden pid is used. This includes operations for generating a pseudonym.
 
-## Prover Identifier
-
-Each pseudonym is constructed from a unique Prover Identifier (`pid`), which is an octet string that MUST be at least 32 octets long. The `pid` value will be the last message signed by the BBS signature. In this document the Prover Identifier is chosen by the BBS Signer. This gives the Signer the ability to track the Prover even when they present BBS proofs with pseudonyms to different Verifiers. To avoid this threat, the Prover can choose and "commit" the `pid` value themselves, using Blind BBS Signatures, as defined in TBD. In any case, the `pid` value MUST be the last signed message. It also MUST unique across different Provers with very high probability. Additionally, it MUST be indistinguishable from a random value, drawn from the uniform distribution over the space of all octet strings that are at least 32 octets long. Such value could be generated from a cryptographically secure pseudo-random number generator. See [@DRBG] for requirements and suggestions on generating randomness.
-
-As mentioned above, the pseudonym value is defined as a point of the G1 group. Serialization and deserialization of the pseudonym point MUST be done using the `point_to_octets_g1` and `octets_to_point_g1` defined by the BBS ciphersuite used (see [Section 6](https://www.ietf.org/archive/id/draft-irtf-cfrg-bbs-signatures-03.html#name-ciphersuites) of [@!I-D.irtf-cfrg-bbs-signatures]).
-
-## Mapping Messages to Scalars
-
-Each BBS Interface defines an operation that will map the inputted messages to scalar values, required by the core BBS operations. Each Interface can use a different mapping procedure, as long as it comforts to the requirements outlined in TBD. For using BBS with pseudonyms, the mapping operation used by the interface is REQUIRED to additionally adhere the following rule;
-
-```
-For each set of messages and separate message msg',
-if C1 = messages_to_scalars(messages.push(msg')),
-and msg_prime_scalar = messages_to_scalars((msg')),
-and C2 = messages_to_scalars(messages).push(msg_prime_scalar),
-it will always hold that C1 == C2.
-```
-
-Informally, the above means that each message is mapped to a scalar independently from all the other messages. For example, if `a = messages_to_scalars((msg_1))` and `b = messages_to_scalars((msg_2))`, then `(a, b) = messages_to_scalars((msg_1, msg_2))`. Its trivial to see that the `messages_to_scalars` operation that is defined in Section TBD of [@!I-D.irtf-cfrg-bbs-signatures], has the required property. That operation will be used by the Interface defined in this document to map the messages to scalars. Note that the above operation (and hence the defined by this document Interface), only accepts messages that are octet strings.
-
-# BBS with Pseudonym Interface
-
-The following section defines a BBS Interface that will make use of per-origin pseudonyms. The identifier of the Interface is defined as `ciphersuite_id || H2G_HM2S_PSEUDONYM_`, where `ciphersuite_id` the unique identifier of the BBS ciphersuite used, as is defined in [Section 6](https://www.ietf.org/archive/id/draft-irtf-cfrg-bbs-signatures-03.html#name-ciphersuites) of [@!I-D.irtf-cfrg-bbs-signatures]). Each BBS Interface MUST define operations to map the inputted messages to scalar values and to create the generators set, required by the core operations. The inputted messages to the defined in this document BBS Interface will be mapped to scalars using the `messages_to_scalars` operation defined in Section TBD of [@!I-D.irtf-cfrg-bbs-signatures]. The generators will be created using the `create_generators` operation defined in Section TBD of [@!I-D.irtf-cfrg-bbs-signatures].
-
-This document also defines 2 alternative core proof generation and verification operations (see (#core-operations)), to accommodate the use of pseudonyms. Those operations will be used by the defined proof generation and verification Interface operations, in place of the `CoreProofGen` and `CoreProofVerify` operations defined in Section TBD of [@!I-D.irtf-cfrg-bbs-signatures].
-
-## Signature Generation and Verification
-
-The Issuer of the BBS signature will include a constant unique prover identifier (`pid`) as one of the signed messages. The format of that identifier is outside the scope of this document. An options is to use a pseudo random generator to return 32 random octets. The `pid` value MUST be the last one in the set of signed messages.
-
-More specifically, the Signer to generate a signature from a secret key (SK), a constant Prover identifier (`pid`) and optionally over a `header` and or a vector of `messages`, MUST execute the following steps,
-
-```
-1. messages = messages.push(pid)
-2. signature = Sign(SK, PK, header, messages)
-```
-
-Where `Sign` is defined in [Section 3.4.1](https://www.ietf.org/archive/id/draft-irtf-cfrg-bbs-signatures-03.html#name-signature-generation-sign) of [@!I-D.irtf-cfrg-bbs-signatures], instantiated with the `api_id` parameter set to the value `ciphersuite_id || H2G_HM2S_PSEUDONYM_`, where `ciphersuite_id` the unique identifier of the ciphersuite.
-
-To verify the above `signature`, for a given `pid`, `header` and vector of `messages`, against a supplied public key (`PK`), the Prover MUST execute the following steps,
-
-```
-1. messages = messages.push(pid)
-2. signature = Verify(PK, signature, header, messages)
-```
-
-The `Verify` operation is defined in [Section 3.4.2](https://www.ietf.org/archive/id/draft-irtf-cfrg-bbs-signatures-03.html#name-signature-verification-veri) of [@!I-D.irtf-cfrg-bbs-signatures], instantiated with the `api_id` parameter set to the value `ciphersuite_id || H2G_HM2S_PSEUDONYM_`, where `ciphersuite_id` the unique identifier of the ciphersuite.
-
-## Proof Generation with Pseudonym
-
-This section defines operations for generating a pseudonym, as well as using it to calculate a BBS proof. The BBS proof is extended to include a zero-knowledge proof of correctness of the pseudonym value, i.e., that is correctly calculated using the (undisclosed) id of the Prover (`pid`), and that is "bound" to the underlying BBS signature (i.e., that the `pid` value is signed by the Signer).
-
-### Calculate Pseudonym
+## Calculate Pseudonym
 
 The following operation describes how to calculate a pseudonym from the Prover's and the Verifier's unique identifiers (IDs), as well as a BBS Interface identifier (`api_id`, see TBD). The pseudonym will be unique for different Verifier and interface IDs and constant under constant inputs (i.e., the same `verifier_id`, `pid` and `api_id` values).
 
@@ -286,13 +250,47 @@ Procedure:
 1. OP = hash_to_curve_g1(verifier_id, api_id)
 2. if OP is INVALID, return INVALID
 3. if OP == Identity_G1 or OP == BP1 or OP == P1, return INVALID
-3. pid_scalar = messages_to_scalars((pid), api_id)
-4. return OP * pid_scalar
+4. pid_scalar = messages_to_scalars((pid), api_id)
+5. return OP * pid_scalar
 ```
 
-### Proof Generation
+# Signer Provided PID BBS Pseudonym Interface
 
-Thi operation computes a BBS proof with a pseudonym, which is a zero-knowledge, proof-of-knowledge, of a BBS signature, while optionally disclosing any subset of the signed messages. The BBS proof is extended to also include a zero-knowledge proof of correctness of the pseudonym, meaning that it is correctly calculated, using a signed Prover identifier and the supplied Verifier's ID.
+This is the signer (issuer) known *pid* case.
+
+The following section defines a BBS Interface that will make use of per-origin pseudonyms. The identifier of the Interface is defined as `ciphersuite_id || H2G_HM2S_PSEUDONYM_`, where `ciphersuite_id` the unique identifier of the BBS ciphersuite used, as is defined in [Section 6](https://www.ietf.org/archive/id/draft-irtf-cfrg-bbs-signatures-03.html#name-ciphersuites) of [@!I-D.irtf-cfrg-bbs-signatures]). Each BBS Interface MUST define operations to map the inputted messages to scalar values and to create the generators set, required by the core operations. The inputted messages to the defined in this document BBS Interface will be mapped to scalars using the `messages_to_scalars` operation defined in Section TBD of [@!I-D.irtf-cfrg-bbs-signatures]. The generators will be created using the `create_generators` operation defined in Section TBD of [@!I-D.irtf-cfrg-bbs-signatures].
+
+This document also defines two alternative core proof generation and verification operations (see (#core-operations)), to accommodate the use of pseudonyms. Those operations will be used by the defined proof generation and verification Interface operations, in place of the `CoreProofGen` and `CoreProofVerify` operations defined in Section TBD of [@!I-D.irtf-cfrg-bbs-signatures].
+
+## Signer Provided PID Signature Generation and Verification
+
+The Issuer of the BBS signature will include a constant unique prover identifier (`pid`) as one of the signed messages. The format of that identifier is outside the scope of this document. An option is to use a pseudo random generator to return 32 random octets. The `pid` value MUST be the last one in the set of signed messages.
+
+More specifically, the Signer to generate a signature from a secret key (SK), a constant Prover identifier (`pid`) and optionally over a `header` and or a vector of `messages`, MUST execute the following steps,
+
+```
+1. messages = messages.push(pid)
+2. signature = Sign(SK, PK, header, messages)
+```
+
+Where `Sign` is defined in [Section 3.4.1](https://www.ietf.org/archive/id/draft-irtf-cfrg-bbs-signatures-03.html#name-signature-generation-sign) of [@!I-D.irtf-cfrg-bbs-signatures], instantiated with the `api_id` parameter set to the value `ciphersuite_id || H2G_HM2S_PSEUDONYM_`, where `ciphersuite_id` the unique identifier of the ciphersuite.
+
+To verify the above `signature`, for a given `pid`, `header` and vector of `messages`, against a supplied public key (`PK`), the Prover MUST execute the following steps,
+
+```
+1. messages = messages.push(pid)
+2. signature = Verify(PK, signature, header, messages)
+```
+
+The `Verify` operation is defined in [Section 3.4.2](https://www.ietf.org/archive/id/draft-irtf-cfrg-bbs-signatures-03.html#name-signature-verification-veri) of [@!I-D.irtf-cfrg-bbs-signatures], instantiated with the `api_id` parameter set to the value `ciphersuite_id || H2G_HM2S_PSEUDONYM_`, where `ciphersuite_id` the unique identifier of the ciphersuite.
+
+## Signer Provided PID Proof Generation with Pseudonym
+
+This section defines operations for generating a pseudonym, as well as using it to calculate a BBS proof. The BBS proof is extended to include a zero-knowledge proof of correctness of the pseudonym value, i.e., that is correctly calculated using the (undisclosed) id of the Prover (`pid`), and that is "bound" to the underlying BBS signature (i.e., that the `pid` value is signed by the Signer).
+
+### Signer Provided PID Proof Generation
+
+This operation computes a BBS proof with a pseudonym, which is a zero-knowledge, proof-of-knowledge, of a BBS signature, while optionally disclosing any subset of the signed messages. The BBS proof is extended to also include a zero-knowledge proof of correctness of the pseudonym, meaning that it is correctly calculated, using a signed Prover identifier and the supplied Verifier's ID.
 
 Validating the proof (see `ProofVerifyWithPseudonym` defined in (#proof-verification-with-pseudonym)), guarantees authenticity and integrity of the header, presentation header and disclosed messages, knowledge of a valid BBS signature as well as correctness and ownership of the pseudonym.
 
@@ -349,7 +347,7 @@ Procedure:
 
 1. message_scalars = messages_to_scalars(messages, api_id)
 2. pid_scalar = messages_to_scalars((pid), api_id)
-3. generators = create_generators(length(messages) + 2, PK, api_id)
+3. generators = create_generators(length(messages) + 2, api_id)
 
 4. proof = CoreProofGenWithPseudonym(PK,
                                      signature,
@@ -367,7 +365,7 @@ Procedure:
 6. return proof
 ```
 
-## Proof Verification with Pseudonym
+## Signer Provided PID Proof Verification with Pseudonym
 
 This operation validates a BBS proof with a pseudonym, given the Signer's public key (PK), the proof, the pseudonym and the Verifier's identifier that was used to create it, a header and presentation header, the disclosed messages and lastly, the indexes those messages had in the original vector of signed messages. Validating the proof also validates the correctness and ownership by the Prover of the received pseudonym.
 
@@ -445,11 +443,11 @@ Procedure:
 4. return result
 ```
 
-# Core Operations
+## Signer Provided PID Core Operations
 
 This section defines the core operations used by the `ProofGenWithPseudonym` and `ProofVerifyWithPseudonym` operations defined in (#proof-generation-with-pseudonym) and (#proof-verification-with-pseudonym) correspondingly. Those operations are handling the main mathematical procedures required to compute and validate the BBS with pseudonym proof.
 
-## Core Proof Generation
+### Signer Provided PID Core Proof Generation
 
 This operations computes a BBS proof and a zero-knowledge proof of correctness of the pseudonym in "parallel" (meaning using common randomness), as to both create a proof that the pseudonym was correctly calculated using an undisclosed value that the Prover knows (i.e., the `pid` value), but also that this value is "signed" by the BBS signature (the last undisclosed message). As a result, validating the proof guarantees that the pseudonym is correctly computed and that it was computed using the Prover identifier that was included in the BBS signature.
 
@@ -515,18 +513,21 @@ Deserialization:
 5.  L = length(messages)
 6.  R = length(disclosed_indexes)
 7.  (i1, ..., iR) = disclosed_indexes
-8.  if R > L, return INVALID
+8.  if R > L - 1, return INVALID, Note: we never reveal the pid value.
 9.  U = L - R
-10. undisclosed_indexes = range(1, L) \ disclosed_indexes
-11. disclosed_messages = (messages[i1], ..., messages[iR])
+10.  undisclosed_indexes = (0, 1, ..., L - 1) \ disclosed_indexes, Note: pid is last message and is not revealed.
+11. (i1, ..., iR) = disclosed_indexes
+12. (j1, ..., jU) = undisclosed_indexes
+13. disclosed_messages = (messages[i1], ..., messages[iR])
+14. undisclosed_messages = (messages[j1], ..., messages[jU])
 
 ABORT if:
 
-1. for i in disclosed_indexes, i < 1 or i > L - 1
+1. for i in disclosed_indexes, i < 0 or i > L - 2, Note: pid  is L-1 message and not revealed.
 
 Procedure:
 
-1.  random_scalars = calculate_random_scalars(3+U)
+1.  random_scalars = calculate_random_scalars(5+U+1) // one more than used in BBS proof gen
 2.  init_res = ProofInit(PK,
                          signature_res,
                          header,
@@ -537,10 +538,10 @@ Procedure:
                          api_id)
 3.  if init_res is INVALID, return INVALID
 
-4.  OP = hash_to_curve_g1(verifier_id)
-5.  pid~ = random_scalars[3+U] // last element of random_scalars
-6.  U = OP * pid~
-7.  pseudonym_init_res = (Pseudonym, OP, U)
+4.  OP = hash_to_curve_g1(verifier_id, api_id)
+5.  pid~ = random_scalars[5+U+1] // last element of random_scalars
+6.  Ut = OP * pid~
+7.  pseudonym_init_res = (Pseudonym, OP, Ut)
 
 8.  challenge = ProofWithPseudonymChallengeCalculate(init_res,
                                                      pseudonym_init_res,
@@ -548,13 +549,12 @@ Procedure:
                                                      disclosed_messages,
                                                      ph,
                                                      api_id)
-
-9.  proof = ProofFinalize(challenge, e, random_scalars, messages,
-                                                    undisclosed_indexes)
-10. return proof_to_octets(proof)
+9.  proof = ProofFinalize(init_res, challenge, e_value, random_scalars,
+                                                   undisclosed_messages)
+10. return proof
 ```
 
-## Core Proof Verification
+### Signer Provided PID Core Proof Verification
 
 This operation validates a BBS proof that also includes a pseudonym. Validating the proof, other than the correctness and integrity of the revealed messages, the header and the presentation header values, also guarantees that the supplied pseudonym was correctly calculated, i.e., that it was produced using the Verifier's identifier and the signed (but undisclosed) Prover's identifier, following the `CalculatePseudonym` operation defined in (#calculate-pseudonym).
 
@@ -643,20 +643,68 @@ Procedure:
 10. return VALID
 ```
 
+# Hidden PID BBS Pseudonym Interface
+
+This is the signer (issuer) known *pid* case.
+
+The following section defines a BBS Interface that will make use of per-origin pseudonyms. The identifier of the Interface, api_id,  is defined as `ciphersuite_id || H2G_HM2S_PSEUDONYM_`, where `ciphersuite_id` the unique identifier of the BBS ciphersuite used, as is defined in [Section 6](https://www.ietf.org/archive/id/draft-irtf-cfrg-bbs-signatures-03.html#name-ciphersuites) of [@!I-D.irtf-cfrg-bbs-signatures]).
+
+In this case the prover create a pid value and keeps it secret. Only sending a commitment with the proof of the pid that the signer will used when creating the signature.
+
+## Hidden PID Signature Generation and Verification
+
+The prover will create a commitment on its pid and conveys it the the signer using the following steps from [@!I-D.irtf-vasilis-blind-bbs]:
+
+```
+1. committed_mesages = [pid]
+2. (commitment_with_proof, secret_prover_blind) = Commit(
+                                                   committed_messages,
+                                                   api_id)
+3. convey commitment_with proof to Signer.
+```
+
+The Signer generate a signature from a secret key (SK), a the commitment with proof,
+and optionally over a `header`, a vector of `messages`, and optional `signer_bling` using
+the BlindSign procedure from [@!I-D.irtf-vasilis-blind-bbs].
+
+```
+1. blind_signature = BlindSign(SK, PK, commitment_with_proof, header,
+                                                 messages, signer_blind)
+```
+
+To verify the above `signature`, the prover uses the `header`, vector of `messages` and `signer_blind` (if used by the signer) along with its `pid` value, and retained
+`secret_prover_blind` value from the commitment generation. According to the following
+steps:
+
+```
+1. committed_messages = [pid]
+1. result = BlindBBS.Verify(PK, signature, header, messages, committed_messages,
+                                      secret_prover_blind, signer_blind)
+```
+
+## Hidden PID Proof Generation with Pseudonym
+
+## Hidden PID Proof Verification with Pseudonyms
+
+## Hidden PID Core Operations
+
+### Hidden PID Core Proof Verification
+
 # Utility Operations
 
 ## Challenge Calculation
+
 ```
 challenge = ProofWithPseudonymChallengeCalculate(init_res,
                                                  pseudonym_init_res,
                                                  i_array,
                                                  msg_array,
-                                                 ph)
+                                                 ph, api_id)
 
 Inputs:
 - init_res (REQUIRED), vector representing the value returned after
                        initializing the proof generation or verification
-                       operations, consisting of 3 points of G1 and a
+                       operations, consisting of 5 points of G1 and a
                        scalar value, in that order.
 - pseudonym_init_res (REQUIRED), vector representing the value returned
                                  after initializing the pseudonym proof,
@@ -667,18 +715,26 @@ Inputs:
                         mapped to scalars).
 - ph (OPTIONAL), an octet string. If not supplied, it must default to the
                  empty octet string ("").
+- api_id (OPTIONAL), an octet string. If not supplied it defaults to the
+                     empty octet string ("").
 
 Outputs:
 
 - challenge, a scalar.
+
+Definitions:
+
+1. challenge_dst, an octet string representing the domain separation
+                  tag: api_id || "H2S_" where "H2S_" is an ASCII string
+                  comprised of 4 bytes.
 
 Deserialization:
 
 1. R = length(i_array)
 2. (i1, ..., iR) = i_array
 3. (msg_i1, ..., msg_iR) = msg_array
-4. (Abar, Bbar, C, domain) = init_res
-5. (Pseudonym, OP, U) = pseudonym_init_res
+4. (Abar, Bbar, D, T1, T2, domain) = init_res
+5. (Pseudonym, OP, Ut) = pseudonym_init_res
 
 ABORT if:
 
@@ -687,10 +743,10 @@ ABORT if:
 
 Procedure:
 
-1. c_arr = (Abar, Bbar, C, Pseudonym, OP, U, R, i1, ..., iR,
+1. c_arr = (Abar, Bbar, D, T1, T2, Pseudonym, OP, Ut, R, i1, ..., iR,
                                             msg_i1, ..., msg_iR, domain)
-2. c_octs = serialize(c_array)
-3. return hash_to_scalar(c_octs || I2OSP(length(ph), 8) || ph)
+2. c_octs = serialize(c_arr) || I2OSP(length(ph), 8) || ph
+3. return hash_to_scalar(c_octs, challenge_dst)
 ```
 
 # Security Considerations
