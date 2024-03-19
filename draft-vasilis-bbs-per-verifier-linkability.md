@@ -176,7 +176,7 @@ This document specifies pseudonyms to be BBS Interface specific (see Section TBD
 
 ## Mapping Messages to Scalars
 
-Each BBS Interface defines an operation that will map the inputted messages to scalar values, required by the core BBS operations. Each Interface can use a different mapping procedure, as long as it comforts to the requirements outlined in TBD. For using BBS with pseudonyms, the mapping operation used by the interface is REQUIRED to additionally adhere the following rule;
+Each BBS Interface defines an operation that will map the inputted messages to scalar values, required by the core BBS operations. Each Interface can use a different mapping procedure, as long as it comforts to the requirements outlined in [@!I-D.irtf-cfrg-bbs-signatures]. For using BBS with pseudonyms, the mapping operation used by the interface is REQUIRED to additionally adhere the following rule;
 
 ```
 For each set of messages and separate message msg',
@@ -196,21 +196,32 @@ To prevent forgeries in all cases all BBS messages are signed with the inclusion
 
 1. In this case the *pid* is computed by the prover and retained for use in generating proofs.
 2. The *pid* and is wrapped up in a cryptographic commitment using the *Commit* procedures of Blind BBS which returns a *commitment_with_proof* value and a *secret_prover_blind*.
-3. The *commitment_with_proof* is conveyed to the signer which then uses the signing procedures in section TBD to create a BBS Pseudonym Signature which is conveyed to the prover along with possibly and optional *signer_blind*.
-4. On receipt of the signature the prover verifies the signature using the procedure of section TBD.
+3. The *commitment_with_proof* is conveyed to the signer which then uses the signing procedures in section (#hidden-pid-signature-generation-and-verification) to create a BBS Pseudonym Signature which is conveyed to the prover along with possibly and optional *signer_blind*.
+4. On receipt of the signature the prover verifies the signature using the procedure of section (#hidden-pid-signature-generation-and-verification).
 5. The prover computes the *pseudonym* based on the *pid* and *verifier_id*
-6. The prover generates a proof using *pid*, *secret_prover_blind*, *signature* and *signer_blind* (if provided with the signature)
-7. The prover conveys the *proof* and *pseudonym* to the verifier. The verifier uses the procedure of section TBD BBS Pseudonym Proof Verification to verify the proof.
+6. The prover generates a proof using *pid*, *secret_prover_blind*, *signature* and *signer_blind* (if provided with the signature) using the procedures of section (#hidden-pid-proof-generation-with-pseudonym).
+7. The prover conveys the *proof* and *pseudonym* to the verifier. The verifier uses the procedure of section (#hidden-pid-proof-verification-with-pseudonym) to verify the proof.
 
 ## Pseudonym with Signer provided Pid
 
 1. In this case the *pid* is computed by the signer and may need to be retained if the signer is to produce more signatures for the same prover.
-2. The signer used the *pid* in producing a BBS Pseudonym Signature according to section TBD for the prover. The signature and the *pid* are conveyed to the prover in a secure fashion, i.e., the *pid* can be considered sensitive information.
-3. The prover on receipt of the signature and *pid* verifiers the signature using the procedure of section TBD.
+2. The signer used the *pid* in producing a BBS Pseudonym Signature according to section (#signer-provided-pid-signature-generation-and-verification) for the prover. The signature and the *pid* are conveyed to the prover in a secure fashion, i.e., the *pid* can be considered sensitive information.
+3. The prover on receipt of the signature and *pid* verifiers the signature using the procedure of section (#signer-provided-pid-signature-generation-and-verification).
 4. The prover computes the *pseudonym* based on the *pid* and *verifier_id*
-5. The prover generates a proof using *pid*, and *signature* based on the procedure of section TBD.
-6. The prover conveys the *proof* and *pseudonym* to the verifier. The verifier uses the procedure of section TBD BBS Pseudonym Proof Verification to verify the proof.
+5. The prover generates a proof using *pid*, and *signature* based on the procedure of section (#signer-provided-pid-proof-generation-with-pseudonym).
+6. The prover conveys the *proof* and *pseudonym* to the verifier. The verifier uses the procedure of section (#signer-provided-pid-proof-verification-with-pseudonym) to verify the proof.
 
+## Potential Integration and Participants Knowledge
+
+Note that we use a three party model of *signer*, *prover*, and *verifier*. In the terminology commonly encountered with *credentials* these would correspond to *issuer*, *holder*, and *verifier*.
+
+As will be seen in the following content the two different cases of *signer provided pid* and *hidden pid* are clear to the *signer* since it has two very different procedures in the two cases. Hence a *signer* (*issuer*) will always know which it is involved with.
+
+Similarly from the *provers* perspective they have very different procedures and retained information for generating proofs in the two different cases.
+
+There is a potential, as can be seen in the small differences in the verification procedures in the two cases to alter the signing and proof procedures in a way that the same verification procedure could be applied in both cases. Since the purpose of pseudonyms is to prevent linkages under verifier-to-verifier collusion this would not seem to present a undue burden to verifiers, but would like inputs. In the case of *signer provided pid* where there is, say statutory reporting, from a *verifier* to the *signer*, e.g., for controlled substance purchase monitoring, the *verifier* would know that its involved in the *signer provided pid* case since the *hidden pid* case is unlinkable under *verifier-to-signer* collusion.
+
+Hence, in both use-cases it seems that the parties involved have relatively complete information concerning their privacy, particularly the *prover* (*holder*) and that developing a common verification procedure for both cases would simplify protocol implementation and promote acceptance.
 
 # General Procedures
 
@@ -260,7 +271,7 @@ This is the signer (issuer) known *pid* case.
 
 The following section defines a BBS Interface that will make use of per-origin pseudonyms. The identifier of the Interface is defined as `ciphersuite_id || H2G_HM2S_PSEUDONYM_`, where `ciphersuite_id` the unique identifier of the BBS ciphersuite used, as is defined in [Section 6](https://www.ietf.org/archive/id/draft-irtf-cfrg-bbs-signatures-03.html#name-ciphersuites) of [@!I-D.irtf-cfrg-bbs-signatures]). Each BBS Interface MUST define operations to map the inputted messages to scalar values and to create the generators set, required by the core operations. The inputted messages to the defined in this document BBS Interface will be mapped to scalars using the `messages_to_scalars` operation defined in Section TBD of [@!I-D.irtf-cfrg-bbs-signatures]. The generators will be created using the `create_generators` operation defined in Section TBD of [@!I-D.irtf-cfrg-bbs-signatures].
 
-This document also defines two alternative core proof generation and verification operations (see (#core-operations)), to accommodate the use of pseudonyms. Those operations will be used by the defined proof generation and verification Interface operations, in place of the `CoreProofGen` and `CoreProofVerify` operations defined in Section TBD of [@!I-D.irtf-cfrg-bbs-signatures].
+This document also defines two alternative core proof generation and verification operations (see (#signer-provided-pid-core-operations)), to accommodate the use of pseudonyms. Those operations will be used by the defined proof generation and verification Interface operations, in place of the `CoreProofGen` and `CoreProofVerify` operations defined in Section TBD of [@!I-D.irtf-cfrg-bbs-signatures].
 
 ## Signer Provided PID Signature Generation and Verification
 
@@ -286,15 +297,15 @@ The `Verify` operation is defined in [Section 3.4.2](https://www.ietf.org/archiv
 
 ## Signer Provided PID Proof Generation with Pseudonym
 
-This section defines operations for generating a pseudonym, as well as using it to calculate a BBS proof. The BBS proof is extended to include a zero-knowledge proof of correctness of the pseudonym value, i.e., that is correctly calculated using the (undisclosed) id of the Prover (`pid`), and that is "bound" to the underlying BBS signature (i.e., that the `pid` value is signed by the Signer).
+This section defines operations for calculating a BBS proof with a pseudonym in the signer provided pid case. The BBS proof is extended to include a zero-knowledge proof of correctness of the pseudonym value, i.e., that is correctly calculated using the (undisclosed) id of the Prover (`pid`), and that is "bound" to the underlying BBS signature (i.e., that the `pid` value is signed by the Signer).
 
 ### Signer Provided PID Proof Generation
 
 This operation computes a BBS proof with a pseudonym, which is a zero-knowledge, proof-of-knowledge, of a BBS signature, while optionally disclosing any subset of the signed messages. The BBS proof is extended to also include a zero-knowledge proof of correctness of the pseudonym, meaning that it is correctly calculated, using a signed Prover identifier and the supplied Verifier's ID.
 
-Validating the proof (see `ProofVerifyWithPseudonym` defined in (#proof-verification-with-pseudonym)), guarantees authenticity and integrity of the header, presentation header and disclosed messages, knowledge of a valid BBS signature as well as correctness and ownership of the pseudonym.
+Validating the proof (see `ProofVerifyWithPseudonym` defined in (#signer-provided-pid-proof-verification-with-pseudonym)), guarantees authenticity and integrity of the header, presentation header and disclosed messages, knowledge of a valid BBS signature as well as correctness and ownership of the pseudonym.
 
-This operation makes use of `CoreProofGenWithPseudonym` as defined in (#core-proof-generation).
+This operation makes use of `CoreProofGenWithPseudonym` as defined in (#signer-provided-pid-core-proof-generation).
 
 ```
 proof = ProofGenWithPseudonym(PK,
@@ -369,7 +380,7 @@ Procedure:
 
 This operation validates a BBS proof with a pseudonym, given the Signer's public key (PK), the proof, the pseudonym and the Verifier's identifier that was used to create it, a header and presentation header, the disclosed messages and lastly, the indexes those messages had in the original vector of signed messages. Validating the proof also validates the correctness and ownership by the Prover of the received pseudonym.
 
-This operation makes use of `CoreProofVerifyWithPseudonym` as defined in (#core-proof-verification).
+This operation makes use of `CoreProofVerifyWithPseudonym` as defined in (#signer-provided-pid-core-proof-verification).
 
 ```
 result = ProofVerifyWithPseudonym(PK,
@@ -445,13 +456,13 @@ Procedure:
 
 ## Signer Provided PID Core Operations
 
-This section defines the core operations used by the `ProofGenWithPseudonym` and `ProofVerifyWithPseudonym` operations defined in (#proof-generation-with-pseudonym) and (#proof-verification-with-pseudonym) correspondingly. Those operations are handling the main mathematical procedures required to compute and validate the BBS with pseudonym proof.
+This section defines the core operations used by the `ProofGenWithPseudonym` and `ProofVerifyWithPseudonym` operations defined in (#signer-provided-pid-proof-generation-with-pseudonym) and (#signer-provided-pid-proof-verification-with-pseudonym) correspondingly. Those operations are handling the main mathematical procedures required to compute and validate the BBS with pseudonym proof.
 
 ### Signer Provided PID Core Proof Generation
 
 This operations computes a BBS proof and a zero-knowledge proof of correctness of the pseudonym in "parallel" (meaning using common randomness), as to both create a proof that the pseudonym was correctly calculated using an undisclosed value that the Prover knows (i.e., the `pid` value), but also that this value is "signed" by the BBS signature (the last undisclosed message). As a result, validating the proof guarantees that the pseudonym is correctly computed and that it was computed using the Prover identifier that was included in the BBS signature.
 
-The operation uses the `ProofInit` and `ProofFinalize` operations defined in TBD and the `ProofWithPseudonymChallengeCalculate` defined in (#challenge-calculation).
+The operation uses the `ProofInit` and `ProofFinalize` operations defined in [@!I-D.irtf-cfrg-bbs-signatures] and the `ProofWithPseudonymChallengeCalculate` defined in (#challenge-calculation).
 
 ```
 proof = CoreProofGenWithPseudonym(PK,
@@ -558,7 +569,7 @@ Procedure:
 
 This operation validates a BBS proof that also includes a pseudonym. Validating the proof, other than the correctness and integrity of the revealed messages, the header and the presentation header values, also guarantees that the supplied pseudonym was correctly calculated, i.e., that it was produced using the Verifier's identifier and the signed (but undisclosed) Prover's identifier, following the `CalculatePseudonym` operation defined in (#calculate-pseudonym).
 
-The operation uses the `ProofVerifyInit` operation defined in TBD and the `ProofWithPseudonymChallengeCalculate` defined in (#challenge-calculation).
+The operation uses the `ProofVerifyInit` operation defined in [@!I-D.irtf-cfrg-bbs-signatures] and the `ProofWithPseudonymChallengeCalculate` defined in (#challenge-calculation).
 
 ```
 result = CoreProofVerifyWithPseudonym(PK,
@@ -645,15 +656,15 @@ Procedure:
 
 # Hidden PID BBS Pseudonym Interface
 
-This is the signer (issuer) known *pid* case.
+This is the prover generated, hidden *pid* case.
 
-The following section defines a BBS Interface that will make use of per-origin pseudonyms. The identifier of the Interface, api_id,  is defined as `ciphersuite_id || H2G_HM2S_PSEUDONYM_`, where `ciphersuite_id` the unique identifier of the BBS ciphersuite used, as is defined in [Section 6](https://www.ietf.org/archive/id/draft-irtf-cfrg-bbs-signatures-03.html#name-ciphersuites) of [@!I-D.irtf-cfrg-bbs-signatures]).
+The following section defines a BBS Interface that will make use of per-origin pseudonyms where the *pid* value is only known to the prover. The identifier of the Interface, api_id,  is defined as `ciphersuite_id || H2G_HM2S_PSEUDONYM_`, where `ciphersuite_id` the unique identifier of the BBS ciphersuite used, as is defined in [Section 6](https://www.ietf.org/archive/id/draft-irtf-cfrg-bbs-signatures-03.html#name-ciphersuites) of [@!I-D.irtf-cfrg-bbs-signatures]).
 
 In this case the prover create a pid value and keeps it secret. Only sending a commitment with the proof of the pid that the signer will used when creating the signature.
 
 ## Hidden PID Signature Generation and Verification
 
-The prover will create a commitment on its pid and conveys it the the signer using the following steps from [@!I-D.irtf-vasilis-blind-bbs]:
+The prover will create a commitment on its pid and conveys it the the signer using the following steps from [@!I-D.kalos-bbs-blind-signatures]:
 
 ```
 1. committed_mesages = [pid]
@@ -665,7 +676,7 @@ The prover will create a commitment on its pid and conveys it the the signer usi
 
 The Signer generate a signature from a secret key (SK), a the commitment with proof,
 and optionally over a `header`, a vector of `messages`, and optional `signer_bling` using
-the BlindSign procedure from [@!I-D.irtf-vasilis-blind-bbs].
+the BlindSign procedure from [@!I-D.kalos-bbs-blind-signatures].
 
 ```
 1. blind_signature = BlindSign(SK, PK, commitment_with_proof, header,
@@ -684,11 +695,400 @@ steps:
 
 ## Hidden PID Proof Generation with Pseudonym
 
-## Hidden PID Proof Verification with Pseudonyms
+This section defines operations for calculating a BBS proof with a pseudonym in the hidden pid case. The BBS proof is extended to include a zero-knowledge proof of correctness of the pseudonym value, i.e., that is correctly calculated using the (undisclosed) id of the Prover (`pid`), and that is "bound" to the underlying BBS signature (i.e., that the `pid` value is signed by the Signer).
+
+Validating the proof (see `HiddenPidProofVerifyWithPseudonym` defined in (#hidden-pid-proof-verification-with-pseudonym)), guarantees authenticity and integrity of the header, presentation header and disclosed messages, knowledge of a valid BBS signature as well as correctness and ownership of the pseudonym.
+
+This operation makes use of `HiddenPidCoreProofGenWithPseudonym` as defined in (#hidden-pid-core-proof-generation).
+
+```
+(proof, disclosed_msgs, disclosed_idxs)
+                 = HiddenPidProofGenWithPseudonym(PK,
+                              signature,
+                              Pseudonym,
+                              verifier_id,
+                              pid,
+                              header,
+                              ph,
+                              messages,
+                              disclosed_indexes,
+                              secret_prover_blind,
+                              signer_blind)
+
+Inputs:
+
+- PK (REQUIRED), an octet string of the form outputted by the SkToPk
+                 operation.
+- signature (REQUIRED), an octet string of the form outputted by the
+                        Sign operation.
+- Pseudonym (REQUIRED), A point of G1, different from the Identity of
+                        G1, as outputted by the CalculatePseudonym
+                        operation.
+- verifier_id (REQUIRED), an octet string, representing the unique proof
+                          Verifier identifier.
+- pid (REQUIRED), an octet string, representing the unique Prover
+                  identifier.
+- header (OPTIONAL), an octet string containing context and application
+                     specific information. If not supplied, it defaults
+                     to an empty string.
+- ph (OPTIONAL), an octet string containing the presentation header. If
+                 not supplied, it defaults to an empty string.
+- messages (OPTIONAL), a vector of octet strings. If not supplied, it
+                       defaults to the empty array "()".
+- disclosed_indexes (OPTIONAL), vector of unsigned integers in ascending
+                                order. Indexes of disclosed messages. If
+                                not supplied, it defaults to the empty
+                                array "()".
+- secret_prover_blind, a scalar value, retained from the commit procedure.
+- signer_blind (OPTIONAL), a scalar value. If not supplied it defaults
+                           to zero "0".
+
+Parameters:
+
+- api_id, the octet string ciphersuite_id || "H2G_HM2S_PSEUDONYM_",
+          where ciphersuite_id is defined by the ciphersuite and
+          "H2G_HM2S_PSEUDONYM_" is an ASCII string comprised of
+          9 bytes.
+
+Outputs:
+
+- (proof, disclosed_msgs, disclosed_idxs) a tuple comprising from an
+                                          octet string, an array of
+                                          octet strings and an array of
+                                          non-zero integers; or INVALID.
+
+Parameters:
+
+- api_id, the octet string ciphersuite_id || "BLIND_H2G_HM2S_", where
+          ciphersuite_id is defined by the ciphersuite and
+          "BLIND_H2G_HM2S_"is an ASCII string composed of 15 bytes.
+
+
+
+Deserialization:
+
+1. L = length(messages)
+2. if length(disclosed_indexes) > L, return INVALID
+3. for i in disclosed_indexes, if i < 0 or i >= L, return INVALID
+4. for j in disclosed_commitment_indexes,
+                               if i < 0 or i >= L, return INVALID
+
+Procedure:
+
+1.  message_scalars = ()
+2.  if secret_prover_blind != 0, message_scalars.append(
+                                     secret_prover_blind + signer_blind)
+
+4.  message_scalars.append(BBS.messages_to_scalars(
+                                   [pid], api_id))
+5.  message_scalars.append(BBS.messages_to_scalars(messages, api_id))
+
+6.  generators = BBS.create_generators(length(message_scalars) + 1,
+                                                                 api_id)
+7.  disclosed_data = BlindBBS.get_disclosed_data(
+                                  messages,
+                                  [pid],
+                                  disclosed_indexes,
+                                  [],
+                                  secret_prover_blind)
+8.  if disclosed_data is INVALID, return INVALID.
+9.  (disclosed_msgs, adj_disclosed_indexes) = disclosed_data
+
+10. proof = HiddenPidCoreProofGenWithPseudonym(PK,
+                                     signature,
+                                     Pseudonym,
+                                     verifier_id,
+                                     pid_scalar,
+                                     generators,
+                                     header,
+                                     ph,
+                                     message_scalars,
+                                     adj_disclosed_indexes,
+                                     api_id)
+
+11. if proof is INVALID, return INVALID
+12. return (proof, disclosed_msgs, adj_disclosed_indexes)
+```
+
+## Hidden PID Proof Verification with Pseudonym
+
+Note: This procedure is nearly identical to that in section (#signer-provided-pid-proof-verification-with-pseudonym), it differs in that it uses *HiddenPidCoreProofVerification* (#hidden-pid-proof-verification-with-pseudonym).
+
+This operation validates a BBS proof with a pseudonym, given the Signer's public key (PK), the proof, the pseudonym and the Verifier's identifier that was used to create it, a header and presentation header, the disclosed messages and lastly, the indexes those messages had in the original vector of signed messages. Validating the proof also validates the correctness and ownership by the Prover of the received pseudonym.
+
+This operation makes use of `HiddenPidCoreProofVerifyWithPseudonym` as defined in (#hidden-pid-core-proof-verification).
+
+```
+result = HiddenPidProofVerifyWithPseudonym(PK,
+                                  proof,
+                                  Pseudonym,
+                                  verifier_id,
+                                  header,
+                                  ph,
+                                  disclosed_indexes,
+                                  disclosed_messages)
+
+Inputs:
+
+- PK (REQUIRED), an octet string of the form outputted by the SkToPk
+                 operation.
+- proof (REQUIRED), an octet string of the form outputted by the
+                    ProofGen operation.
+- Pseudonym (REQUIRED), A point of G1, different from the Identity of
+                        G1, as outputted by the CalculatePseudonym
+                        operation.
+- verifier_id (REQUIRED), an octet string, representing the unique proof
+                          Verifier identifier.
+- header (OPTIONAL), an optional octet string containing context and
+                     application specific information. If not supplied,
+                     it defaults to an empty string.
+- ph (OPTIONAL), an octet string containing the presentation header. If
+                 not supplied, it defaults to an empty string.
+- disclosed_messages (OPTIONAL), a vector of octet strings. If not
+                                 supplied, it defaults to the empty
+                                 array "()".
+- disclosed_indexes (OPTIONAL), vector of unsigned integers in ascending
+                                order. Indexes of disclosed messages. If
+                                not supplied, it defaults to the empty
+                                array "()".
+
+Parameters:
+
+- api_id, the octet string ciphersuite_id || "H2G_HM2S_PSEUDONYM_",
+          where ciphersuite_id is defined by the ciphersuite and
+          "H2G_HM2S_PSEUDONYM_" is an ASCII string comprised of
+          9 bytes.
+- (octet_point_length, octet_scalar_length), defined by the ciphersuite.
+
+Outputs:
+
+- result, either VALID or INVALID.
+
+Deserialization:
+
+1. proof_len_floor = 2 * octet_point_length + 3 * octet_scalar_length
+2. if length(proof) < proof_len_floor, return INVALID
+3. U = floor((length(proof) - proof_len_floor) / octet_scalar_length)
+4. R = length(disclosed_indexes)
+5. L = U + R
+
+Procedure:
+
+1. message_scalars = messages_to_scalars(disclosed_messages, api_id)
+2. generators = create_generators(L + 1, PK, api_id)
+
+3. result = HiddenPidCoreProofVerifyWithPseudonym(PK,
+                                         proof,
+                                         Pseudonym,
+                                         verifier_id,
+                                         generators,
+                                         header,
+                                         ph,
+                                         message_scalars,
+                                         disclosed_indexes,
+                                         api_id)
+4. return result
+```
 
 ## Hidden PID Core Operations
 
+### Hidden PID Core Proof Generation
+
+This operations computes a BBS proof and a zero-knowledge proof of correctness of the pseudonym in "parallel" (meaning using common randomness), as to both create a proof that the pseudonym was correctly calculated using an undisclosed value that the Prover knows (i.e., the `pid` value), but also that this value is "signed" in the Blind BBS signature (as the only committed message). As a result, validating the proof guarantees that the pseudonym is correctly computed and that it was computed using the Prover identifier that was included in the BBS signature.
+
+The operation uses the `ProofInit` and `ProofFinalize` operations defined in [@!I-D.irtf-cfrg-bbs-signatures] and the `ProofWithPseudonymChallengeCalculate` defined in (#challenge-calculation).
+
+```
+proof = HiddenPidCoreProofGenWithPseudonym(PK,
+                                  signature,
+                                  Pseudonym,
+                                  verifier_id,
+                                  pid_scalar,
+                                  generators,
+                                  header,
+                                  ph,
+                                  messages,
+                                  disclosed_indexes,
+                                  api_id)
+
+Inputs:
+
+- PK (REQUIRED), an octet string of the form outputted by the SkToPk
+                 operation.
+- signature (REQUIRED), an octet string of the form outputted by the
+                        Sign operation.
+- Pseudonym (REQUIRED), A point of G1, different from the Identity of
+                        G1, as outputted by the CalculatePseudonym
+                        operation.
+- verifier_id (REQUIRED), an octet string, representing the unique proof
+                          Verifier identifier.
+- pid_scalar (REQUIRED), a scalar value, representing the unique Prover
+                         identifier after it is mapped to a scalar.
+- generators (REQUIRED), vector of points in G1.
+- header (OPTIONAL), an octet string containing context and application
+                     specific information. If not supplied, it defaults
+                     to an empty string.
+- ph (OPTIONAL), an octet string containing the presentation header. If
+                 not supplied, it defaults to an empty string.
+- messages (OPTIONAL), a vector of scalars representing the messages.
+                       If not supplied, it defaults to the empty
+                       array "()".
+- disclosed_indexes (OPTIONAL), vector of unsigned integers in ascending
+                                order. Indexes of disclosed messages. If
+                                not supplied, it defaults to the empty
+                                array "()".
+- api_id (OPTIONAL), an octet string. If not supplied it defaults to the
+                     empty octet string ("").
+
+Parameters:
+
+- P1, fixed point of G1, defined by the ciphersuite.
+
+Outputs:
+
+- proof, an octet string; or INVALID.
+
+Deserialization:
+
+1.  signature_result = octets_to_signature(signature)
+2.  if signature_result is INVALID, return INVALID
+3.  (A, e) = signature_result
+
+4.  messages = messages.push(pid_scalar)
+5.  L = length(messages)
+6.  R = length(disclosed_indexes)
+7.  (i1, ..., iR) = disclosed_indexes
+8.  if R > L - 1, return INVALID, Note: we never reveal the pid value.
+9.  U = L - R
+10.  undisclosed_indexes = (0, 1, ..., L - 1) \ disclosed_indexes, Note: pid is last message and is not revealed.
+11. (i1, ..., iR) = disclosed_indexes
+12. (j1, ..., jU) = undisclosed_indexes
+13. disclosed_messages = (messages[i1], ..., messages[iR])
+14. undisclosed_messages = (messages[j1], ..., messages[jU])
+
+ABORT if:
+
+1. for i in disclosed_indexes, i < 0 or i > L - 2, Note: pid  is L-1 message and not revealed.
+
+Procedure:
+
+1.  random_scalars = calculate_random_scalars(5+U)
+2.  init_res = ProofInit(PK,
+                         signature_res,
+                         header,
+                         random_scalars,
+                         generators,
+                         messages,
+                         undisclosed_indexes,
+                         api_id)
+3.  if init_res is INVALID, return INVALID
+
+4.  OP = hash_to_curve_g1(verifier_id, api_id)
+5.  pid~ = random_scalars[5+1] // **Note difference**: first element of mTilde
+6.  Ut = OP * pid~
+7.  pseudonym_init_res = (Pseudonym, OP, Ut)
+
+8.  challenge = ProofWithPseudonymChallengeCalculate(init_res,
+                                                     pseudonym_init_res,
+                                                     disclosed_indexes,
+                                                     disclosed_messages,
+                                                     ph,
+                                                     api_id)
+9.  proof = ProofFinalize(init_res, challenge, e_value, random_scalars,
+                                                   undisclosed_messages)
+10. return proof
+```
+
 ### Hidden PID Core Proof Verification
+
+Note: This procedure is nearly identical to that in section (#signer-provided-pid-core-proof-verification) and differs only in "procedure" step 4 given below.
+
+This operation validates a BBS proof that also includes a pseudonym. Validating the proof, other than the correctness and integrity of the revealed messages, the header and the presentation header values, also guarantees that the supplied pseudonym was correctly calculated, i.e., that it was produced using the Verifier's identifier and the signed (but undisclosed) Prover's identifier, following the `CalculatePseudonym` operation defined in (#calculate-pseudonym).
+
+The operation uses the `ProofVerifyInit` operation defined in [@!I-D.irtf-cfrg-bbs-signatures] and the `ProofWithPseudonymChallengeCalculate` defined in (#challenge-calculation).
+
+```
+result = HiddenPidCoreProofVerifyWithPseudonym(PK,
+                                      proof,
+                                      Pseudonym,
+                                      verifier_id,
+                                      generators,
+                                      header,
+                                      ph,
+                                      disclosed_messages,
+                                      disclosed_indexes,
+                                      api_id)
+
+Inputs:
+
+- PK (REQUIRED), an octet string of the form outputted by the SkToPk
+                 operation.
+- proof (REQUIRED), an octet string of the form outputted by the
+                    ProofGen operation.
+- Pseudonym (REQUIRED), A point of G1, different from the Identity of
+                        G1, as outputted by the CalculatePseudonym
+                        operation.
+- verifier_id (REQUIRED), an octet string, representing the unique proof
+                          Verifier identifier.
+- generators (REQUIRED), vector of points in G1.
+- header (OPTIONAL), an optional octet string containing context and
+                     application specific information. If not supplied,
+                     it defaults to an empty string.
+- ph (OPTIONAL), an octet string containing the presentation header. If
+                 not supplied, it defaults to an empty string.
+- disclosed_messages (OPTIONAL), a vector of scalars representing the
+                                 messages. If not supplied, it defaults
+                                 to the empty array "()".
+- disclosed_indexes (OPTIONAL), vector of unsigned integers in ascending
+                                order. Indexes of disclosed messages. If
+                                not supplied, it defaults to the empty
+                                array "()".
+- api_id (OPTIONAL), an octet string. If not supplied it defaults to the
+                     empty octet string ("").
+
+Parameters:
+
+- P1, fixed point of G1, defined by the ciphersuite.
+
+Outputs:
+
+- result, either VALID or INVALID.
+
+Deserialization:
+
+1. proof_result = octets_to_proof(proof)
+2. if proof_result is INVALID, return INVALID
+3. (Abar, Bbar, r2^, r3^, commitments, cp) = proof_result
+4. W = octets_to_pubkey(PK)
+5. if W is INVALID, return INVALID
+6. R = length(disclosed_indexes)
+7. (i1, ..., iR) = disclosed_indexes
+
+ABORT if:
+
+1. for i in disclosed_indexes, i < 1 or i > R + length(commitments) - 1
+
+Procedure:
+
+1.  init_res = ProofVerifyInit(PK, proof_result, header, generators,
+                                    messages, disclosed_indexes, api_id)
+
+2.  OP = hash_to_curve_g1(verifier_id)
+3.  U = length(commitments)
+4.  pid^ = commitments[1] // **Note difference**: 2nd element of the commitments!
+5.  Uv = OP * pid^ - Pseudonym * cp
+6.  pseudonym_init_res = (Pseudonym, OP, Uv)
+
+7.  challenge = ProofWithPseudonymChallengeCalculate(init_res,
+                                                     pseudonym_init_res,
+                                                     disclosed_indexes,
+                                                     messages,
+                                                     ph,
+                                                     api_id)
+8.  if cp != challenge, return INVALID
+9.  if e(Abar, W) * e(Bbar, -BP2) != Identity_GT, return INVALID
+10. return VALID
+```
 
 # Utility Operations
 
