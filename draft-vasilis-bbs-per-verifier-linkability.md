@@ -3,7 +3,9 @@ title = "BBS per Verifier Linkability"
 abbrev = "BBS per Verifier Linkability"
 ipr= "trust200902"
 area = "Internet"
-workgroup = "CFRG"
+workgroup = "none"
+submissiontype = "IETF"
+keyword = [""]
 
 [seriesInfo]
 name = "Internet-Draft"
@@ -19,18 +21,26 @@ organization = "MATTR"
   [author.address]
   email = "vasilis.kalos@mattr.global"
 
+[[author]]
+initials = "G."
+surname = "Bernstein"
+fullname = "Greg M. Bernstein"
+#role = "editor"
+organization = "Grotto Networking"
+  [author.address]
+  email = "gregb@grotto-networking.com"
 %%%
 
 .# Abstract
 
-The BBS Signatures scheme defined in [@!I-D.irtf-cfrg-bbs-signatures], describes a multi-message digital signature, that supports selectively disclosing the messages through unlinkable presentations, build using zero-knowledge proofs. Each BBS proof reveals no information other than the signed messages that the Prover chooses to disclose in that specific instance. As such, the Verifier (i.e., the recipient) of the BBS proof, may not be able to track those presentations over time. Although in many applications this is desirable, there are use cases where that require from the Verifier, to be able to track the BBS proofs they receive from the same entity. Examples include monitoring the use of access credentials for abnormal activity, monetization etc.. This document presents the use of pseudonyms with BBS proofs. A pseudonym, is a value that will remain constant each time a Prover presents a BBS proof to the same Verifier, but will be different (and unlinkable), when the Prover interacts with different parties. This provides a way for a recipient to track the presentations intended for them, while also hindering them from tracking the Prover's interactions with other Verifiers.
+The BBS Signatures scheme describes a multi-message digital signature, that supports selectively disclosing the messages through unlinkable presentations, build using zero-knowledge proofs. Each BBS proof reveals no information other than the signed messages that the Prover chooses to disclose in that specific instance. As such, the Verifier (i.e., the recipient) of the BBS proof, may not be able to track those presentations over time. Although in many applications this is desirable, there are use cases where that require from the Verifier, to be able to track the BBS proofs they receive from the same entity. Examples include monitoring the use of access credentials for abnormal activity, monetization etc.. This document presents the use of pseudonyms with BBS proofs. A pseudonym, is a value that will remain constant each time a Prover presents a BBS proof to the same Verifier, but will be different (and unlinkable), when the Prover interacts with different parties. This provides a way for a recipient to track the presentations intended for them, while also hindering them from tracking the Prover's interactions with other Verifiers.
 
 
 {mainmatter}
 
 # Introduction
 
-BBS Signatures, originally described in the academic work by Dan Boneh, Xavier Boyen, and Hovav Shacham [@BBS04], is a signature scheme able to sign multiple messages at once, allowing for selectively disclosing those message while not revealing the signature it self. It does so by creating unlinkable, zero-knowledge proofs-of-knowledge of a signature value on (among other) the disclosed set of messages. More specifically, the BBS Prover, will create a BBS proof that if validated by the Verifier, guarantees that the prover knows a BBS signature on the disclosed messages, guaranteeing this way the revealed messages authenticity and integrity.
+BBS Signatures, defined in [@!I-D.irtf-cfrg-bbs-signatures] and originally described in the academic work by Dan Boneh, Xavier Boyen, and Hovav Shacham [@BBS04], is a signature scheme able to sign multiple messages at once, allowing for selectively disclosing those message while not revealing the signature it self. It does so by creating unlinkable, zero-knowledge proofs-of-knowledge of a signature value on (among other) the disclosed set of messages. More specifically, the BBS Prover, will create a BBS proof that if validated by the Verifier, guarantees that the prover knows a BBS signature on the disclosed messages, guaranteeing this way the revealed messages authenticity and integrity.
 
 The BBS Proof is by design unlinkable, meaning that given 2 different BBS proofs, there is no way to tell if they originated from the same BBS signature. This means that if a Prover does not reveal any other identifying information (for example if they are using proxies to hide their IP address etc.), the Verifier of the proof will not be able "track" the different proof presentations or the Provers activity. This is done to guarantee privacy in applications where the Verifier only needs to know that the Prover is in possession of a valid BBS signature over a list of disclosed messages. In a lot of applications however, the Verifier needs to track the presentations made by the Prover over time, as to provide security monitoring, monetization services, configuration persistance etc.. That said, for obvious privacy reasons, the Prover should not reveal a unique identifier that would remain constant across proof presentations to different Verifiers (like their IP address).
 
@@ -125,7 +135,7 @@ octets\_to\_point\_g1(ostr) -> P, octets\_to\_point\_g2(ostr) -> P
 
 # Conventions and Definitions
 
-{::boilerplate bcp14-tagged}
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in BCP 14 [@!RFC2119] [@!RFC8174] when, and only when, they appear in all capitals, as shown here.
 
 # Preliminaries
 
@@ -598,8 +608,8 @@ Inputs:
                       the disclosed messages).
 - msg_array (REQUIRED), array of scalars (the disclosed messages after
                         mapped to scalars).
-- ph (OPTIONAL), an octet string. If not supplied, it must default to the
-                 empty octet string ("").
+- ph (OPTIONAL), an octet string. If not supplied, it must default to
+                 the empty octet string ("").
 
 Outputs:
 
