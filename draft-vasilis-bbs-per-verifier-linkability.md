@@ -210,7 +210,7 @@ To prevent forgeries in all cases all BBS messages are signed with the inclusion
 5. The prover generates a proof using *pid*, and *signature* based on the procedure of section (#signer-provided-pid-proof-generation-with-pseudonym).
 6. The prover conveys the *proof* and *pseudonym* to the verifier. The verifier uses the procedure of section (#proof-verification-with-pseudonym) to verify the proof.
 
-## Potential Integration and Participants Knowledge
+## Proof Verification Integration and Participants Knowledge
 
 Note that we use a three party model of *signer*, *prover*, and *verifier*. In the terminology commonly encountered with *credentials* these would correspond to *issuer*, *holder*, and *verifier*.
 
@@ -218,9 +218,9 @@ As will be seen in the following content the two different cases of *signer prov
 
 Similarly from the *provers* perspective they have very different procedures and retained information for generating proofs in the two different cases.
 
-There is a potential, as can be seen in the small differences in the verification procedures in the two cases to alter the signing and proof procedures in a way that the same verification procedure could be applied in both cases. Since the purpose of pseudonyms is to prevent linkages under verifier-to-verifier collusion this would not seem to present a undue burden to verifiers, but would like inputs. In the case of *signer provided pid* where there is, say statutory reporting, from a *verifier* to the *signer*, e.g., for controlled substance purchase monitoring, the *verifier* would know that its involved in the *signer provided pid* case since the *hidden pid* case is unlinkable under *verifier-to-signer* collusion.
+In the following we have unified the verification procedure for the two cases. In the case of *signer provided pid* where there is, say statutory reporting, from a *verifier* to the *signer*, e.g., for controlled substance purchase monitoring, the *verifier* would know that its involved in the *signer provided pid* case since the *hidden pid* case is unlinkable under *verifier-to-signer* collusion.
 
-Hence, in both use-cases it seems that the parties involved have relatively complete information concerning their privacy, particularly the *prover* (*holder*) and that developing a common verification procedure for both cases would simplify protocol implementation and promote acceptance.
+Hence, in both use-cases it seems that the parties involved have relatively complete information concerning their privacy, particularly the *prover* (*holder*) and that having a common verification procedure for both cases would simplify protocol implementation and promotes acceptance.
 
 # General Procedures
 
