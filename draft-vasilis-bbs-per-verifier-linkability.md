@@ -199,7 +199,7 @@ To prevent forgeries in all cases all BBS messages are signed with the inclusion
 4. On receipt of the signature the prover verifies the signature using the procedure of section (#hidden-pid-signature-generation-and-verification).
 5. The prover computes the *pseudonym* based on the *pid* and *verifier_id*
 6. The prover generates a proof using *pid*, *secret_prover_blind*, *signature* and *signer_blind* (if provided with the signature) using the procedures of section (#hidden-pid-proof-generation-with-pseudonym).
-7. The prover conveys the *proof* and *pseudonym* to the verifier. The verifier uses the procedure of section (#hidden-pid-proof-verification-with-pseudonym) to verify the proof.
+7. The prover conveys the *proof* and *pseudonym* to the verifier. The verifier uses the procedure of section (#proof-verification-with-pseudonym) to verify the proof.
 
 ## Pseudonym with Signer provided Pid
 
@@ -208,7 +208,7 @@ To prevent forgeries in all cases all BBS messages are signed with the inclusion
 3. The prover on receipt of the signature and *pid* verifiers the signature using the procedure of section (#signer-provided-pid-signature-generation-and-verification).
 4. The prover computes the *pseudonym* based on the *pid* and *verifier_id*
 5. The prover generates a proof using *pid*, and *signature* based on the procedure of section (#signer-provided-pid-proof-generation-with-pseudonym).
-6. The prover conveys the *proof* and *pseudonym* to the verifier. The verifier uses the procedure of section (#signer-provided-pid-proof-verification-with-pseudonym) to verify the proof.
+6. The prover conveys the *proof* and *pseudonym* to the verifier. The verifier uses the procedure of section (#proof-verification-with-pseudonym) to verify the proof.
 
 ## Potential Integration and Participants Knowledge
 
@@ -270,7 +270,7 @@ This is the signer (issuer) known *pid* case.
 
 The following section defines a BBS Interface that will make use of per-origin pseudonyms. The identifier of the Interface is defined as `ciphersuite_id || H2G_HM2S_PSEUDONYM_`, where `ciphersuite_id` the unique identifier of the BBS ciphersuite used, as is defined in [Section 6](https://www.ietf.org/archive/id/draft-irtf-cfrg-bbs-signatures-03.html#name-ciphersuites) of [@!I-D.irtf-cfrg-bbs-signatures]). Each BBS Interface MUST define operations to map the inputted messages to scalar values and to create the generators set, required by the core operations. The inputted messages to the defined in this document BBS Interface will be mapped to scalars using the `messages_to_scalars` operation defined in Section TBD of [@!I-D.irtf-cfrg-bbs-signatures]. The generators will be created using the `create_generators` operation defined in Section TBD of [@!I-D.irtf-cfrg-bbs-signatures].
 
-This document also defines two alternative core proof generation and verification operations (see (#signer-provided-pid-core-operations)), to accommodate the use of pseudonyms. Those operations will be used by the defined proof generation and verification Interface operations, in place of the `CoreProofGen` and `CoreProofVerify` operations defined in Section TBD of [@!I-D.irtf-cfrg-bbs-signatures].
+This document also defines two alternative core proof generation and verification operations (see (#core-operations)), to accommodate the use of pseudonyms. Those operations will be used by the defined proof generation and verification Interface operations, in place of the `CoreProofGen` and `CoreProofVerify` operations defined in Section TBD of [@!I-D.irtf-cfrg-bbs-signatures].
 
 ## Signer Provided PID Signature Generation and Verification
 
@@ -333,9 +333,9 @@ export async function ProofGenWithPseudonym(PK, signature, pseudonym_bytes, veri
 
 This operation computes a BBS proof with a pseudonym, which is a zero-knowledge, proof-of-knowledge, of a BBS signature, while optionally disclosing any subset of the signed messages. The BBS proof is extended to also include a zero-knowledge proof of correctness of the pseudonym, meaning that it is correctly calculated, using a signed Prover identifier and the supplied Verifier's ID.
 
-Validating the proof (see `ProofVerifyWithPseudonym` defined in (#signer-provided-pid-proof-verification-with-pseudonym)), guarantees authenticity and integrity of the header, presentation header and disclosed messages, knowledge of a valid BBS signature as well as correctness and ownership of the pseudonym.
+Validating the proof (see `ProofVerifyWithPseudonym` defined in (#proof-verification-with-pseudonym)), guarantees authenticity and integrity of the header, presentation header and disclosed messages, knowledge of a valid BBS signature as well as correctness and ownership of the pseudonym.
 
-This operation makes use of `CoreProofGenWithPseudonym` as defined in (#signer-provided-pid-core-proof-generation).
+This operation makes use of `CoreProofGenWithPseudonym` as defined in (#core-proof-generation).
 
 ```
 proof = ProofGenWithPseudonym(PK,
@@ -501,9 +501,9 @@ export async function HiddenPidProofGen(PK, signature, pseudonym_bytes, verifier
 
 This section defines operations for calculating a BBS proof with a pseudonym in the hidden pid case. The BBS proof is extended to include a zero-knowledge proof of correctness of the pseudonym value, i.e., that is correctly calculated using the (undisclosed) id of the Prover (`pid`), and that is "bound" to the underlying BBS signature (i.e., that the `pid` value is signed by the Signer).
 
-Validating the proof (see `HiddenPidProofVerifyWithPseudonym` defined in (#hidden-pid-proof-verification-with-pseudonym)), guarantees authenticity and integrity of the header, presentation header and disclosed messages, knowledge of a valid BBS signature as well as correctness and ownership of the pseudonym.
+Validating the proof (see `HiddenPidProofVerifyWithPseudonym` defined in (#proof-verification-with-pseudonym)), guarantees authenticity and integrity of the header, presentation header and disclosed messages, knowledge of a valid BBS signature as well as correctness and ownership of the pseudonym.
 
-This operation makes use of `HiddenPidCoreProofGenWithPseudonym` as defined in (#hidden-pid-core-proof-generation).
+This operation makes use of `HiddenPidCoreProofGenWithPseudonym` as defined in (#core-proof-generation).
 
 ```
 (proof, disclosed_msgs, disclosed_idxs)
@@ -692,7 +692,7 @@ export async function ProofVerifyWithPseudonym(PK, proof, L, pseudonym_bytes,
 
 This operation validates a BBS proof with a pseudonym, given the Signer's public key (PK), the proof, the pseudonym and the Verifier's identifier that was used to create it, a header and presentation header, the disclosed messages and lastly, the indexes those messages had in the original vector of signed messages. Validating the proof also validates the correctness and ownership by the Prover of the received pseudonym.
 
-This operation makes use of `CoreProofVerifyWithPseudonym` as defined in (#signer-provided-pid-core-proof-verification).
+This operation makes use of `CoreProofVerifyWithPseudonym` as defined in (#core-proof-verification).
 
 ```
 result = ProofVerifyWithPseudonym(PK,
