@@ -32,8 +32,6 @@ organization = "Grotto Networking"
 
 .# Abstract
 
-This is a proposed enhancement to V. Kalos' Pseudonym proposal to include the hidden "prover identifier" case along with the "signer know prover identifier" case to provide enhanced privacy. This proposal seeks to make the verification procedure the same in both cases to ease development and deployment.
-
 The BBS Signatures scheme defined in [@!I-D.irtf-cfrg-bbs-signatures], describes a multi-message digital signature, that supports selectively disclosing the messages through unlinkable presentations, built using zero-knowledge proofs. Each BBS proof reveals no information other than the signed messages that the Prover chooses to disclose in that specific instance. As such, the Verifier (i.e., the recipient) of the BBS proof, may not be able to track those presentations over time. Although in many applications this is desirable, there are use cases where that require the Verifier be able to track the BBS proofs they receive from the same Prover. Examples include monitoring the use of access credentials for abnormal activity, monetization etc.. This document presents the use of pseudonyms with BBS proofs.
 
 A pseudonym, is a value that will remain constant each time a Prover presents a BBS proof to the same Verifier, but will be different (and unlinkable), when the Prover interacts with a different Verifier. This provides a way for a recipient (Verifier) to track the presentations intended for them, while also hindering them from tracking the Prover's interactions with other Verifiers.
@@ -401,7 +399,7 @@ The prover will create a commitment on its pid and conveys it the the signer usi
 ```
 
 The Signer generate a signature from a secret key (SK), a the commitment with proof,
-and optionally over a `header`, a vector of `messages`, and optional `signer_bling` using
+and optionally over a `header`, a vector of `messages`, and optional `signer_blind` using
 the BlindSign procedure from [@!I-D.kalos-bbs-blind-signatures].
 
 ```
