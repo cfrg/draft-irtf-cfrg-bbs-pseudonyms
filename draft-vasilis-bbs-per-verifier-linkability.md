@@ -854,9 +854,8 @@ ABORT if:
 2. length(ph) > 2^64 - 1
 
 Procedure:
-
-1. c_arr = (Abar, Bbar, D, T1, T2, Pseudonym, OP, Ut, R, i1, ..., iR,
-                                            msg_i1, ..., msg_iR, domain)
+1. c_arr = (R, i1, msg_i1, i2, msg_i2, ..., iR, msg_iR, Abar, Bbar,
+                                    D, T1, T2, Pseudonym, OP, Ut, domain)
 2. c_octs = serialize(c_arr) || I2OSP(length(ph), 8) || ph
 3. return hash_to_scalar(c_octs, challenge_dst)
 ```
