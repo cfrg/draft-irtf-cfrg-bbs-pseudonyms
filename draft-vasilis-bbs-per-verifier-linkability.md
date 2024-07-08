@@ -3,7 +3,9 @@ title = "BBS per Verifier Linkability"
 abbrev = "BBS per Verifier Linkability"
 ipr= "trust200902"
 area = "Internet"
-workgroup = "CFRG"
+workgroup = "none"
+submissiontype = "IETF"
+keyword = [""]
 
 [seriesInfo]
 name = "Internet-Draft"
@@ -19,6 +21,14 @@ organization = "MATTR"
   [author.address]
   email = "vasilis.kalos@mattr.global"
 
+[[author]]
+initials = "G."
+surname = "Bernstein"
+fullname = "Greg M. Bernstein"
+#role = "editor"
+organization = "Grotto Networking"
+  [author.address]
+  email = "gregb@grotto-networking.com"
 %%%
 
 .# Abstract
@@ -132,7 +142,7 @@ octets\_to\_point\_g1(ostr) -> P, octets\_to\_point\_g2(ostr) -> P
 
 # Conventions and Definitions
 
-{::boilerplate bcp14-tagged}
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in BCP 14 [@!RFC2119] [@!RFC8174] when, and only when, they appear in all capitals, as shown here.
 
 # Preliminaries
 
@@ -605,8 +615,8 @@ Inputs:
                       the disclosed messages).
 - msg_array (REQUIRED), array of scalars (the disclosed messages after
                         mapped to scalars).
-- ph (OPTIONAL), an octet string. If not supplied, it must default to the
-                 empty octet string ("").
+- ph (OPTIONAL), an octet string. If not supplied, it must default to
+                 the empty octet string ("").
 
 Outputs:
 
