@@ -3,7 +3,9 @@ title = "BBS per Verifier Linkability"
 abbrev = "BBS per Verifier Linkability"
 ipr= "trust200902"
 area = "Internet"
-workgroup = "CFRG"
+workgroup = "none"
+submissiontype = "IETF"
+keyword = [""]
 
 [seriesInfo]
 name = "Internet-Draft"
@@ -143,7 +145,7 @@ octets\_to\_point\_g1(ostr) -> P, octets\_to\_point\_g2(ostr) -> P
 
 # Conventions and Definitions
 
-{::boilerplate bcp14-tagged}
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in BCP 14 [@!RFC2119] [@!RFC8174] when, and only when, they appear in all capitals, as shown here.
 
 # Key Concepts
 
