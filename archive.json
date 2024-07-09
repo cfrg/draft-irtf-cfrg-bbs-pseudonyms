@@ -1,0 +1,111 @@
+{
+  "magic": "E!vIA5L86J2I",
+  "timestamp": "2024-07-09T00:44:38.681965+00:00",
+  "repo": "BasileiosKal/bbs-per-verifier-id",
+  "labels": [
+    {
+      "name": "bug",
+      "description": "Something isn't working",
+      "color": "d73a4a"
+    },
+    {
+      "name": "documentation",
+      "description": "Improvements or additions to documentation",
+      "color": "0075ca"
+    },
+    {
+      "name": "duplicate",
+      "description": "This issue or pull request already exists",
+      "color": "cfd3d7"
+    },
+    {
+      "name": "enhancement",
+      "description": "New feature or request",
+      "color": "a2eeef"
+    },
+    {
+      "name": "good first issue",
+      "description": "Good for newcomers",
+      "color": "7057ff"
+    },
+    {
+      "name": "help wanted",
+      "description": "Extra attention is needed",
+      "color": "008672"
+    },
+    {
+      "name": "invalid",
+      "description": "This doesn't seem right",
+      "color": "e4e669"
+    },
+    {
+      "name": "question",
+      "description": "Further information is requested",
+      "color": "d876e3"
+    },
+    {
+      "name": "wontfix",
+      "description": "This will not be worked on",
+      "color": "ffffff"
+    }
+  ],
+  "issues": [],
+  "pulls": [
+    {
+      "number": 1,
+      "id": "PR_kwDOKOg1E85pJtGO",
+      "title": "Some simple wording improvements to abstract and introduction.",
+      "url": "https://github.com/BasileiosKal/bbs-per-verifier-id/pull/1",
+      "state": "MERGED",
+      "author": "Wind4Greg",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Hi @BasileiosKal prior to adding some new requirements and substantial text I did a few edits on the abstract and introduction if you are interested. Cheers Greg",
+      "createdAt": "2024-03-09T19:01:42Z",
+      "updatedAt": "2024-07-08T22:21:01Z",
+      "baseRepository": "BasileiosKal/bbs-per-verifier-id",
+      "baseRefName": "main",
+      "baseRefOid": "b0c504461dc50c07646da1f114063853036195b3",
+      "headRepository": "Wind4Greg/bbs-per-verifier-id",
+      "headRefName": "general-edits",
+      "headRefOid": "3d62664a0fe989043b3abae1f6fc6d647a691186",
+      "closedAt": "2024-07-08T22:21:01Z",
+      "mergedAt": "2024-07-08T22:21:01Z",
+      "mergedBy": "BasileiosKal",
+      "mergeCommit": {
+        "oid": "c66c468040459ed425054ae421f56d7f8981d3b4"
+      },
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 2,
+      "id": "PR_kwDOKOg1E850IBND",
+      "title": "Update for New Blind API and Hidden PID use case",
+      "url": "https://github.com/BasileiosKal/bbs-per-verifier-id/pull/2",
+      "state": "MERGED",
+      "author": "Wind4Greg",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Hi Vasilis, this PR includes a bunch of explanatory text on known PID and hidden PID pseudonyms and updates to the various procedures to reflect the updated (`different-generators` branch) Blind BBS API.  This procedures have been implemented in code and appear self consistent, but have not been tested by anyone but me.",
+      "createdAt": "2024-07-01T22:46:14Z",
+      "updatedAt": "2024-07-08T22:24:53Z",
+      "baseRepository": "BasileiosKal/bbs-per-verifier-id",
+      "baseRefName": "main",
+      "baseRefOid": "c66c468040459ed425054ae421f56d7f8981d3b4",
+      "headRepository": "Wind4Greg/bbs-per-verifier-id",
+      "headRefName": "new-blind-api",
+      "headRefOid": "e92549e50cdfc24c4d083cfe98c45a426056ba80",
+      "closedAt": "2024-07-08T22:24:52Z",
+      "mergedAt": "2024-07-08T22:24:52Z",
+      "mergedBy": "BasileiosKal",
+      "mergeCommit": {
+        "oid": "3d9f6896aa919d7cbeb629b97125669b030d12d7"
+      },
+      "comments": [],
+      "reviews": []
+    }
+  ]
+}
