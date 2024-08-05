@@ -362,10 +362,9 @@ Procedure:
 
 1. messages.append(pid) // add pid to end of messages
 2. message_scalars = messages_to_scalars(messages, api_id)
-3. pid_scalar = messages_to_scalars((pid), api_id)
-4. generators = create_generators(length(messages) + 1, api_id) // includes one for pid
+3. generators = create_generators(length(messages) + 1, api_id) // includes one for pid
 
-5. proof = CoreProofGenWithPseudonym(PK,
+4. proof = CoreProofGenWithPseudonym(PK,
                                      signature,
                                      Pseudonym,
                                      verifier_id,
@@ -376,8 +375,8 @@ Procedure:
                                      disclosed_indexes,
                                      api_id)
 
-6. if proof is INVALID, return INVALID
-7. return proof
+5. if proof is INVALID, return INVALID
+6. return proof
 ```
 
 # Hidden PID BBS Pseudonym Interface
@@ -415,7 +414,7 @@ steps:
 
 ```
 1. committed_messages = [pid]
-1. result = BlindBBS.Verify(PK, signature, header, messages, committed_messages,
+2. result = BlindBBS.Verify(PK, signature, header, messages, committed_messages,
                                       secret_prover_blind, signer_blind)
 ```
 
@@ -498,19 +497,17 @@ Deserialization:
 Procedure:
 
 1.  message_scalars = ()
-2.  if secret_prover_blind != 0, message_scalars.append(
-                                     secret_prover_blind + signer_blind)
+2.  message_scalars.append(BBS.messages_to_scalars(messages, api_id))
+3.  message_scalars.append(secret_prover_blind + signer_blind)
     // The above addition must be done in the scalar field.
-3.  message_scalars.append(BBS.messages_to_scalars(
-                                   [pid], api_id))
-4.  message_scalars.append(BBS.messages_to_scalars(messages, api_id))
+4.  message_scalars.append(BBS.messages_to_scalars([pid], api_id))
 
 5.  generators = BBS.create_generators(L + 1, api_id)
 6.  blind_generators = BBS.create.create_generators(2, "BLIND_" + api_id)
 7.  generators.append(blind_generators)
 
 
-9. proof = CoreProofGenWithPseudonym(PK,
+8. proof = CoreProofGenWithPseudonym(PK,
                                      signature,
                                      Pseudonym,
                                      verifier_id,
@@ -521,8 +518,8 @@ Procedure:
                                      adj_disclosed_indexes,
                                      api_id)
 
-10. if proof is INVALID, return INVALID
-11. return proof
+9. if proof is INVALID, return INVALID
+10. return proof
 ```
 
 # Proof Verification with Pseudonym
@@ -595,7 +592,7 @@ Procedure:
 1. message_scalars = messages_to_scalars(disclosed_messages, api_id)
 2. generators = BBS.create_generators(L + 1, api_id)
 3. blind_generators = []
-4. if M > -1, bind_generators = BBS.create_generators(M + 1, "BLIND_" + api_id)
+4. bind_generators = BBS.create_generators(M + 1, "BLIND_" + api_id)
 5. generators.append(blind_generators)
 3. result = CoreProofVerifyWithPseudonym(PK,
                                          proof,
@@ -873,7 +870,6 @@ This document does not define new BBS ciphersuites. Its ciphersuite defined in [
 # IANA Considerations
 
 This document has no IANA actions.
-
 
 {backmatter}
 
