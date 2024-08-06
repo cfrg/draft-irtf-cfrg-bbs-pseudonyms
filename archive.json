@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2024-08-04T00:50:58.263055+00:00",
+  "timestamp": "2024-08-06T00:46:03.441187+00:00",
   "repo": "BasileiosKal/bbs-per-verifier-id",
   "labels": [
     {
@@ -104,6 +104,32 @@
       "mergeCommit": {
         "oid": "3d9f6896aa919d7cbeb629b97125669b030d12d7"
       },
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 3,
+      "id": "PR_kwDOKOg1E853gILB",
+      "title": "Algorithm fixes and formatting updates",
+      "url": "https://github.com/BasileiosKal/bbs-per-verifier-id/pull/3",
+      "state": "OPEN",
+      "author": "Wind4Greg",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "This PR addresses the  following issues:\r\n\r\n1. Issuer known pid proof generation procedure has a redundant pid_scalar computation.\r\n2. In hidden pid proof generation procedure has an unnecessary test (if) on secret prover blind.\r\n3. In hidden pid proof generation ordering of scalars is incorrect.\r\n4. In proof verification with pseudonym should M < 0 now be considered an error? Compare to Blind proof verify. Currently no check. So will take it out for now.",
+      "createdAt": "2024-08-05T22:27:54Z",
+      "updatedAt": "2024-08-05T22:27:54Z",
+      "baseRepository": "BasileiosKal/bbs-per-verifier-id",
+      "baseRefName": "main",
+      "baseRefOid": "3d9f6896aa919d7cbeb629b97125669b030d12d7",
+      "headRepository": "Wind4Greg/bbs-per-verifier-id",
+      "headRefName": "alg-updates",
+      "headRefOid": "5251f7462bd80353a3b003e66d8d19b4b1d48a15",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
       "comments": [],
       "reviews": []
     }
