@@ -58,4 +58,4 @@ Pros:
 
 Cons:
 
-1. Requires two different proof verify procedures or extra info to be communicated and a  branch in proof verify.
+1. Requires two different proof verify procedures or extra info to be communicated and a branch in proof verify, i.e., additional primitives for devs to implement and maintain, when the other approach solves the use case without needing them.
