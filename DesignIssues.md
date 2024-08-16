@@ -39,9 +39,13 @@ Pros:
 
 Cons:
 
-1. Extra communication flow in issuer known PID case (holder to issuer)
-2. Extra commitment computation for holder in issuer known PID case compared to previous approach.
+1. Extra communication flow in issuer known PID case (holder to issuer). See *mitigation* below.
+2. Extra commitment computation for holder in issuer known PID case compared to previous approach. *Minor*
 3. Additional proof is needed that revealed PID (issuer known) is in the commitment in the proper place.
+
+### Simple Issuer Known PID (mitigation)
+
+In the case of issuer known PID **without** the holder having additional committed messages to sign the issuer can just generate the PID, commitment, and commitment with proof, and use these in the blind BBS sign procedure.  In order for the holder to  generate the psuedonym proof they only need the  PID and `secret_prover_blind` values  from the issuer.  Note since "blinding" the commitment isn't really necessary (the issuer  knows the PID) we should be able to set `secret_prover_blind` = 0.  Hence the information flow can remain as simple as existing approach.
 
 ## Alternative  Approach 2
 
@@ -50,7 +54,7 @@ Drop the requirement for only one pseudonym proof verify procedure or equivalent
 Pros:
 
 1. Keeps information flow in issuer known PID case simple
-2. Allows for issuer  known  PID to work with anonymous holder binding
+2. Allows for issuer  known  PID to work with anonymous holder binding. This is a more complicated information flow and would be equivalent to flow in Approach 1 for this case.
 
 Cons:
 
