@@ -7,6 +7,8 @@ How best to implement the two flavors of pseudonyms? (a) issuer/signer known PID
 
 * Both types of pseudonyms must use the same proof verification procedure. This was my (Greg B) original requirement when I added hidden PID pseudonym.
 * Permit pseudonym feature to be combined with "anonymous holder binding" feature  or multiple holder/prover secret  messages. *Regardless* of  pseudonym type.
+* In the ABC4Trust requirements they have an **inspector** role that can de-anonymize the pseudonym by having the PID revealed. This could be the **issuer** but does not have to be. Hence it seems more general to always have a hidden pid and a procedure to reveal the hidden pid for a given credential.
+* In the hidden PID case we want to guard against duplication of PIDs or use of stolen PIDs. One way is to have the issuer check on this via secure a secure artifact. One way would be the holder creating an issuer-pseudonym, i.e., pseudo_issuer = H(issuer_public_id)*(holders_PID); And have the issuer check keep a table of these. Note this would have holder send (commitment, pseudo_issuer, proof of commitment and pseudonym)
 
 ## Current Approach
 
@@ -26,16 +28,22 @@ This approach is characterized by:
 1. Some would argue that my approach in step 4 above is a "hack", since we break the correspondence between messages and generators. Though in this case the message is zero.
 2. With the above approach we can't combine issuer known PID feature with anonymous holder binding (or other holder secrets) since this would produce message ordering such as (issuer messages, issuer pid, secret_prover_blind + signer_blind, holder committed  messages). Note that in the hidden PID case we can order as (issuer messages, secret_prover_blind + signer_blind, holder committed msgs, holder pid). This is under the one proof verification method assumption.
 
-## Alternative  Approach 1
+## Suggested Alternative  Approach
 
 Always use a committed PID with blind signing. In this approach the holder either receives the PID from the issuer or simply reveals the PID they have chosen to the issuer.  They then can add in as many committed secrets as they like, e.g., anonymous holder binding.
+
+Implementation suggestions/additions/details:
+
+1. Always have anonymous holder binding value (if used) be the first committed message and always have the (per credential) PID value be the last.
+2. Always compute an "issuer pseudonym" value, pseudo_issuer = H(issuer_public_id)*(holders_PID), to allow the issuer to guard against duplicate PIDs from different holders. Holders would send (PID commitment, pseudo_issuer, proof of commitment and pseudonym)
+3. Explicit PID reveal procedure. If issuer or 3rd party tracking is required. Provide a separate proof procedure that generates a proof that reveals just the PID value (and that the PID corresponds to the pseudonym). Recall the holder can reveal any of the blind signed messages of which the PID is the last.
 
 Pros:
 
 1. Unifies both flavors of PID completely.  Only difference is what is revealed to issuer.
-2. Issuer known PID can now work with anonymous holder binding and other committed messages.
-3. Only one  pseudonym verification function required
-4. Only one  pseudonym proof function required
+2. Issuer known PID can now work with anonymous holder binding and other committed messages. Can have an entity different from issuer do the tracking.
+3. Only one pseudonym verification function required
+4. Only one pseudonym proof function required
 
 Cons:
 
