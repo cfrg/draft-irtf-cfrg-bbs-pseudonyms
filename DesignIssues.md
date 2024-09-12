@@ -55,6 +55,12 @@ Cons:
 
 In the case of issuer known PID **without** the holder having additional committed messages to sign the issuer can just generate the PID, commitment, and commitment with proof, and use these in the blind BBS sign procedure.  In order for the holder to  generate the psuedonym proof they only need the  PID and `secret_prover_blind` values  from the issuer.  Note since "blinding" the commitment isn't really necessary (the issuer  knows the PID) we should be able to set `secret_prover_blind` = 0.  Hence the information flow can remain as simple as existing approach.
 
+### Proposed APIs Under This Approach
+
+1. Holder commits to arbitrary number of messages with a minimum of one. First message must be holder binding secret (if used), and last message must be PID.  Note proof of commitment contains number of committed messages. Need proof and mechanism to guarantee/check issuer uniqueness of PID.
+2. Signature Generation and Verification, ProofGen, ProofVerify
+3. PID reveal procedure/proof generation and verification.
+
 ## Alternative  Approach 2
 
 Drop the requirement for only one pseudonym proof verify procedure or equivalently send an  indicator of which of the two cases are being proved to the verifier.  Just put pid at end of either issuer messages or hidden (committed) messages. Use Blind signatures to allow for committed messages and features like anonymous holder binding. In issuer known PID case the last issuer message is the PID and  `pid^` can be found  via the **L** value used in blind BBS  proofs.  In the hidden PID case the PID is the last committed message.
