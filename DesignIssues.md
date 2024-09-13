@@ -51,6 +51,22 @@ Cons:
 2. Extra commitment computation for holder in issuer known PID case compared to previous approach. *Minor*
 3. Additional proof is needed that revealed PID (issuer known) is in the commitment in the proper place.
 
+### Other Ideas for PID uniqueness problem
+
+What if we use a "two part PID", i.e., have one part come from the issuer and the other part from the holder?
+
+#### Sum of two numbers
+
+Require the total PID to be 2*N number of bits. Have issuer generate a unique N bit number, $PID_i$, holder generates its N bit number, $PID_h$. The combined PID, $PID_c = (PID_i << N) + PID_h$. Or the reverse. But how do we prove to the issuer that the PID_c is of this form?
+
+Let G be a generator for the group. Note that $G^{PID_C} = G^{(PID_i << N )} * G^{PID_h}$ and by DL problem if the holder sends the issuer $G^{PID_h}$ and a proof they know the $PID_h$ that created this, the issuer cannot determine $PID_h$ but can check $G^{PID_C} * (1/(G^{PID_h)}) = G^{(PID_i << N )}$ But would we also need a "range proof" to insure that $PID_h$ is less than 2^N - 1? See Boneh and Shoup section 20.4.1
+Example: range proofs for a proof that "x is a d bit number".
+
+#### Multi-Part Pseudonym
+
+Again let there be $PID_i$ and $PID_h$ can we form a pseudonym based on these two values in a unique way? And furnish a proof of this. Let G and H be two **different** generators for the Group, what if we let $pseudo = G^{PID_i}*H^{PID_h}$ then the holder furnishes proof that they know the $PID_i$ and $PID_h$. Could we just have $G = curveHash(issuer_{pubId})$ and $H = curveHash(verifier_{pubId})$? For proof see Boneh and Shoup section 19.5.3
+"A Sigma protocol for arbitrary linear relations".
+
 ### Simple Issuer Known PID (mitigation)
 
 In the case of issuer known PID **without** the holder having additional committed messages to sign the issuer can just generate the PID, commitment, and commitment with proof, and use these in the blind BBS sign procedure.  In order for the holder to  generate the psuedonym proof they only need the  PID and `secret_prover_blind` values  from the issuer.  Note since "blinding" the commitment isn't really necessary (the issuer  knows the PID) we should be able to set `secret_prover_blind` = 0.  Hence the information flow can remain as simple as existing approach.
