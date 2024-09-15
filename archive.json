@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2024-09-12T00:50:34.557605+00:00",
+  "timestamp": "2024-09-15T00:56:22.618203+00:00",
   "repo": "BasileiosKal/bbs-per-verifier-id",
   "labels": [
     {
@@ -119,13 +119,13 @@
       "labels": [],
       "body": "This PR addresses the  following issues:\r\n\r\n1. Issuer known pid proof generation procedure has a redundant pid_scalar computation.\r\n2. In hidden pid proof generation procedure has an unnecessary test (if) on secret prover blind.\r\n3. In hidden pid proof generation ordering of scalars is incorrect.\r\n4. In proof verification with pseudonym should M < 0 now be considered an error? Compare to Blind proof verify. Currently no check. So will take it out for now.",
       "createdAt": "2024-08-05T22:27:54Z",
-      "updatedAt": "2024-09-11T22:54:44Z",
+      "updatedAt": "2024-09-13T17:37:17Z",
       "baseRepository": "BasileiosKal/bbs-per-verifier-id",
       "baseRefName": "main",
       "baseRefOid": "3d9f6896aa919d7cbeb629b97125669b030d12d7",
       "headRepository": "Wind4Greg/bbs-per-verifier-id",
       "headRefName": "alg-updates",
-      "headRefOid": "8d36381665d22b76d6a1971395f320e6192d5d0e",
+      "headRefOid": "c098abd12fe33e5ce888184acdec7444df5aa09a",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
