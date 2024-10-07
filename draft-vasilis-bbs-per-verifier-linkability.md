@@ -281,7 +281,8 @@ More specifically, the Signer to generate a signature from a secret key (SK), a 
 ```
 1. messages = messages.push(pid)
 2. commitment_with_proof = "" // The empty string
-2. signature = BlindSign(SK, PK, commitment_with_proof, header, messages)
+2. signature = BlindSign(SK, PK, commitment_with_proof, header,
+                                                               messages)
 ```
 
 Where `BlindSign` is defined in [Section 4.2.1](https://www.ietf.org/archive/id/draft-kalos-bbs-blind-signatures-00.html#name-blind-signature-generation) of [@!I-D.irtf-cfrg-bbs-signatures], instantiated with the `api_id` parameter set to the value `ciphersuite_id || H2G_HM2S_PSEUDONYM_`, where `ciphersuite_id` the unique identifier of the ciphersuite.
@@ -290,11 +291,7 @@ To verify the above `signature`, for a given `pid`, `header` and vector of `mess
 
 ```
 1. messages = messages.push(pid)
-2. committed_messages = ()
-3. secret_prover_blind = 0
-4. signer_blind = 0
-5. signature = Verify(PK, signature, header, messages, committed_messages,
-                                      secret_prover_blind, signer_blind)
+2. signature = Verify(PK, signature, header, messages)
 ```
 
 The `Verify` operation is defined in [Section 4.2.2](https://www.ietf.org/archive/id/draft-kalos-bbs-blind-signatures-00.html#name-blind-signature-verificatio) of [@!I-D.irtf-cfrg-bbs-signatures], instantiated with the `api_id` parameter set to the value `ciphersuite_id || H2G_HM2S_PSEUDONYM_`, where `ciphersuite_id` the unique identifier of the ciphersuite.
@@ -363,7 +360,9 @@ Procedure:
 1. messages.append(pid) // add pid to end of messages
 2. message_scalars = messages_to_scalars(messages, api_id)
 3. pid_scalar = messages_to_scalars((pid), api_id)
-4. generators = create_generators(length(messages) + 1, api_id) // includes one for pid
+
+// includes one for pid
+4. generators = create_generators(length(messages) + 1, api_id)
 
 5. proof = CoreProofGenWithPseudonym(PK,
                                      signature,
@@ -397,7 +396,7 @@ The prover will create a commitment on its pid and conveys it the the signer usi
 2. (commitment_with_proof, secret_prover_blind) = Commit(
                                                    committed_messages,
                                                    api_id)
-3. convey commitment_with proof to Signer.
+3. convey commitment_with_proof to Signer.
 ```
 
 The Signer generate a signature from a secret key (SK), a the commitment with proof,
@@ -415,8 +414,8 @@ steps:
 
 ```
 1. committed_messages = [pid]
-1. result = BlindBBS.Verify(PK, signature, header, messages, committed_messages,
-                                      secret_prover_blind, signer_blind)
+2. result = BlindVerify(PK, blind_signature, header, messages,
+                  committed_messages, secret_prover_blind, signer_blind)
 ```
 
 ## Hidden PID Proof Generation with Pseudonym
@@ -464,7 +463,8 @@ Inputs:
                                 order. Indexes of disclosed messages. If
                                 not supplied, it defaults to the empty
                                 array "()".
-- secret_prover_blind, a scalar value, retained from the commit procedure.
+- secret_prover_blind, a scalar value, retained from the commit
+                       procedure.
 - signer_blind (OPTIONAL), a scalar value. If not supplied it defaults
                            to zero "0".
 
@@ -498,16 +498,19 @@ Deserialization:
 Procedure:
 
 1.  message_scalars = ()
-2.  if secret_prover_blind != 0, message_scalars.append(
-                                     secret_prover_blind + signer_blind)
-    // The above addition must be done in the scalar field.
-3.  message_scalars.append(BBS.messages_to_scalars(
-                                   [pid], api_id))
-4.  message_scalars.append(BBS.messages_to_scalars(messages, api_id))
+2.  message_scalars.append(BBS.messages_to_scalars(messages, api_id))
 
-5.  generators = BBS.create_generators(L + 1, api_id)
-6.  blind_generators = BBS.create.create_generators(2, "BLIND_" + api_id)
-7.  generators.append(blind_generators)
+3.  blind_factor = secret_prover_blind + signer_blind
+4.  message_scalars.append(blind_factor)
+
+5.  message_scalars.append(BBS.messages_to_scalars(
+                                   [pid], api_id))
+
+
+6.  generators = BBS.create_generators(L + 1, api_id)
+7.  blind_generators = BBS.create.create_generators(2,
+                                                      "BLIND_" + api_id)
+8.  generators.append(blind_generators)
 
 
 9. proof = CoreProofGenWithPseudonym(PK,
@@ -548,8 +551,8 @@ Inputs:
                  operation.
 - proof (REQUIRED), an octet string of the form outputted by the
                     ProofGen operation.
-- L (REQUIRED), the total number of signer provided messages in the original
-                signature.
+- L (REQUIRED), the total number of signer provided messages in the
+                original signature.
 - Pseudonym (REQUIRED), A point of G1, different from the Identity of
                         G1, as outputted by the CalculatePseudonym
                         operation.
@@ -595,7 +598,8 @@ Procedure:
 1. message_scalars = messages_to_scalars(disclosed_messages, api_id)
 2. generators = BBS.create_generators(L + 1, api_id)
 3. blind_generators = []
-4. if M > -1, bind_generators = BBS.create_generators(M + 1, "BLIND_" + api_id)
+4. if M > -1, bind_generators = BBS.create_generators(M + 1,
+                                                      "BLIND_" + api_id)
 5. generators.append(blind_generators)
 3. result = CoreProofVerifyWithPseudonym(PK,
                                          proof,
@@ -647,9 +651,10 @@ Inputs:
                      to an empty string.
 - ph (OPTIONAL), an octet string containing the presentation header. If
                  not supplied, it defaults to an empty string.
-- message_scalars (OPTIONAL), a vector of scalars representing the messages.
-                       If not supplied, it defaults to the empty
-                       array "()" must include the pid scalar as last element.
+- message_scalars (OPTIONAL), a vector of scalars representing the
+                              messages. If not supplied, it defaults to
+                              the empty array "()" must include the pid
+                              scalar as last element.
 - disclosed_indexes (OPTIONAL), vector of unsigned integers in ascending
                                 order. Indexes of disclosed messages. If
                                 not supplied, it defaults to the empty
@@ -675,16 +680,20 @@ Deserialization:
 6.  (i1, ..., iR) = disclosed_indexes
 7.  if R > L - 1, return INVALID, Note: we never reveal the pid value.
 8.  U = L - R
-9.  undisclosed_indexes = (0, 1, ..., L - 1) \ disclosed_indexes, Note: pid is last message and is not revealed.
+
+// Note: pid is last message and is not revealed.
+9.  undisclosed_indexes = (0, 1, ..., L - 1) \ disclosed_indexes
 10. (i1, ..., iR) = disclosed_indexes
 11. (j1, ..., jU) = undisclosed_indexes
 12. disclosed_messages = (message_scalars[i1], ..., message_scalars[iR])
-13. undisclosed_messages = (message_scalars[j1], ..., message_scalars[jU])
+13. undisclosed_messages = (message_scalars[j1], ...,
+                                                    message_scalars[jU])
 
 ABORT if:
 
-1. for i in disclosed_indexes, i < 0 or i > L - 1, Note: pid  is L  message and
-     not revealed.
+1. for i in disclosed_indexes, i < 0 or i > L - 1, // Note: pid  is L
+                                                   // message and not
+                                                   // revealed.
 
 Procedure:
 
@@ -827,8 +836,8 @@ Inputs:
                       the disclosed messages).
 - msg_array (REQUIRED), array of scalars (the disclosed messages after
                         mapped to scalars).
-- ph (OPTIONAL), an octet string. If not supplied, it must default to the
-                 empty octet string ("").
+- ph (OPTIONAL), an octet string. If not supplied, it must default to
+                 the empty octet string ("").
 - api_id (OPTIONAL), an octet string. If not supplied it defaults to the
                      empty octet string ("").
 
@@ -857,7 +866,7 @@ ABORT if:
 
 Procedure:
 1. c_arr = (R, i1, msg_i1, i2, msg_i2, ..., iR, msg_iR, Abar, Bbar,
-                                    D, T1, T2, Pseudonym, OP, Ut, domain)
+                                   D, T1, T2, Pseudonym, OP, Ut, domain)
 2. c_octs = serialize(c_arr) || I2OSP(length(ph), 8) || ph
 3. return hash_to_scalar(c_octs, challenge_dst)
 ```
