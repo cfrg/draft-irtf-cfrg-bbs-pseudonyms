@@ -912,3 +912,347 @@ TODO acknowledge.
    <author><organization>NIST</organization></author>
  </front>
 </reference>
+
+
+### Commitment With Pseudonym
+
+```
+commit_with_proof = CommitWithPseudonym(committed_messages, prover_nym, api_id)
+
+Inputs:
+
+Procedure:
+
+1. committed_messages_with_nym = committed_messages.append(prover_nym)
+2. return Commit(committed_messages, api_id)
+```
+
+### Blind Sign With Pseudonym
+
+```
+BlindSignWithNym(SK, PK, commitment_with_proof, header, messages)
+
+Inputs:
+
+- SK (REQUIRED), a secret key in the form outputted by the KeyGen
+                 operation.
+- PK (REQUIRED), an octet string of the form outputted by SkToPk
+                 provided the above SK as input.
+- commitment_with_proof (OPTIONAL), an octet string, representing a
+                                    serialized commitment and
+                                    commitment_proof, as the first
+                                    element outputted by the Commit
+                                    operation. If not supplied, it
+                                    defaults to the empty string ("").
+- header (OPTIONAL), an octet string containing context and application
+                     specific information. If not supplied, it defaults
+                     to an empty string ("").
+- messages (OPTIONAL), a vector of octet strings. If not supplied, it
+                       defaults to the empty array ("()").
+
+Deserialization:
+
+1. L = length(messages)
+
+// calculate the number of blind generators used by the commitment,
+// if any.
+2. M = length(commitment_with_proof)
+3. if M != 0, M = M - octet_point_length - octet_scalar_length
+4. M = M / octet_scalar_length
+5. if M < 0, return INVALID
+
+Procedure:
+
+1.  generators = BBS.create_generators(L + 1, api_id)
+2.  blind_generators = BBS.create_generators(M, "BLIND_" || api_id)
+
+3.  commit = deserialize_and_validate_commit(commitment_with_proof,
+                                               blind_generators, api_id)
+4.  if commit is INVALID, return INVALID
+
+5.  message_scalars = BBS.messages_to_scalars(messages, api_id)
+
+6.  res = B_calculate(message_scalars, generators, blind_generators[-1])
+7.  if res is INVALID, return INVALID
+8.  (B, signer_nym_entropy) = res
+
+9.  blind_sig = FinalizeBlindSign(SK,
+                                  PK,
+                                  B,
+                                  generators,
+                                  blind_generators,
+                                  header,
+                                  api_id)
+
+10. if blind_sig is INVALID, return INVALID
+11. return (blind_sig, signer_nym_entropy)
+```
+
+#### Calculate B
+
+```
+(B, signer_nym_entropy)  = B_Calculate(messages, generators, nym_generator)
+
+Inputs:
+
+Deserialization:
+
+1. L = length(messages)
+2. if length(generators) != L + 1, return INVALID
+3. (Q_1, H_1, ..., H_L) = generators
+
+Procedure:
+
+1. B = Q_1 + H_1 * msg_1 + ... + H_L * msg_L
+2. signer_nym_entropy = get_random(1)
+3. B = B + nym_generator * signer_nym_entropy
+4. return (B, signer_nym_entropy)
+```
+
+### Finalize
+
+```
+nym_secret = Finalize(PK,
+                      signature,
+                      header,
+                      messages,
+                      committed_messages,
+                      prover_nym,
+                      signer_nym_entropy)
+
+Inputs:
+
+- PK (REQUIRED), an octet string of the form outputted by the SkToPk
+                 operation.
+- signature (REQUIRED), an octet string of the form outputted by the
+                        Sign operation.
+- header (OPTIONAL), an octet string containing context and application
+                     specific information. If not supplied, it defaults
+                     to an empty string.
+- messages (OPTIONAL), a vector of octet strings. If not supplied, it
+                       defaults to the empty array "()".
+- committed_messages (OPTIONAL), a vector of octet strings. If not
+                                 supplied, it defaults to the empty
+                                 array "()".
+- prover_nym (OPTIONAL), scalar value. If not supplied, it defaults to
+                         the zero scalar (0).    
+- signer_nym_entropy (OPTIONAL), a scalar value. If not supplied, it
+                                 defaults to the zero scalar (0).
+
+Procedure:
+
+1. nym_secret = prover_nym + signer_nym_entropy
+2. committed_messages.append(nym_secret)
+3. res = Verify(PK, signature, header, messages, committed_messages)
+4. if res is INVALID, return INVALID
+5. return nym_secret
+```
+
+### Proof Generation with Pseudonym
+
+```
+proof = ProofGenWithNym(PK,
+                        signature,
+                        header,
+                        ph,
+                        nym_secret,
+                        context_id,
+                        messages,
+                        committed_messages,
+                        disclosed_indexes,
+                        disclosed_commitment_indexes,
+                        secret_prover_blind)
+
+Inputs:
+
+- PK (REQUIRED), an octet string of the form outputted by the SkToPk
+                 operation.
+- signature (REQUIRED), an octet string of the form outputted by the
+                        Sign operation.
+- header (OPTIONAL), an octet string containing context and application
+                     specific information. If not supplied, it defaults
+                     to an empty string.
+- ph (OPTIONAL), an octet string containing the presentation header. If
+                 not supplied, it defaults to an empty string.
+- messages (OPTIONAL), a vector of octet strings. If not supplied, it
+                       defaults to the empty array "()".
+- committed_messages (OPTIONAL), a vector of octet strings. If not
+                                 supplied, it defaults to the empty
+                                 array "()".
+- disclosed_indexes (OPTIONAL), vector of unsigned integers in ascending
+                                order. Indexes of disclosed messages. If
+                                not supplied, it defaults to the empty
+                                array "()".
+- disclosed_commitment_indexes (OPTIONAL), vector of unsigned integers
+                                           in ascending order. Indexes
+                                           of disclosed committed
+                                           messages. If not supplied, it
+                                           defaults to the empty array
+                                           "()".
+- secret_prover_blind (OPTIONAL), a scalar value. If not supplied it
+                                  defaults to zero "0".
+
+
+Parameters:
+
+- api_id, the octet string ciphersuite_id || "BLIND_H2G_HM2S_", where
+          ciphersuite_id is defined by the ciphersuite and
+          "BLIND_H2G_HM2S_"is an ASCII string composed of 15 bytes.
+
+
+Outputs:
+
+- proof, an octet string; or INVALID.
+
+Deserialization:
+
+1. L = length(messages)
+2. M = length(committed_messages)
+3. if length(disclosed_indexes) > L, return INVALID
+4. for i in disclosed_indexes, if i < 0 or i >= L, return INVALID
+5. if length(disclosed_commitment_indexes) > M, return INVALID
+6. for j in disclosed_commitment_indexes,
+                               if i < 0 or i >= M, return INVALID
+
+Procedure:
+
+1.  message_scalars = BBS.messages_to_scalars(messages, api_id)
+
+2.  committed_message_scalars = ()
+3.  committed_message_scalars.append(secret_prover_blind)
+4.  committed_message_scalars.append(BBS.messages_to_scalars(
+                                            committed_messages, api_id))
+5.  committed_message_scalars.append(nym_secret)
+
+
+6.  generators = BBS.create_generators(length(message_scalars) + 1, api_id)
+7.  blind_generators = BBS.create_generators(length(committed_message_scalars) + 1, "BLIND_" || api_id)
+
+8.  indexes = ()
+9.  indexes.append(disclosed_indexes)
+10. for j in disclosed_commitment_indexes: indexes.append(j + L + 1)
+
+11. proof = CoreProofGenWithNym(PK,
+                                signature,
+                                generators.append(blind_generators),
+                                header,
+                                ph,
+                                nym_secret,
+                                context_id,
+                                message_scalars.append(committed_message_scalars),
+                                indexes,
+                                api_id)
+12. return proof
+```
+
+
+
+
+### Core Proof Gen
+
+```
+result = CoreProofVerifyWithPseudonym(PK,
+                                      signature,
+                                      header,
+                                      ph,
+                                      nym_secret,
+                                      context_id,
+                                      generators,
+                                      disclosed_messages,
+                                      disclosed_indexes,
+                                      api_id)
+
+Inputs:
+
+- PK (REQUIRED), an octet string of the form outputted by the SkToPk
+                 operation.
+- proof (REQUIRED), an octet string of the form outputted by the
+                    ProofGen operation.
+- Pseudonym (REQUIRED), A point of G1, different from the Identity of
+                        G1, as outputted by the CalculatePseudonym
+                        operation.
+- verifier_id (REQUIRED), an octet string, representing the unique proof
+                          Verifier identifier.
+- generators (REQUIRED), vector of points in G1.
+- header (OPTIONAL), an optional octet string containing context and
+                     application specific information. If not supplied,
+                     it defaults to an empty string.
+- ph (OPTIONAL), an octet string containing the presentation header. If
+                 not supplied, it defaults to an empty string.
+- disclosed_messages (OPTIONAL), a vector of scalars representing the
+                                 messages. If not supplied, it defaults
+                                 to the empty array "()".
+- disclosed_indexes (OPTIONAL), vector of unsigned integers in ascending
+                                order. Indexes of disclosed messages. If
+                                not supplied, it defaults to the empty
+                                array "()".
+- api_id (OPTIONAL), an octet string. If not supplied it defaults to the
+                     empty octet string ("").
+
+Parameters:
+
+- P1, fixed point of G1, defined by the ciphersuite.
+
+Outputs:
+
+- result, either VALID or INVALID.
+
+Outputs:
+
+- proof, an octet string; or INVALID.
+
+Deserialization:
+
+1.  signature_result = octets_to_signature(signature)
+2.  if signature_result is INVALID, return INVALID
+3.  (A, e) = signature_result
+4.  L = length(message_scalars)
+5.  R = length(disclosed_indexes)
+6.  (i1, ..., iR) = disclosed_indexes
+7.  if R > L - 1, return INVALID, Note: we never reveal the pid value.
+8.  U = L - R
+
+// Note: pid is last message and is not revealed.
+9.  undisclosed_indexes = (0, 1, ..., L - 1) \ disclosed_indexes
+10. (i1, ..., iR) = disclosed_indexes
+11. (j1, ..., jU) = undisclosed_indexes
+12. disclosed_messages = (message_scalars[i1], ..., message_scalars[iR])
+13. undisclosed_messages = (message_scalars[j1], ...,
+                                                    message_scalars[jU])
+
+ABORT if:
+
+1. for i in disclosed_indexes, i < 0 or i > L - 1, // Note: pid  is L
+                                                   // message and not
+                                                   // revealed.
+
+Procedure:
+
+1.  random_scalars = calculate_random_scalars(5+U)
+2.  init_res = ProofInit(PK,
+                         signature_res,
+                         header,
+                         random_scalars,
+                         generators,
+                         message_scalars,
+                         undisclosed_indexes,
+                         api_id)
+3.  if init_res is INVALID, return INVALID
+
+4.  OP = hash_to_curve_g1(context_id, api_id)
+5.  Pseudonym = OP * nym_scalar
+5.  pid~ = random_scalars[5+U] // last element of random_scalars
+6.  Ut = OP * pid~
+7.  pseudonym_init_res = (Pseudonym, OP, Ut)
+
+8.  challenge = ProofWithPseudonymChallengeCalculate(init_res,
+                                                     pseudonym_init_res,
+                                                     disclosed_indexes,
+                                                     disclosed_messages,
+                                                     ph,
+                                                     api_id)
+
+9.  proof = ProofFinalize(init_res, challenge, e_value, random_scalars,
+                                                   undisclosed_messages)
+10. return (proof, Pseudonym)
+```
