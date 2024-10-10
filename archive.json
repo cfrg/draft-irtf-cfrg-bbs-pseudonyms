@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2024-10-08T00:52:47.282189+00:00",
+  "timestamp": "2024-10-10T00:52:39.939949+00:00",
   "repo": "BasileiosKal/bbs-per-verifier-id",
   "labels": [
     {
@@ -145,13 +145,13 @@
       "labels": [],
       "body": "",
       "createdAt": "2024-10-07T21:23:35Z",
-      "updatedAt": "2024-10-07T21:23:35Z",
+      "updatedAt": "2024-10-09T11:00:21Z",
       "baseRepository": "BasileiosKal/bbs-per-verifier-id",
       "baseRefName": "main",
       "baseRefOid": "3d9f6896aa919d7cbeb629b97125669b030d12d7",
       "headRepository": "BasileiosKal/bbs-per-verifier-id",
       "headRefName": "vasilis/draft-update",
-      "headRefOid": "40abcaedd2189a8309240215597595627de1aa9c",
+      "headRefOid": "a9ba9227b9a10ab089d7a229ac6e3907231af9fc",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
