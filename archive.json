@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2024-10-10T00:52:39.939949+00:00",
+  "timestamp": "2024-10-13T00:56:43.976400+00:00",
   "repo": "BasileiosKal/bbs-per-verifier-id",
   "labels": [
     {
@@ -145,19 +145,33 @@
       "labels": [],
       "body": "",
       "createdAt": "2024-10-07T21:23:35Z",
-      "updatedAt": "2024-10-09T11:00:21Z",
+      "updatedAt": "2024-10-11T15:35:36Z",
       "baseRepository": "BasileiosKal/bbs-per-verifier-id",
       "baseRefName": "main",
       "baseRefOid": "3d9f6896aa919d7cbeb629b97125669b030d12d7",
       "headRepository": "BasileiosKal/bbs-per-verifier-id",
       "headRefName": "vasilis/draft-update",
-      "headRefOid": "a9ba9227b9a10ab089d7a229ac6e3907231af9fc",
+      "headRefOid": "0078c419e5adeaf7f0355fda74cfe0e8b25cdf32",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
       "mergeCommit": null,
       "comments": [],
-      "reviews": []
+      "reviews": [
+        {
+          "id": "PRR_kwDOKOg1E86M2d60",
+          "commit": {
+            "abbreviatedOid": "0078c41"
+          },
+          "author": "Wind4Greg",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "APPROVED",
+          "body": "Thanks Vasilis. Like the PID and nym_secret terminology. Merge and issue. I'll implement and double check ASAP.",
+          "createdAt": "2024-10-11T15:35:36Z",
+          "updatedAt": "2024-10-11T15:35:36Z",
+          "comments": []
+        }
+      ]
     }
   ]
 }
