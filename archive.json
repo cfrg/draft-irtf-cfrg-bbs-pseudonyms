@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2024-10-13T00:56:43.976400+00:00",
+  "timestamp": "2024-10-15T00:53:48.024487+00:00",
   "repo": "BasileiosKal/bbs-per-verifier-id",
   "labels": [
     {
@@ -145,7 +145,7 @@
       "labels": [],
       "body": "",
       "createdAt": "2024-10-07T21:23:35Z",
-      "updatedAt": "2024-10-11T15:35:36Z",
+      "updatedAt": "2024-10-14T18:53:46Z",
       "baseRepository": "BasileiosKal/bbs-per-verifier-id",
       "baseRefName": "main",
       "baseRefOid": "3d9f6896aa919d7cbeb629b97125669b030d12d7",
@@ -169,6 +169,19 @@
           "body": "Thanks Vasilis. Like the PID and nym_secret terminology. Merge and issue. I'll implement and double check ASAP.",
           "createdAt": "2024-10-11T15:35:36Z",
           "updatedAt": "2024-10-11T15:35:36Z",
+          "comments": []
+        },
+        {
+          "id": "PRR_kwDOKOg1E86NG7ta",
+          "commit": {
+            "abbreviatedOid": "0078c41"
+          },
+          "author": "Wind4Greg",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "APPROVED",
+          "body": "Looks good! I will work on test vectors after publishing this update.",
+          "createdAt": "2024-10-14T18:53:46Z",
+          "updatedAt": "2024-10-14T18:53:46Z",
           "comments": []
         }
       ]
