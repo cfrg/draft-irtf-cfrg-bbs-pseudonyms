@@ -312,6 +312,10 @@ Inputs:
 - secret_prover_blind (OPTIONAL), a scalar value. If not supplied it
                                   defaults to zero "0".
 
+Outputs:
+
+- nym_secret, a scalar value; or INVALID.
+
 Procedure:
 
 1. nym_secret = prover_nym + signer_nym_entropy
