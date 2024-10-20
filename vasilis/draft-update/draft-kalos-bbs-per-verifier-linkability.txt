@@ -5,12 +5,12 @@
 none                                                            V. Kalos
 Internet-Draft                                                     MATTR
 Intended status: Informational                              G. Bernstein
-Expires: 14 April 2025                                 Grotto Networking
-                                                         11 October 2024
+Expires: 23 April 2025                                 Grotto Networking
+                                                         20 October 2024
 
 
                       BBS per Verifier Linkability
-           draft-vasilis-bbs-per-verifier-linkability-latest
+            draft-kalos-bbs-per-verifier-linkability-latest
 
 Abstract
 
@@ -50,7 +50,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 14 April 2025.
+   This Internet-Draft will expire on 23 April 2025.
 
 Copyright Notice
 
@@ -371,12 +371,12 @@ Table of Contents
 5.  High Level Procedures and Information Flows
 
    To prevent forgeries in all cases all BBS messages are signed with
-   the inclusion of some form of the provider identifier (_pid_).  In
-   addition the pseudonym is always computed by the prover and sent with
-   the proof to the verifier.  While two different variations of
-   signature and proof generation are given below based on the
-   previously discussed unlinkability requirements there MUST be only
-   one verification algorithm for the verifier to use.
+   the inclusion of some form of the provider pseudonym secret
+   (nym_secret).  In addition the pseudonym is always computed by the
+   prover and sent with the proof to the verifier.  While two different
+   variations of signature and proof generation are given below based on
+   the previously discussed unlinkability requirements there MUST be
+   only one verification algorithm for the verifier to use.
 
    1.  The Prover computes their input for the nym_secret (called
        prover_nym) and retained for use when calculating the nym_secret
@@ -408,7 +408,7 @@ Table of Contents
 6.  BBS Pseudonym Interface
 
    The following section defines a BBS Interface that will make use of
-   per-origin pseudonyms where the _pid_ value is only known to the
+   per-origin pseudonyms where the nym_secret value is only known to the
    prover.  The identifier of the Interface, api_id, is defined as
    ciphersuite_id || H2G_HM2S_PSEUDONYM_, where ciphersuite_id the
    unique identifier of the BBS ciphersuite used, as is defined in
@@ -416,9 +416,9 @@ Table of Contents
    signatures-03.html#name-ciphersuites) of
    [I-D.irtf-cfrg-bbs-signatures]).
 
-   In this case the prover create a pid value and keeps it secret.  Only
-   sending a commitment with the proof of the pid that the signer will
-   used when creating the signature.
+   The prover create a nym_secret value and keeps it secret.  Only
+   sending a commitment with the proof of the nym_secret that the signer
+   will used when creating the signature.
 
 6.1.  Signature Generation and Verification with Pseudonym
 
@@ -444,7 +444,7 @@ Table of Contents
    to the Signer.  They will also choose their part of the pseudonym
    secret prover_nym as a random scalar value.
 
-  1. committed_messages.append(pid)
+  1. committed_messages.append(prover_nym)
   2. (commitment_with_proof, secret_prover_blind) = Commit(
                                                      committed_messages,
                                                      api_id)
@@ -462,8 +462,8 @@ Table of Contents
    [I-D.kalos-bbs-blind-signatures], substituting steps 6, 7 and 8 with
    the following three steps
 
-6. res = B_calculate_with_nym(message_scalars, generators,
-                                                   blind_generators[-1])
+6. res = B_calculate_with_nym(generators, commit,
+                                  blind_generators[-1], message_scalars)
 7. if res is INVALID, return INVALID
 8. (B, signer_nym_entropy) = res
 
@@ -478,16 +478,16 @@ Table of Contents
    The B_calculate_with_nym operation is defined as follows,
 
    (B, signer_nym_entropy)  = B_calculate_with_nym(generators,
-                                                   nym_generator,
                                                    commitment,
+                                                   nym_generator,
                                                    message_scalars)
 
    Inputs:
 
    - generators (REQUIRED), an array of at least one point from the
                             G1 group.
-   - nym_generator (REQUIRED), a point from the G1 group
    - commitment (REQUIRED), a point from the G1 group
+   - nym_generator (REQUIRED), a point from the G1 group
    - message_scalars (OPTIONAL), an array of scalar values. If not
                                  supplied, it defaults to the empty
                                  array ("()").
@@ -500,7 +500,7 @@ Table of Contents
 
    Procedure:
 
-   1. B = Q_1 + H_1 * msg_1 + ... + H_L * msg_L
+   1. B = Q_1 + H_1 * msg_1 + ... + H_L * msg_L + commitment
    2. signer_nym_entropy = get_random(1)
    3. B = B + nym_generator * signer_nym_entropy
    4. If B is Identity_G1, return INVALID
@@ -515,9 +515,7 @@ Table of Contents
    This operation uses the BlindBBS.Verify function as defined in
    Section 4.2.2 (https://www.ietf.org/archive/id/draft-kalos-bbs-blind-
    signatures-01.html#name-blind-signature-verificatio) of the Blind BBS
-   document (https://datatracker.ietf.org/doc/draft-kalos-bbs-blind-
-   signatures/ (https://datatracker.ietf.org/doc/draft-kalos-bbs-blind-
-   signatures/))
+   document [BlindBBS]
 
 nym_secret = Finalize(PK,
                       signature,
@@ -548,6 +546,10 @@ Inputs:
                                  defaults to the zero scalar (0).
 - secret_prover_blind (OPTIONAL), a scalar value. If not supplied it
                                   defaults to zero "0".
+
+Outputs:
+
+- nym_secret, a scalar value; or INVALID.
 
 Procedure:
 
@@ -651,14 +653,18 @@ Procedure:
    correctness of the pseudonym in "parallel" (meaning using common
    randomness), as to both create a proof that the pseudonym was
    correctly calculated using an undisclosed value that the Prover knows
-   (i.e., the pid value), but also that this value is "signed" by the
-   BBS signature (the last undisclosed message).  As a result,
+   (i.e., the nym_secret value), but also that this value is "signed" by
+   the BBS signature (the last undisclosed message).  As a result,
    validating the proof guarantees that the pseudonym is correctly
    computed and that it was computed using the Prover identifier that
    was included in the BBS signature.
 
-   The operation uses the ProofInit and ProofFinalize operations defined
-   in [I-D.irtf-cfrg-bbs-signatures], the PseudonymProofInit operation
+   The operation uses the BBS.ProofInit and BBS.ProofFinalize operations
+   defined in Section 3.7.1 (https://www.ietf.org/archive/id/draft-irtf-
+   cfrg-bbs-signatures-07.html#name-proof-initialization) and
+   Section 3.7.2 (https://www.ietf.org/archive/id/draft-irtf-cfrg-bbs-
+   signatures-07.html#name-proof-finalization) correspondingly of
+   [I-D.irtf-cfrg-bbs-signatures], the PseudonymProofInit operation
    defined in Section 7.3.1 and the ProofWithPseudonymChallengeCalculate
    defined in Section 8.1.
 
@@ -692,8 +698,8 @@ Inputs:
                  not supplied, it defaults to an empty string.
 - message_scalars (OPTIONAL), a vector of scalars representing the
                               messages. If not supplied, it defaults to
-                              the empty array "()" must include the pid
-                              scalar as last element.
+                              the empty array "()" must include the
+                              nym_secret scalar as last element.
 - disclosed_indexes (OPTIONAL), vector of unsigned integers in ascending
                                 order. Indexes of disclosed messages. If
                                 not supplied, it defaults to the empty
@@ -717,10 +723,10 @@ Deserialization:
 4.  L = length(message_scalars)
 5.  R = length(disclosed_indexes)
 6.  (i1, ..., iR) = disclosed_indexes
-7.  if R > L - 1, return INVALID, Note: we never reveal the pid value.
+7.  if R > L - 1, return INVALID, Note: we never reveal the nym_secret.
 8.  U = L - R
 
-// Note: pid is last message and is not revealed.
+// Note: nym_secret is last message and is not revealed.
 9.  undisclosed_indexes = (0, 1, ..., L - 1) \ disclosed_indexes
 10. (i1, ..., iR) = disclosed_indexes
 11. (j1, ..., jU) = undisclosed_indexes
@@ -730,14 +736,14 @@ Deserialization:
 
 ABORT if:
 
-1. for i in disclosed_indexes, i < 0 or i > L - 1, // Note: pid  is L
-                                                   // message and not
-                                                   // revealed.
+1. for i in disclosed_indexes, i < 0 or i > L - 1, // Note: nym_secret
+                                                   // is the Lth message
+                                                   // and not revealed.
 
 Procedure:
 
 1. random_scalars = calculate_random_scalars(5+U)
-2. init_res = ProofInit(PK,
+2. init_res = BBS.ProofInit(PK,
                         signature_res,
                         header,
                         random_scalars,
@@ -759,8 +765,8 @@ Procedure:
                                                     disclosed_messages,
                                                     ph,
                                                     api_id)
-8. proof = ProofFinalize(init_res, challenge, e_value, random_scalars,
-                                                   undisclosed_messages)
+8. proof = BBS.ProofFinalize(init_res, challenge, e_value,
+                                   random_scalars, undisclosed_messages)
 9. return (proof, Pseudonym)
 
 7.2.  Core Proof Verification
@@ -773,7 +779,9 @@ Procedure:
    signed (but undisclosed) Prover's identifier, following the operation
    defined in Section 4.
 
-   The operation uses the ProofVerifyInit operation defined in
+   The operation uses the BBS.ProofVerifyInit operation defined
+   Section 3.7.3 (https://www.ietf.org/archive/id/draft-irtf-cfrg-bbs-
+   signatures-07.html#name-proof-verification-initiali) of
    [I-D.irtf-cfrg-bbs-signatures], the PseudonymProofVerifyInit
    operation defined in Section 7.3.2 and the
    ProofWithPseudonymChallengeCalculate operation defined in
@@ -841,7 +849,7 @@ ABORT if:
 
 Procedure:
 
-1. init_res = ProofVerifyInit(PK, proof_result, header, generators,
+1. init_res = BBS.ProofVerifyInit(PK, proof_result, header, generators,
                                     messages, disclosed_indexes, api_id)
 
 2. pseudonym_init_res = PseudonymProofVerifyInit(Pseudonym,
@@ -1010,9 +1018,9 @@ Procedure:
    [I-D.kalos-bbs-blind-signatures]
               Kalos, V. and G. M. Bernstein, "Blind BBS Signatures",
               Work in Progress, Internet-Draft, draft-kalos-bbs-blind-
-              signatures-01, 8 July 2024,
-              <https://datatracker.ietf.org/doc/html/draft-kalos-bbs-
-              blind-signatures-01>.
+              signatures-03, 20 October 2024,
+              <https://datatracker.ietf.org/api/v1/doc/document/draft-
+              kalos-bbs-blind-signatures/>.
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119,
@@ -1029,6 +1037,10 @@ Procedure:
               Signatures", In Advances in Cryptology, pages 41-55, 2004,
               <https://link.springer.com/
               chapter/10.1007/978-3-540-28628-8_3>.
+
+   [BlindBBS] IETF, "Blind BBS Signatures",
+              <https://datatracker.ietf.org/doc/draft-kalos-bbs-blind-
+              signatures/>.
 
 Appendix A.  Acknowledgments
 
