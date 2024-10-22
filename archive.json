@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2024-10-20T00:57:55.572758+00:00",
+  "timestamp": "2024-10-22T00:54:00.560582+00:00",
   "repo": "BasileiosKal/bbs-per-verifier-id",
   "labels": [
     {
@@ -138,24 +138,26 @@
       "id": "PR_kwDOKOg1E8593oxa",
       "title": "WIP, update draft",
       "url": "https://github.com/BasileiosKal/bbs-per-verifier-id/pull/4",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "BasileiosKal",
       "authorAssociation": "OWNER",
       "assignees": [],
       "labels": [],
       "body": "",
       "createdAt": "2024-10-07T21:23:35Z",
-      "updatedAt": "2024-10-14T18:53:46Z",
+      "updatedAt": "2024-10-20T22:08:42Z",
       "baseRepository": "BasileiosKal/bbs-per-verifier-id",
       "baseRefName": "main",
       "baseRefOid": "3d9f6896aa919d7cbeb629b97125669b030d12d7",
       "headRepository": "BasileiosKal/bbs-per-verifier-id",
       "headRefName": "vasilis/draft-update",
-      "headRefOid": "0078c419e5adeaf7f0355fda74cfe0e8b25cdf32",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "headRefOid": "3208a5dc348fd9fb5d1d3cb61a3af3a8fb72e21d",
+      "closedAt": "2024-10-20T22:08:42Z",
+      "mergedAt": "2024-10-20T22:08:42Z",
+      "mergedBy": "BasileiosKal",
+      "mergeCommit": {
+        "oid": "bf3687ae244ddd2706e8707099606d2eaff24698"
+      },
       "comments": [],
       "reviews": [
         {
