@@ -190,9 +190,9 @@ Additionally, the `nym_secret` value will be signed by the BBS Signature. This w
 
 # High Level Procedures and Information Flows
 
-To prevent forgeries in all cases all BBS messages are signed with the inclusion of some form of the provider pseudonym secret (`nym_secret`). In addition the pseudonym is always computed by the prover and sent with the proof to the verifier. While two different variations of signature and proof generation are given below based on the previously discussed unlinkability requirements there MUST be only one verification algorithm for the verifier to use.
+To prevent forgeries in all cases all BBS messages are signed with the inclusion of some form of the provider pseudonym secret (`nym_secret`). In addition the pseudonym is always computed by the prover and sent with the proof to the verifier.
 
-1. The Prover computes their input for the `nym_secret` (called `prover_nym`) and retained for use when calculating the `nym_secret` value.
+1. The Prover computes the `prover_nym`. This is their input for the `nym_secret` and they retain it for use when calculating the `nym_secret` value.
 2. The Prover will wrap up in a cryptographic commitment using the *Commit* procedures of Blind BBS the messages they want to include in the signature (`committed_messages`) and the `prover_nym` value, generating a `commitment_with_proof` and a `secret_prover_blind`.
 3. The `commitment_with_proof` is conveyed to the signer which then uses the signing procedures in Section (#signature-generation-and-verification-with-pseudonym) to create a BBS signature and their input for the `nym_secret` value, called `signer_nym_entropy`. They will convey both to the Prover.
 4. On receipt of the signature and the `signer_nym_entropy` value, the Prover verifies the signature using the procedure of section (#signature-generation-and-verification-with-pseudonym) and calculates the `nym_secret` value by adding their `prover_nym` secret and the provided `signer_nym_entropy` values.
@@ -222,6 +222,23 @@ Initially, the Prover will chose a set of messages `committed_messages` that the
                                                    committed_messages,
                                                    api_id)
 3. convey commitment_with_proof to Signer.
+```
+
+**TODO**: Fix the above. The prover_nym is a scalar and cannot be grouped with the committed messages since these get run through a `hash_to_scalar()` function. Recommend a new function `NymCommit(messages, prover_nym)` that reuses `Blind.CoreCommit(generators,msg_scalars)`. See example code below.
+
+```javascript
+export async function NymCommit(messages, prover_nym, api_id,
+  rand_scalars = calculate_random_scalars) {
+  // 1. committed_message_scalars = BBS.messages_to_scalars(committed_messages, api_id)
+  const msgScalars = await messages_to_scalars(messages, api_id);
+  msgScalars.push(prover_nym);
+  const M = msgScalars.length;
+  // 2. blind_generators = BBS.create_generators(length(committed_message_scalars) + 1, "BLIND_" || api_id)
+  const gens = await prepareGenerators(M + 1, 'BLIND_' + api_id);
+  const blind_generators = gens.generators.slice(0, M + 1);
+  // 3. return CoreCommit(committed_message_scalars, blind_generators, api_id)
+  return CoreCommit(blind_generators, msgScalars, api_id, rand_scalars);
+}
 ```
 
 ### Blind Issuance
@@ -326,6 +343,46 @@ Procedure:
 5. return nym_secret
 ```
 
+**TODO**: Fix the above. Cannot add nym_secret to committed messages since these get run through `hash_to_scalar`. Recomment new function `BlindVerifyWithNym((PK, signature, header, messages, committed_messages,
+  prover_nym, signer_nym_entropy, secret_prover_blind)` that reuses `BBS.CoreVerify()`.
+
+```javascript
+export async function BlindVerifyWithNym(PK, signature, header, messages, committed_messages,
+  prover_nym, signer_nym_entropy, secret_prover_blind, api_id) {
+  // Procedure: From Pseudonym
+  // 1. nym_secret = prover_nym + signer_nym_entropy
+  const nym_secret = bls.fields.Fr.add(prover_nym, signer_nym_entropy);
+  // Procedure from Blind
+  // 1. message_scalars = BBS.messages_to_scalars(messages, api_id)
+  const message_scalars = await messages_to_scalars(messages, api_id);
+  // 2. committed_message_scalars = ()
+  let committed_message_scalars = [];
+  // 4. committed_message_scalars.append(secret_prover_blind) bls.fields.Fr.create(e)
+  committed_message_scalars.push(bls.fields.Fr.create(secret_prover_blind)); // very first committed message scalar
+  // 5. committed_message_scalars.append(BBS.messages_to_scalars(committed_messages, api_id))
+  console.log(`Committed messages: ${committed_messages}`);
+  const tempScalars = await messages_to_scalars(committed_messages, api_id);
+  committed_message_scalars = committed_message_scalars.concat(tempScalars);
+  // Pseudonym: 2. committed_messages.append(nym_secret) -- very last committed message scalar
+  committed_message_scalars = committed_message_scalars.concat([nym_secret]);
+  // 6. generators = BBS.create_generators(length(message_scalars) + 1, api_id)
+  const L = messages.length;
+  const gens = await prepareGenerators(L + 1, api_id);
+  // 7. blind_generators = BBS.create_generators(length(committed_message_scalars), "BLIND_" || api_id)
+  const M = committed_message_scalars.length;
+  const blindGens = await prepareGenerators(M + 1, 'BLIND_' + api_id);
+  // 8. res = BBS.CoreVerify(PK, signature, generators.append(blind_generators), header,
+  //            message_scalars.append(committed_message_scalars), api_id)
+  const allScalars = [...message_scalars, ...committed_message_scalars];
+  const combinedGens = {
+    P1: gens.P1,
+    generators: [...gens.generators, ...blindGens.generators]
+  };
+  const valid = await verify(PK, signature, header, allScalars, combinedGens, api_id);
+  return [valid, nym_secret];
+}
+```
+
 ## Proof Generation with Pseudonym
 
 This section defines the `ProofGenWithPseudonym` operations, for calculating a BBS proof with a pseudonym. The BBS proof is extended to include a zero-knowledge proof of correctness of the pseudonym value, i.e., that is correctly calculated using the (undisclosed) pseudonym secret (`nym_secret`), and that is "bound" to the underlying BBS signature (i.e., that the `nym_secret` value is signed by the Signer).
@@ -337,7 +394,7 @@ To support pseudonyms, the `ProofGen` procedure will be extended to accept the p
 ```
 4.  committed_message_scalars
             .append(BBS.messages_to_scalars(committed_messages, api_id))
-            .append(nym_secret)
+            .append(nym_secret) // Note that nym_secret is a scalar
 ```
 
 This operation makes use of `CoreProofGenWithPseudonym` as defined in (#core-proof-generation).
@@ -550,7 +607,7 @@ Deserialization:
 
 1. proof_result = octets_to_proof(proof)
 2. if proof_result is INVALID, return INVALID
-3. (Abar, Bbar, r2^, r3^, commitments, cp) = proof_result
+3. (Abar, Bbar, D, e^,r1^, r3^, commitments, cp) = proof_result
 4. W = octets_to_pubkey(PK)
 5. if W is INVALID, return INVALID
 6. R = length(disclosed_indexes)
@@ -954,11 +1011,11 @@ Outputs:
 
 Deserialization:
 
-1. proof_len_floor = 2 * octet_point_length + 3 * octet_scalar_length
+1. proof_len_floor = 2 * octet_point_length + 4 * octet_scalar_length
 2. if length(proof) < proof_len_floor, return INVALID
 3. U = floor((length(proof) - proof_len_floor) / octet_scalar_length)
 4. total_no_messages = length(disclosed_indexes) +
-                                 length(disclosed_committed_indexes) + U
+                                 length(disclosed_committed_indexes) + U - 1
 5. M = total_no_messages - L
 
 Procedure:
