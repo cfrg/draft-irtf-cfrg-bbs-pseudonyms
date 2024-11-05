@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2024-11-03T00:57:30.303674+00:00",
+  "timestamp": "2024-11-05T00:52:27.799014+00:00",
   "repo": "BasileiosKal/bbs-per-verifier-id",
   "labels": [
     {
@@ -187,6 +187,32 @@
           "comments": []
         }
       ]
+    },
+    {
+      "number": 5,
+      "id": "PR_kwDOKOg1E86A1WXu",
+      "title": "Edits and Fix suggestions. ",
+      "url": "https://github.com/BasileiosKal/bbs-per-verifier-id/pull/5",
+      "state": "OPEN",
+      "author": "Wind4Greg",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Remove sentence about two different pseudonym types. Fix two different off by one errors in ProofVerifyWithNym. Point out issues with Commit and Verify (Finalize) with repect to nym_secret and hashing. Suggest alternatives based on code. Let me know what you think. Cheers Greg",
+      "createdAt": "2024-11-04T17:55:18Z",
+      "updatedAt": "2024-11-04T17:55:18Z",
+      "baseRepository": "BasileiosKal/bbs-per-verifier-id",
+      "baseRefName": "main",
+      "baseRefOid": "bf3687ae244ddd2706e8707099606d2eaff24698",
+      "headRepository": "Wind4Greg/bbs-per-verifier-id",
+      "headRefName": "fix-notes",
+      "headRefOid": "d6dd74f031cd067949e8abc1f8d16ebf2017cc95",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": []
     }
   ]
 }
