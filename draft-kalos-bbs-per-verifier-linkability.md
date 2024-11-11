@@ -217,11 +217,40 @@ This section will provide a high level description of the required operations, b
 Initially, the Prover will chose a set of messages `committed_messages` that they want to be included in the signature, without reveling them to the Signer. They will also choose their part of the pseudonym secret `prover_nym` as a random scalar value.
 
 ```
-1. committed_messages.append(prover_nym)
-2. (commitment_with_proof, secret_prover_blind) = Commit(
+(commitment_with_proof, secret_prover_blind) = Commit(
                                                    committed_messages,
+                                                   nym_secret,
                                                    api_id)
-3. convey commitment_with_proof to Signer.
+
+Inputs:
+
+- committed_messages (OPTIONAL), a vector of octet strings. If not
+                                 supplied it defaults to the empty
+                                 array ("()").
+- nym_secret (OPTIONAL), a random scalar value. If not supplied, it
+                         defaults to the zero scalar (0).
+- api_id (OPTIONAL), octet string. If not supplied it defaults to the
+                     empty octet string ("").
+
+Outputs:
+
+- (commitment_with_proof, secret_prover_blind), a tuple comprising from
+                                                an octet string and a
+                                                random scalar in that
+                                                order.
+
+Procedure:
+
+1. committed_message_scalars = BBS.messages_to_scalars(
+                                             committed_messages, api_id)
+2. committed_message_scalars.append(nym_secret)
+
+3. blind_generators = BBS.create_generators(
+                                  length(committed_message_scalars) + 1,
+                                  "BLIND_" || api_id)
+
+4. return CoreCommit(committed_message_scalars,
+                             blind_generators, api_id)
 ```
 
 ### Blind Issuance
@@ -318,12 +347,22 @@ Outputs:
 
 Procedure:
 
-1. nym_secret = prover_nym + signer_nym_entropy
-2. committed_messages.append(nym_secret)
-3. res = BlindBBS.Verify(PK, signature, header, messages,
-                                committed_messages, secret_prover_blind)
-4. if res is INVALID, return INVALID
-5. return nym_secret
+1. (message_scalars, generators) = prepare_parameters(
+                                        messages,
+                                        committed_messages,
+                                        length(messages) + 1,
+                                        length(committed_messages) + 2,
+                                        secret_prover_blind,
+                                        api_id)
+
+2. nym_secret = prover_nym + signer_nym_entropy
+3. message_scalars.append(nym_secret)
+
+4. res = BBS.CoreVerify(PK, signature, generators, header,
+                                                message_scalars, api_id)
+
+5. if res is INVALID, return INVALID
+6. return nym_secret
 ```
 
 ## Proof Generation with Pseudonym
@@ -876,32 +915,29 @@ Deserialization:
 
 Procedure:
 
-1.  message_scalars = BBS.messages_to_scalars(messages, api_id)
+1. (message_scalars, generators) = prepare_parameters(
+                                         messages,
+                                         committed_messages,
+                                         L + 1,
+                                         M + 2,
+                                         secret_prover_blind,
+                                         api_id)
+2. message_scalars.append(nym_secret)
 
-2.  committed_message_scalars = ()
-3.  committed_message_scalars.append(secret_prover_blind)
-4.  committed_message_scalars.append(BBS.messages_to_scalars(
-                                            committed_messages, api_id))
-5.  committed_message_scalars.append(nym_secret)
+3. indexes = ()
+4. indexes.append(disclosed_indexes)
+5. for j in disclosed_commitment_indexes: indexes.append(j + L + 1)
 
-
-6.  generators = BBS.create_generators(length(message_scalars) + 1, api_id)
-7.  blind_generators = BBS.create_generators(length(committed_message_scalars) + 1, "BLIND_" || api_id)
-
-8.  indexes = ()
-9.  indexes.append(disclosed_indexes)
-10. for j in disclosed_commitment_indexes: indexes.append(j + L + 1)
-
-11. proof = CoreProofGenWithNym(PK,
-                                signature,
-                                generators.append(blind_generators),
-                                header,
-                                ph,
-                                context_id,
-                                message_scalars.append(committed_message_scalars),
-                                indexes,
-                                api_id)
-12. return proof
+6. proof = CoreProofGenWithNym(PK,
+                               signature,
+                               generators.append(blind_generators),
+                               header,
+                               ph,
+                               context_id,
+                               message_scalars.append(committed_message_scalars),
+                               indexes,
+                               api_id)
+7. return proof
 ```
 
 ## Detailed Proof Verification with Pseudonym
@@ -963,30 +999,28 @@ Deserialization:
 
 Procedure:
 
-1.  generators = BBS.create_generators(L + 1, api_id)
-2.  blind_generators = BBS.create_generators(M + 1, "BLIND_" || api_id)
+1. (message_scalars, generators) = prepare_parameters(
+                                           disclosed_messages,
+                                           disclosed_committed_messages,
+                                           L + 1,
+                                           M,
+                                           NONE,
+                                           api_id)
 
-3.  disclosed_message_scalars = messages_to_scalars(
-                                             disclosed_messages, api_id)
-4.  disclosed_committed_message_scalars = messages_to_scalars(
-                                   disclosed_committed_messages, api_id)
-5.  message_scalars = disclosed_message_scalars.append(
-                                    disclosed_committed_message_scalars)
+2. indexes = ()
+3. indexes.append(disclosed_indexes)
+4. for j in disclosed_commitment_indexes: indexes.append(j + L + 1)
 
-6.  indexes = ()
-7.  indexes.append(disclosed_indexes)
-8.  for j in disclosed_commitment_indexes: indexes.append(j + L + 1)
-
-9.  result = CoreProofVerifyWithPseudonym(
+5. result = CoreProofVerifyWithPseudonym(
                                     PK,
                                     proof,
                                     Pseudonym,
                                     context_id,
-                                    generators.append(blind_generators),
+                                    generators,
                                     header,
                                     ph,
                                     message_scalars,
                                     indexes,
                                     api_id)
-10. return result
+6. return result
 ```
