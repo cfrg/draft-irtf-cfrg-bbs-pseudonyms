@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2024-11-10T00:55:56.584827+00:00",
+  "timestamp": "2024-11-12T00:51:58.309979+00:00",
   "repo": "BasileiosKal/bbs-per-verifier-id",
   "labels": [
     {
@@ -213,6 +213,106 @@
       "mergeCommit": null,
       "comments": [],
       "reviews": []
+    },
+    {
+      "number": 6,
+      "id": "PR_kwDOKOg1E86Bi0z4",
+      "title": "Handle nym_secret",
+      "url": "https://github.com/BasileiosKal/bbs-per-verifier-id/pull/6",
+      "state": "OPEN",
+      "author": "BasileiosKal",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2024-11-11T18:36:34Z",
+      "updatedAt": "2024-11-12T00:24:26Z",
+      "baseRepository": "BasileiosKal/bbs-per-verifier-id",
+      "baseRefName": "main",
+      "baseRefOid": "bf3687ae244ddd2706e8707099606d2eaff24698",
+      "headRepository": "BasileiosKal/bbs-per-verifier-id",
+      "headRefName": "vasilis/api",
+      "headRefOid": "2b1a909aa0d49e3ca3eef42cf503abece60a17da",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOKOg1E86QvddC",
+          "commit": {
+            "abbreviatedOid": "2b1a909"
+          },
+          "author": "Wind4Greg",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2024-11-12T00:22:41Z",
+          "updatedAt": "2024-11-12T00:22:41Z",
+          "comments": [
+            {
+              "originalPosition": 17,
+              "body": "prover_nym",
+              "createdAt": "2024-11-12T00:22:41Z",
+              "updatedAt": "2024-11-12T00:22:41Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOKOg1E86Qvdeb",
+          "commit": {
+            "abbreviatedOid": "2b1a909"
+          },
+          "author": "Wind4Greg",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2024-11-12T00:22:47Z",
+          "updatedAt": "2024-11-12T00:22:47Z",
+          "comments": [
+            {
+              "originalPosition": 8,
+              "body": "We are committing to *prover_nym* here. *nym_secret* is not computed yet. This is for initial prover to signer communications.",
+              "createdAt": "2024-11-12T00:22:47Z",
+              "updatedAt": "2024-11-12T00:22:47Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOKOg1E86QvdlJ",
+          "commit": {
+            "abbreviatedOid": "2b1a909"
+          },
+          "author": "Wind4Greg",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2024-11-12T00:23:23Z",
+          "updatedAt": "2024-11-12T00:23:23Z",
+          "comments": [
+            {
+              "originalPosition": 33,
+              "body": "prover_nym",
+              "createdAt": "2024-11-12T00:23:23Z",
+              "updatedAt": "2024-11-12T00:23:23Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOKOg1E86Qvdwj",
+          "commit": {
+            "abbreviatedOid": "2b1a909"
+          },
+          "author": "Wind4Greg",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "APPROVED",
+          "body": "See comments on *prover_nym* versus *nym_secret*. Cheers Greg",
+          "createdAt": "2024-11-12T00:24:26Z",
+          "updatedAt": "2024-11-12T00:24:26Z",
+          "comments": []
+        }
+      ]
     }
   ]
 }
