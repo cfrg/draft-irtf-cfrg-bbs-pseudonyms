@@ -227,7 +227,7 @@ Inputs:
 - committed_messages (OPTIONAL), a vector of octet strings. If not
                                  supplied it defaults to the empty
                                  array ("()").
-- nym_secret (OPTIONAL), a random scalar value. If not supplied, it
+- prover_nym (OPTIONAL), a random scalar value. If not supplied, it
                          defaults to the zero scalar (0).
 - api_id (OPTIONAL), octet string. If not supplied it defaults to the
                      empty octet string ("").
@@ -243,7 +243,7 @@ Procedure:
 
 1. committed_message_scalars = BBS.messages_to_scalars(
                                              committed_messages, api_id)
-2. committed_message_scalars.append(nym_secret)
+2. committed_message_scalars.append(prover_nym)
 
 3. blind_generators = BBS.create_generators(
                                   length(committed_message_scalars) + 1,
