@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2024-12-08T01:02:36.610509+00:00",
+  "timestamp": "2024-12-10T00:59:22.125450+00:00",
   "repo": "BasileiosKal/bbs-per-verifier-id",
   "labels": [
     {
@@ -219,25 +219,35 @@
       "id": "PR_kwDOKOg1E86Bi0z4",
       "title": "Handle nym_secret",
       "url": "https://github.com/BasileiosKal/bbs-per-verifier-id/pull/6",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "BasileiosKal",
       "authorAssociation": "OWNER",
       "assignees": [],
       "labels": [],
       "body": "",
       "createdAt": "2024-11-11T18:36:34Z",
-      "updatedAt": "2024-11-12T00:24:26Z",
+      "updatedAt": "2024-12-09T08:41:12Z",
       "baseRepository": "BasileiosKal/bbs-per-verifier-id",
       "baseRefName": "main",
       "baseRefOid": "bf3687ae244ddd2706e8707099606d2eaff24698",
       "headRepository": "BasileiosKal/bbs-per-verifier-id",
       "headRefName": "vasilis/api",
-      "headRefOid": "2b1a909aa0d49e3ca3eef42cf503abece60a17da",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
-      "comments": [],
+      "headRefOid": "01ad0a04635e032660c85611a1f2cd72feffb28e",
+      "closedAt": "2024-12-09T08:41:11Z",
+      "mergedAt": "2024-12-09T08:41:11Z",
+      "mergedBy": "BasileiosKal",
+      "mergeCommit": {
+        "oid": "a415ab2167f074bbcc75a240c9070f08b612cdcd"
+      },
+      "comments": [
+        {
+          "author": "BasileiosKal",
+          "authorAssociation": "OWNER",
+          "body": "Addressed Greg's comments! Merging!",
+          "createdAt": "2024-12-09T08:41:08Z",
+          "updatedAt": "2024-12-09T08:41:08Z"
+        }
+      ],
       "reviews": [
         {
           "id": "PRR_kwDOKOg1E86QvddC",
