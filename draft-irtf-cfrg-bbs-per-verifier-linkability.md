@@ -3,13 +3,13 @@ title = "BBS per Verifier Linkability"
 abbrev = "BBS per Verifier Linkability"
 ipr= "trust200902"
 area = "Internet"
-workgroup = "none"
+workgroup = "CFRG"
 submissiontype = "IETF"
 keyword = [""]
 
 [seriesInfo]
 name = "Internet-Draft"
-value = "draft-kalos-bbs-per-verifier-linkability-latest"
+value = "draft-irtf-cfrg-bbs-per-verifier-linkability-latest"
 status = "informational"
 
 [[author]]
