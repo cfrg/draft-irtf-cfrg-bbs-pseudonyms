@@ -384,7 +384,7 @@ This operation makes use of `CoreProofGenWithPseudonym` as defined in (#core-pro
 Further more, the call to the `BBS.CoreProofGen` operation at step 10 of the `BlindProofGen` Procedure will be substituted with a call to `CoreProofGenWithNym` operation, defined in Section (#core-proof-generation). More specifically, step 11 of `BlindProofGen` will be substituted by the following step.
 
 ```
-11. proof = CoreProofGenWithNym(PK,
+11. (proof, Pseudonym) = CoreProofGenWithNym(PK,
                                 signature,
                                 generators.append(blind_generators),
                                 header,
@@ -430,7 +430,7 @@ This operations computes a BBS proof and a zero-knowledge proof of correctness o
 The operation uses the `BBS.ProofInit` and `BBS.ProofFinalize` operations defined in [Section 3.7.1](https://www.ietf.org/archive/id/draft-irtf-cfrg-bbs-signatures-07.html#name-proof-initialization) and [Section 3.7.2](https://www.ietf.org/archive/id/draft-irtf-cfrg-bbs-signatures-07.html#name-proof-finalization) correspondingly of [@!I-D.irtf-cfrg-bbs-signatures], the `PseudonymProofInit` operation defined in (#pseudonym-proof-generation-initialization) and the `ProofWithPseudonymChallengeCalculate` defined in (#challenge-calculation).
 
 ```
-proof = CoreProofGenWithPseudonym(PK,
+(proof, Pseudonym) = CoreProofGenWithNym(PK,
                                   signature,
                                   Pseudonym,
                                   verifier_id,
@@ -850,7 +850,7 @@ Procedure:
 ## Detailed Proof Generation with Pseudonym
 
 ```
-proof = ProofGenWithNym(PK,
+(proof, Pseudonym) = ProofGenWithNym(PK,
                         signature,
                         header,
                         ph,
@@ -928,7 +928,7 @@ Procedure:
 4. indexes.append(disclosed_indexes)
 5. for j in disclosed_commitment_indexes: indexes.append(j + L + 1)
 
-6. proof = CoreProofGenWithNym(PK,
+6. (proof, Pseudonym) = CoreProofGenWithNym(PK,
                                signature,
                                generators.append(blind_generators),
                                header,
@@ -937,7 +937,7 @@ Procedure:
                                message_scalars.append(committed_message_scalars),
                                indexes,
                                api_id)
-7. return proof
+7. return (proof, Pseudonym)
 ```
 
 ## Detailed Proof Verification with Pseudonym
