@@ -1552,7 +1552,7 @@ Procedure:
                                   length(committed_message_scalars) + 1,
                                   "BLIND_" || api_id)
 
-4. return CoreCommit(committed_message_scalars,
+4. return Blind.CoreCommit(committed_message_scalars,
                              blind_generators, api_id)
 
 </pre><a href="#section-6.1.1-4" class="pilcrow">¶</a>
@@ -2229,7 +2229,7 @@ Procedure:
 1.  generators = BBS.create_generators(L + 1, api_id)
 2.  blind_generators = BBS.create_generators(M, "BLIND_" || api_id)
 
-3.  commit = deserialize_and_validate_commit(commitment_with_proof,
+3.  commit = Blind.deserialize_and_validate_commit(commitment_with_proof,
                                                blind_generators, api_id)
 4.  if commit is INVALID, return INVALID
 
