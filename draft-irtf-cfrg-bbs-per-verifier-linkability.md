@@ -355,7 +355,7 @@ Procedure:
                                         secret_prover_blind,
                                         api_id)
 
-2. nym_secret = prover_nym + signer_nym_entropy
+2. nym_secret = prover_nym + signer_nym_entropy (modulo r)
 3. message_scalars.append(nym_secret)
 
 4. res = BBS.CoreVerify(PK, signature, generators, header,
