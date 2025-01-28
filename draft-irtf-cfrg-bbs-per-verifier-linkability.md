@@ -347,7 +347,7 @@ Outputs:
 
 Procedure:
 
-1. (message_scalars, generators) = prepare_parameters(
+1. (message_scalars, generators) = Blind.prepare_parameters(
                                         messages,
                                         committed_messages,
                                         length(messages) + 1,
@@ -835,7 +835,7 @@ Procedure:
 7.  if res is INVALID, return INVALID
 8.  (B, signer_nym_entropy) = res
 
-9.  blind_sig = FinalizeBlindSign(SK,
+9.  blind_sig = Blind.FinalizeBlindSign(SK,
                                   PK,
                                   B,
                                   generators,
@@ -915,7 +915,7 @@ Deserialization:
 
 Procedure:
 
-1. (message_scalars, generators) = prepare_parameters(
+1. (message_scalars, generators) = Blind.prepare_parameters(
                                          messages,
                                          committed_messages,
                                          L + 1,
@@ -999,7 +999,7 @@ Deserialization:
 
 Procedure:
 
-1. (message_scalars, generators) = prepare_parameters(
+1. (message_scalars, generators) = Blind.prepare_parameters(
                                            disclosed_messages,
                                            disclosed_committed_messages,
                                            L + 1,
