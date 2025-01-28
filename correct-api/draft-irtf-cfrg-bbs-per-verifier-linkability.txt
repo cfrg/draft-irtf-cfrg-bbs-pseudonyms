@@ -5,8 +5,8 @@
 CFRG                                                            V. Kalos
 Internet-Draft                                                     MATTR
 Intended status: Informational                              G. Bernstein
-Expires: 31 July 2025                                  Grotto Networking
-                                                         27 January 2025
+Expires: 1 August 2025                                 Grotto Networking
+                                                         28 January 2025
 
 
                       BBS per Verifier Linkability
@@ -50,7 +50,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 31 July 2025.
+   This Internet-Draft will expire on 1 August 2025.
 
 Copyright Notice
 
@@ -582,7 +582,7 @@ Outputs:
 
 Procedure:
 
-1. (message_scalars, generators) = prepare_parameters(
+1. (message_scalars, generators) = Blind.prepare_parameters(
                                         messages,
                                         committed_messages,
                                         length(messages) + 1,
@@ -1135,7 +1135,7 @@ Procedure:
 7.  if res is INVALID, return INVALID
 8.  (B, signer_nym_entropy) = res
 
-9.  blind_sig = FinalizeBlindSign(SK,
+9.  blind_sig = Blind.FinalizeBlindSign(SK,
                                   PK,
                                   B,
                                   generators,
@@ -1213,7 +1213,7 @@ Deserialization:
 
 Procedure:
 
-1. (message_scalars, generators) = prepare_parameters(
+1. (message_scalars, generators) = Blind.prepare_parameters(
                                          messages,
                                          committed_messages,
                                          L + 1,
@@ -1295,7 +1295,7 @@ Deserialization:
 
 Procedure:
 
-1. (message_scalars, generators) = prepare_parameters(
+1. (message_scalars, generators) = Blind.prepare_parameters(
                                            disclosed_messages,
                                            disclosed_committed_messages,
                                            L + 1,
