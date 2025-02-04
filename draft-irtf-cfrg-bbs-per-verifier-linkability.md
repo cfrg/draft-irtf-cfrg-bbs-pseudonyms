@@ -249,7 +249,7 @@ Procedure:
                                   length(committed_message_scalars) + 1,
                                   "BLIND_" || api_id)
 
-4. return CoreCommit(committed_message_scalars,
+4. return Blind.CoreCommit(committed_message_scalars,
                              blind_generators, api_id)
 ```
 
@@ -347,7 +347,7 @@ Outputs:
 
 Procedure:
 
-1. (message_scalars, generators) = prepare_parameters(
+1. (message_scalars, generators) = Blind.prepare_parameters(
                                         messages,
                                         committed_messages,
                                         length(messages) + 1,
@@ -355,7 +355,7 @@ Procedure:
                                         secret_prover_blind,
                                         api_id)
 
-2. nym_secret = prover_nym + signer_nym_entropy
+2. nym_secret = prover_nym + signer_nym_entropy (modulo r)
 3. message_scalars.append(nym_secret)
 
 4. res = BBS.CoreVerify(PK, signature, generators, header,
@@ -384,7 +384,7 @@ This operation makes use of `CoreProofGenWithPseudonym` as defined in (#core-pro
 Further more, the call to the `BBS.CoreProofGen` operation at step 10 of the `BlindProofGen` Procedure will be substituted with a call to `CoreProofGenWithNym` operation, defined in Section (#core-proof-generation). More specifically, step 11 of `BlindProofGen` will be substituted by the following step.
 
 ```
-11. proof = CoreProofGenWithNym(PK,
+11. (proof, Pseudonym) = CoreProofGenWithNym(PK,
                                 signature,
                                 generators.append(blind_generators),
                                 header,
@@ -430,7 +430,7 @@ This operations computes a BBS proof and a zero-knowledge proof of correctness o
 The operation uses the `BBS.ProofInit` and `BBS.ProofFinalize` operations defined in [Section 3.7.1](https://www.ietf.org/archive/id/draft-irtf-cfrg-bbs-signatures-07.html#name-proof-initialization) and [Section 3.7.2](https://www.ietf.org/archive/id/draft-irtf-cfrg-bbs-signatures-07.html#name-proof-finalization) correspondingly of [@!I-D.irtf-cfrg-bbs-signatures], the `PseudonymProofInit` operation defined in (#pseudonym-proof-generation-initialization) and the `ProofWithPseudonymChallengeCalculate` defined in (#challenge-calculation).
 
 ```
-proof = CoreProofGenWithPseudonym(PK,
+(proof, Pseudonym) = CoreProofGenWithNym(PK,
                                   signature,
                                   Pseudonym,
                                   verifier_id,
@@ -825,7 +825,7 @@ Procedure:
 1.  generators = BBS.create_generators(L + 1, api_id)
 2.  blind_generators = BBS.create_generators(M, "BLIND_" || api_id)
 
-3.  commit = deserialize_and_validate_commit(commitment_with_proof,
+3.  commit = Blind.deserialize_and_validate_commit(commitment_with_proof,
                                                blind_generators, api_id)
 4.  if commit is INVALID, return INVALID
 
@@ -835,7 +835,7 @@ Procedure:
 7.  if res is INVALID, return INVALID
 8.  (B, signer_nym_entropy) = res
 
-9.  blind_sig = FinalizeBlindSign(SK,
+9.  blind_sig = Blind.FinalizeBlindSign(SK,
                                   PK,
                                   B,
                                   generators,
@@ -850,7 +850,7 @@ Procedure:
 ## Detailed Proof Generation with Pseudonym
 
 ```
-proof = ProofGenWithNym(PK,
+(proof, Pseudonym) = ProofGenWithNym(PK,
                         signature,
                         header,
                         ph,
@@ -915,7 +915,7 @@ Deserialization:
 
 Procedure:
 
-1. (message_scalars, generators) = prepare_parameters(
+1. (message_scalars, generators) = Blind.prepare_parameters(
                                          messages,
                                          committed_messages,
                                          L + 1,
@@ -928,7 +928,7 @@ Procedure:
 4. indexes.append(disclosed_indexes)
 5. for j in disclosed_commitment_indexes: indexes.append(j + L + 1)
 
-6. proof = CoreProofGenWithNym(PK,
+6. (proof, Pseudonym) = CoreProofGenWithNym(PK,
                                signature,
                                generators.append(blind_generators),
                                header,
@@ -937,7 +937,7 @@ Procedure:
                                message_scalars.append(committed_message_scalars),
                                indexes,
                                api_id)
-7. return proof
+7. return (proof, Pseudonym)
 ```
 
 ## Detailed Proof Verification with Pseudonym
@@ -999,7 +999,7 @@ Deserialization:
 
 Procedure:
 
-1. (message_scalars, generators) = prepare_parameters(
+1. (message_scalars, generators) = Blind.prepare_parameters(
                                            disclosed_messages,
                                            disclosed_committed_messages,
                                            L + 1,
