@@ -311,7 +311,7 @@ The following operation both verifies the generated blind signature, as well as 
 This operation uses the `BlindBBS.Verify` function as defined in [Section 4.2.2](https://www.ietf.org/archive/id/draft-kalos-bbs-blind-signatures-01.html#name-blind-signature-verificatio) of the Blind BBS document [@BlindBBS]
 
 ```
-nym_secret = Finalize(PK,
+nym_secret = VerifyFinalizeWithNym(PK,
                       signature,
                       header,
                       messages,
