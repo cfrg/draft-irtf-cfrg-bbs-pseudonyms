@@ -367,7 +367,7 @@ Procedure:
 
 ## Proof Generation with Pseudonym
 
-This section defines the `ProofGenWithPseudonym` operations, for calculating a BBS proof with a pseudonym. The BBS proof is extended to include a zero-knowledge proof of correctness of the pseudonym value, i.e., that is correctly calculated using the (undisclosed) pseudonym secret (`nym_secret`), and that is "bound" to the underlying BBS signature (i.e., that the `nym_secret` value is signed by the Signer).
+This section defines the `ProofGenWithNym` operations, for calculating a BBS proof with a pseudonym. The BBS proof is extended to include a zero-knowledge proof of correctness of the pseudonym value, i.e., that is correctly calculated using the (undisclosed) pseudonym secret (`nym_secret`), and that is "bound" to the underlying BBS signature (i.e., that the `nym_secret` value is signed by the Signer).
 
 Validating the proof (see `ProofVerifyWithPseudonym` defined in (#proof-verification-with-pseudonym)), guarantees authenticity and integrity of the header, presentation header and disclosed messages, knowledge of a valid BBS signature as well as correctness and ownership of the pseudonym.
 
@@ -379,7 +379,7 @@ To support pseudonyms, the `ProofGen` procedure will be extended to accept the p
             .append(nym_secret)
 ```
 
-This operation makes use of `CoreProofGenWithPseudonym` as defined in (#core-proof-generation).
+This operation makes use of `CoreProofGenWithNym` as defined in (#core-proof-generation).
 
 Further more, the call to the `BBS.CoreProofGen` operation at step 10 of the `BlindProofGen` Procedure will be substituted with a call to `CoreProofGenWithNym` operation, defined in Section (#core-proof-generation). More specifically, step 11 of `BlindProofGen` will be substituted by the following step.
 
@@ -395,7 +395,7 @@ Further more, the call to the `BBS.CoreProofGen` operation at step 10 of the `Bl
                                 api_id)
 ```
 
-The `ProofGenWithPseudonym` operation is described in detail in Appendix (#detailed-proof-generation-with-pseudonym)
+The `ProofGenWithNym` operation is described in detail in Appendix (#detailed-proof-generation-with-pseudonym)
 
 ## Proof Verification with Pseudonym
 
