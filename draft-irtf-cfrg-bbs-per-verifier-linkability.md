@@ -369,7 +369,7 @@ Procedure:
 
 This section defines the `ProofGenWithNym` operations, for calculating a BBS proof with a pseudonym. The BBS proof is extended to include a zero-knowledge proof of correctness of the pseudonym value, i.e., that is correctly calculated using the (undisclosed) pseudonym secret (`nym_secret`), and that is "bound" to the underlying BBS signature (i.e., that the `nym_secret` value is signed by the Signer).
 
-Validating the proof (see `ProofVerifyWithPseudonym` defined in (#proof-verification-with-pseudonym)), guarantees authenticity and integrity of the header, presentation header and disclosed messages, knowledge of a valid BBS signature as well as correctness and ownership of the pseudonym.
+Validating the proof (see `ProofVerifyWithNym` defined in (#proof-verification-with-pseudonym)), guarantees authenticity and integrity of the header, presentation header and disclosed messages, knowledge of a valid BBS signature as well as correctness and ownership of the pseudonym.
 
 To support pseudonyms, the `ProofGen` procedure will be extended to accept the pseudonym secret `nym_secret`, as well as the context identifier `context_id`, which the pseudonym will be bounded to. The `nym_secret` scalar value should be added to the `committed_message_scalars` list computed in `ProofGen`. More specifically, step 4 of the `ProofGen` Procedure, defined in Section TBD will be substituted with the following step
 
@@ -401,12 +401,12 @@ The `ProofGenWithNym` operation is described in detail in Appendix (#detailed-pr
 
 This operation validates a BBS proof with a pseudonym, given the Signer's public key (PK), the proof, the pseudonym, the context identifier that was used to create it, a header and presentation header, the disclosed messages and committed messages as well as the, the indexes those messages had in the original vectors of signed messages. Validating the proof also validates the correctness and ownership by the Prover of the received pseudonym.
 
-To support pseudonyms, the `BlindProofVerify` procedure will be extended to accept the pseudonym value `Pseudonym`, as well as the context identifier `context_id`, which the pseudonym is bounded to. Additionally, the call to the `BBS.CoreProofVerify` operation at step 9, will be replaced with a call to the core proof verification operation with pseudonyms defined in this document, i.e., of `CoreProofVerifyWithPseudonym` as defined in (#core-proof-verification).
+To support pseudonyms, the `BlindProofVerify` procedure will be extended to accept the pseudonym value `Pseudonym`, as well as the context identifier `context_id`, which the pseudonym is bounded to. Additionally, the call to the `BBS.CoreProofVerify` operation at step 9, will be replaced with a call to the core proof verification operation with pseudonyms defined in this document, i.e., of `CoreProofVerifyWithNym` as defined in (#core-proof-verification).
 
 More specifically, step 9 of the `BlindProofVerify` Procedure will be replaced with the following step,
 
 ```
-9.  result = CoreProofVerifyWithPseudonym(
+9.  result = CoreProofVerifyWithNym(
                                     PK,
                                     proof,
                                     Pseudonym,
@@ -419,7 +419,7 @@ More specifically, step 9 of the `BlindProofVerify` Procedure will be replaced w
                                     api_id)
 ```
 
-The `ProofVerifyWithPseudonym` operation is described in detail in Appendix (#detailed-proof-verification-with-pseudonym).
+The `ProofVerifyWithNym` operation is described in detail in Appendix (#detailed-proof-verification-with-pseudonym).
 
 # Core Operations
 
@@ -539,7 +539,7 @@ This operation validates a BBS proof that also includes a pseudonym. Validating 
 The operation uses the `BBS.ProofVerifyInit` operation defined [Section 3.7.3](https://www.ietf.org/archive/id/draft-irtf-cfrg-bbs-signatures-07.html#name-proof-verification-initiali) of [@!I-D.irtf-cfrg-bbs-signatures], the `PseudonymProofVerifyInit` operation defined in (#pseudonym-proof-verification-initialization) and the `ProofWithPseudonymChallengeCalculate` operation defined in (#challenge-calculation).
 
 ```
-result = CoreProofVerifyWithPseudonym(PK,
+result = CoreProofVerifyWithNym(PK,
                                       proof,
                                       Pseudonym,
                                       context_id,
@@ -943,7 +943,7 @@ Procedure:
 ## Detailed Proof Verification with Pseudonym
 
 ```
-result = ProofVerifyWithPseudonym(PK,
+result = ProofVerifyWithNym(PK,
                                   proof,
                                   header,
                                   ph,
@@ -1011,8 +1011,7 @@ Procedure:
 3. indexes.append(disclosed_indexes)
 4. for j in disclosed_commitment_indexes: indexes.append(j + L + 1)
 
-5. result = CoreProofVerifyWithPseudonym(
-                                    PK,
+5. result = CoreProofVerifyWithNym(PK,
                                     proof,
                                     Pseudonym,
                                     context_id,
