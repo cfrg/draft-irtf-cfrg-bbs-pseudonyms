@@ -193,7 +193,7 @@ Additionally, the `nym_secret` value will be signed by the BBS Signature. This w
 To prevent forgeries in all cases all BBS messages are signed with the inclusion of some form of the provider pseudonym secret (`nym_secret`). In addition the pseudonym is always computed by the prover and sent with the proof to the verifier. While two different variations of signature and proof generation are given below based on the previously discussed unlinkability requirements there MUST be only one verification algorithm for the verifier to use.
 
 1. The Prover computes their input for the `nym_secret` (called `prover_nym`) and retained for use when calculating the `nym_secret` value.
-2. The Prover will wrap up in a cryptographic commitment using the *Commit* procedures of Blind BBS the messages they want to include in the signature (`committed_messages`) and the `prover_nym` value, generating a `commitment_with_proof` and a `secret_prover_blind`.
+2. The Prover will wrap up in a cryptographic commitment using the *CommitWithNym* procedures of Blind BBS the messages they want to include in the signature (`committed_messages`) and the `prover_nym` value, generating a `commitment_with_proof` and a `secret_prover_blind`.
 3. The `commitment_with_proof` is conveyed to the signer which then uses the signing procedures in Section (#signature-generation-and-verification-with-pseudonym) to create a BBS signature and their input for the `nym_secret` value, called `signer_nym_entropy`. They will convey both to the Prover.
 4. On receipt of the signature and the `signer_nym_entropy` value, the Prover verifies the signature using the procedure of section (#signature-generation-and-verification-with-pseudonym) and calculates the `nym_secret` value by adding their `prover_nym` secret and the provided `signer_nym_entropy` values.
 5. The Prover computes the *pseudonym* based on the `nym_secret` and the pseudonym's context identifier `context_id`.
@@ -217,7 +217,7 @@ This section will provide a high level description of the required operations, b
 Initially, the Prover will chose a set of messages `committed_messages` that they want to be included in the signature, without reveling them to the Signer. They will also choose their part of the pseudonym secret `prover_nym` as a random scalar value.
 
 ```
-(commitment_with_proof, secret_prover_blind) = Commit(
+(commitment_with_proof, secret_prover_blind) = CommitWithNym(
                                                    committed_messages,
                                                    nym_secret,
                                                    api_id)
@@ -800,7 +800,7 @@ Inputs:
 - commitment_with_proof (OPTIONAL), an octet string, representing a
                                     serialized commitment and
                                     commitment_proof, as the first
-                                    element outputted by the Commit
+                                    element outputted by the CommitWithNym
                                     operation. If not supplied, it
                                     defaults to the empty string ("").
 - header (OPTIONAL), an octet string containing context and application
