@@ -255,17 +255,17 @@ Procedure:
 
 ### Blind Issuance
 
-The Signer generate a signature from a secret key (SK), the commitment with proof, and optionally over a `header` and vector of `messages` using
-the BlindSign procedure from [@!I-D.kalos-bbs-blind-signatures], substituting the call on the `B_calculate` of step 6, with the call to `B_calculate_with_nym` defined in Section (#calculate-b). More specifically, to issue a blind signature over a pseudonym, the Issuer will use BlindSign from [@!I-D.kalos-bbs-blind-signatures], substituting steps 6, 7 and 8 with the following three steps
+The Signer generate a signature from a secret key (SK), the commitment with proof, the signer_nym_entropy and optionally over a `header` and vector of `messages` using
+the BlindSign procedure from [@!I-D.kalos-bbs-blind-signatures], substituting the call on the `B_calculate` of step 6, with the call to `B_calculate_with_nym` defined in Section (#calculate-b).
+Typically the signer_nym_entropy will be a fresh random scalar, however in the case of
+"reissue" of a signature for a prover who wants to keep their same pseudonymous identity this value can be reused for the same prover if desired. More specifically, to issue a blind signature over a pseudonym, the Issuer will use BlindSign from [@!I-D.kalos-bbs-blind-signatures], substituting steps 6, 7 and 8 with the following three steps
 
 ```
-6. res = B_calculate_with_nym(generators, commit,
+6. res = B_calculate_with_nym(signer_nym_entropy, generators, commit,
                                   blind_generators[-1], message_scalars)
 7. if res is INVALID, return INVALID
-8. (B, signer_nym_entropy) = res
+8. B = res
 ```
-
-Lastly, the return statement of `BlindSign` should be updated to return the `signer_nym_entropy` value, returned by the call to the `B_calculate` operation.
 
 The complete operation is defined in Appendix (#detailed-blind-signature-generation-with-pseudonym).
 
@@ -274,13 +274,14 @@ The complete operation is defined in Appendix (#detailed-blind-signature-generat
 The `B_calculate_with_nym` operation is defined as follows,
 
 ```
-(B, signer_nym_entropy)  = B_calculate_with_nym(generators,
+B = B_calculate_with_nym(signer_nym_entropy, generators,
                                                 commitment,
                                                 nym_generator,
                                                 message_scalars)
 
 Inputs:
 
+- signer_nym_entropy (REQUIRED), a scalar.
 - generators (REQUIRED), an array of at least one point from the
                          G1 group.
 - commitment (REQUIRED), a point from the G1 group
@@ -301,7 +302,7 @@ Procedure:
 2. signer_nym_entropy = get_random(1)
 3. B = B + nym_generator * signer_nym_entropy
 4. If B is Identity_G1, return INVALID
-5. return (B, signer_nym_entropy)
+5. return B
 ```
 
 ### Verification and Finalization
@@ -789,7 +790,8 @@ TODO acknowledge.
 ## Detailed Blind Signature Generation with Pseudonym
 
 ```
-BlindSignWithNym(SK, PK, commitment_with_proof, header, messages)
+BlindSignWithNym(SK, PK, commitment_with_proof, signer_nym_entropy,
+                  header, messages)
 
 Inputs:
 
@@ -803,6 +805,7 @@ Inputs:
                                     element outputted by the CommitWithNym
                                     operation. If not supplied, it
                                     defaults to the empty string ("").
+- signer_nym_entropy (REQUIRED), a scalar value.
 - header (OPTIONAL), an octet string containing context and application
                      specific information. If not supplied, it defaults
                      to an empty string ("").
@@ -831,9 +834,10 @@ Procedure:
 
 5.  message_scalars = BBS.messages_to_scalars(messages, api_id)
 
-6.  res = B_calculate(message_scalars, generators, blind_generators[-1])
+6.  res = B_calculate(signer_nym_entropy, message_scalars,
+                      generators, blind_generators[-1])
 7.  if res is INVALID, return INVALID
-8.  (B, signer_nym_entropy) = res
+8.  B = res
 
 9.  blind_sig = Blind.FinalizeBlindSign(SK,
                                   PK,
@@ -844,7 +848,7 @@ Procedure:
                                   api_id)
 
 10. if blind_sig is INVALID, return INVALID
-11. return (blind_sig, signer_nym_entropy)
+11. return blind_sig
 ```
 
 ## Detailed Proof Generation with Pseudonym
