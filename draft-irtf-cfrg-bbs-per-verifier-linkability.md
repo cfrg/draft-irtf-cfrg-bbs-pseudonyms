@@ -219,7 +219,7 @@ Initially, the Prover will chose a set of messages `committed_messages` that the
 ```
 (commitment_with_proof, secret_prover_blind) = CommitWithNym(
                                                    committed_messages,
-                                                   nym_secret,
+                                                   prover_nym,
                                                    api_id)
 
 Inputs:
