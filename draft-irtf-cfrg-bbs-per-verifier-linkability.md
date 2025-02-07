@@ -994,11 +994,11 @@ Outputs:
 
 Deserialization:
 
-1. proof_len_floor = 2 * octet_point_length + 3 * octet_scalar_length
+1. proof_len_floor = 3 * octet_point_length + 4 * octet_scalar_length
 2. if length(proof) < proof_len_floor, return INVALID
 3. U = floor((length(proof) - proof_len_floor) / octet_scalar_length)
 4. total_no_messages = length(disclosed_indexes) +
-                                 length(disclosed_committed_indexes) + U
+                                 length(disclosed_committed_indexes) + U - 1
 5. M = total_no_messages - L
 
 Procedure:
@@ -1007,7 +1007,7 @@ Procedure:
                                            disclosed_messages,
                                            disclosed_committed_messages,
                                            L + 1,
-                                           M,
+                                           M + 1,
                                            NONE,
                                            api_id)
 
