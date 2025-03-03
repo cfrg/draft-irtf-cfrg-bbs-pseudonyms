@@ -256,18 +256,72 @@ Procedure:
 ### Blind Issuance
 
 The Signer generate a signature from a secret key (SK), the commitment with proof, the signer_nym_entropy and optionally over a `header` and vector of `messages` using
-the BlindSign procedure from [@!I-D.kalos-bbs-blind-signatures], substituting the call on the `B_calculate` of step 6, with the call to `B_calculate_with_nym` defined in Section (#calculate-b).
+the BlindSignWithNym procedure shown below.
+
 Typically the signer_nym_entropy will be a fresh random scalar, however in the case of
-"reissue" of a signature for a prover who wants to keep their same pseudonymous identity this value can be reused for the same prover if desired. More specifically, to issue a blind signature over a pseudonym, the Issuer will use BlindSign from [@!I-D.kalos-bbs-blind-signatures], substituting steps 6, 7 and 8 with the following three steps
+"reissue" of a signature for a prover who wants to keep their same pseudonymous identity this value can be reused for the same prover if desired.
 
 ```
-6. res = B_calculate_with_nym(signer_nym_entropy, generators, commit,
-                                  blind_generators[-1], message_scalars)
-7. if res is INVALID, return INVALID
-8. B = res
-```
+BlindSignWithNym(SK, PK, commitment_with_proof, signer_nym_entropy,
+                  header, messages)
 
-The complete operation is defined in Appendix (#detailed-blind-signature-generation-with-pseudonym).
+Inputs:
+
+- SK (REQUIRED), a secret key in the form outputted by the KeyGen
+                 operation.
+- PK (REQUIRED), an octet string of the form outputted by SkToPk
+                 provided the above SK as input.
+- commitment_with_proof (OPTIONAL), an octet string, representing a
+                                    serialized commitment and
+                                    commitment_proof, as the first
+                                    element outputted by the CommitWithNym
+                                    operation. If not supplied, it
+                                    defaults to the empty string ("").
+- signer_nym_entropy (REQUIRED), a scalar value.
+- header (OPTIONAL), an octet string containing context and application
+                     specific information. If not supplied, it defaults
+                     to an empty string ("").
+- messages (OPTIONAL), a vector of octet strings. If not supplied, it
+                       defaults to the empty array ("()").
+
+Deserialization:
+
+1. L = length(messages)
+
+// calculate the number of blind generators used by the commitment,
+// if any.
+2. M = length(commitment_with_proof)
+3. if M != 0, M = M - octet_point_length - octet_scalar_length
+4. M = M / octet_scalar_length
+5. if M < 0, return INVALID
+
+Procedure:
+
+1.  generators = BBS.create_generators(L + 1, api_id)
+2.  blind_generators = BBS.create_generators(M, "BLIND_" || api_id)
+
+3.  commit = Blind.deserialize_and_validate_commit(commitment_with_proof,
+                                               blind_generators, api_id)
+4.  if commit is INVALID, return INVALID
+
+5.  message_scalars = BBS.messages_to_scalars(messages, api_id)
+
+6.  res = B_calculate(signer_nym_entropy, message_scalars,
+                      generators, blind_generators[-1])
+7.  if res is INVALID, return INVALID
+8.  B = res
+
+9.  blind_sig = Blind.FinalizeBlindSign(SK,
+                                  PK,
+                                  B,
+                                  generators,
+                                  blind_generators,
+                                  header,
+                                  api_id)
+
+10. if blind_sig is INVALID, return INVALID
+11. return blind_sig
+```
 
 #### Calculate B
 
@@ -372,55 +426,184 @@ This section defines the `ProofGenWithNym` operations, for calculating a BBS pro
 
 Validating the proof (see `ProofVerifyWithNym` defined in (#proof-verification-with-pseudonym)), guarantees authenticity and integrity of the header, presentation header and disclosed messages, knowledge of a valid BBS signature as well as correctness and ownership of the pseudonym.
 
-To support pseudonyms, the `ProofGen` procedure will be extended to accept the pseudonym secret `nym_secret`, as well as the context identifier `context_id`, which the pseudonym will be bounded to. The `nym_secret` scalar value should be added to the `committed_message_scalars` list computed in `ProofGen`. More specifically, step 4 of the `ProofGen` Procedure, defined in Section TBD will be substituted with the following step
+To support pseudonyms, the `ProofGenWithNym` procedure takes the pseudonym secret `nym_secret`, as well as the context identifier `context_id`, which the pseudonym will be bounded to.
 
 ```
-4.  committed_message_scalars
-            .append(BBS.messages_to_scalars(committed_messages, api_id))
-            .append(nym_secret)
+(proof, pseudonym) = ProofGenWithNym(PK,
+                        signature,
+                        header,
+                        ph,
+                        nym_secret,
+                        context_id,
+                        messages,
+                        committed_messages,
+                        disclosed_indexes,
+                        disclosed_commitment_indexes,
+                        secret_prover_blind)
+
+Inputs:
+
+- PK (REQUIRED), an octet string of the form outputted by the SkToPk
+                 operation.
+- signature (REQUIRED), an octet string of the form outputted by the
+                        Sign operation.
+- header (OPTIONAL), an octet string containing context and application
+                     specific information. If not supplied, it defaults
+                     to an empty string.
+- ph (OPTIONAL), an octet string containing the presentation header. If
+                 not supplied, it defaults to an empty string.
+- messages (OPTIONAL), a vector of octet strings. If not supplied, it
+                       defaults to the empty array "()".
+- committed_messages (OPTIONAL), a vector of octet strings. If not
+                                 supplied, it defaults to the empty
+                                 array "()".
+- disclosed_indexes (OPTIONAL), vector of unsigned integers in ascending
+                                order. Indexes of disclosed messages. If
+                                not supplied, it defaults to the empty
+                                array "()".
+- disclosed_commitment_indexes (OPTIONAL), vector of unsigned integers
+                                           in ascending order. Indexes
+                                           of disclosed committed
+                                           messages. If not supplied, it
+                                           defaults to the empty array
+                                           "()".
+- secret_prover_blind (OPTIONAL), a scalar value. If not supplied it
+                                  defaults to zero "0".
+
+
+Parameters:
+
+- api_id, the octet string ciphersuite_id || "BLIND_H2G_HM2S_", where
+          ciphersuite_id is defined by the ciphersuite and
+          "BLIND_H2G_HM2S_"is an ASCII string composed of 15 bytes.
+
+
+Outputs:
+
+- proof, an octet string; or INVALID.
+
+Deserialization:
+
+1. L = length(messages)
+2. M = length(committed_messages)
+3. if length(disclosed_indexes) > L, return INVALID
+4. for i in disclosed_indexes, if i < 0 or i >= L, return INVALID
+5. if length(disclosed_commitment_indexes) > M, return INVALID
+6. for j in disclosed_commitment_indexes,
+                               if i < 0 or i >= M, return INVALID
+
+Procedure:
+
+1. (message_scalars, generators) = Blind.prepare_parameters(
+                                         messages,
+                                         committed_messages,
+                                         L + 1,
+                                         M + 2,
+                                         secret_prover_blind,
+                                         api_id)
+2. message_scalars.append(nym_secret)
+
+3. indexes = ()
+4. indexes.append(disclosed_indexes)
+5. for j in disclosed_commitment_indexes: indexes.append(j + L + 1)
+
+6. (proof, pseudonym) = CoreProofGenWithNym(PK,
+                               signature,
+                               generators.append(blind_generators),
+                               header,
+                               ph,
+                               context_id,
+                               message_scalars.append(committed_message_scalars),
+                               indexes,
+                               api_id)
+7. return (proof, pseudonym)
 ```
-
-This operation makes use of `CoreProofGenWithNym` as defined in (#core-proof-generation).
-
-Further more, the call to the `BBS.CoreProofGen` operation at step 10 of the `BlindProofGen` Procedure will be substituted with a call to `CoreProofGenWithNym` operation, defined in Section (#core-proof-generation). More specifically, step 11 of `BlindProofGen` will be substituted by the following step.
-
-```
-11. (proof, pseudonym) = CoreProofGenWithNym(PK,
-                                signature,
-                                generators.append(blind_generators),
-                                header,
-                                ph,
-                                context_id,
-                                message_scalars.append(committed_message_scalars),
-                                indexes,
-                                api_id)
-```
-
-The `ProofGenWithNym` operation is described in detail in Appendix (#detailed-proof-generation-with-pseudonym)
 
 ## Proof Verification with Pseudonym
 
 This operation validates a BBS proof with a pseudonym, given the Signer's public key (PK), the proof, the pseudonym, the context identifier that was used to create it, a header and presentation header, the disclosed messages and committed messages as well as the, the indexes those messages had in the original vectors of signed messages. Validating the proof also validates the correctness and ownership by the Prover of the received pseudonym.
 
-To support pseudonyms, the `BlindProofVerify` procedure will be extended to accept the pseudonym value `pseudonym`, as well as the context identifier `context_id`, which the pseudonym is bounded to. Additionally, the call to the `BBS.CoreProofVerify` operation at step 9, will be replaced with a call to the core proof verification operation with pseudonyms defined in this document, i.e., of `CoreProofVerifyWithNym` as defined in (#core-proof-verification).
-
-More specifically, step 9 of the `BlindProofVerify` Procedure will be replaced with the following step,
-
 ```
-9.  result = CoreProofVerifyWithNym(
-                                    PK,
+result = ProofVerifyWithNym(PK,
+                                  proof,
+                                  header,
+                                  ph,
+                                  pseudonym,
+                                  context_id,
+                                  L,
+                                  disclosed_messages,
+                                  disclosed_committed_messages,
+                                  disclosed_indexes,
+                                  disclosed_committed_indexes)
+
+Inputs:
+
+- PK (REQUIRED), an octet string of the form outputted by the SkToPk
+                 operation.
+- proof (REQUIRED), an octet string of the form outputted by the
+                    ProofGen operation.
+- header (OPTIONAL), an optional octet string containing context and
+                     application specific information. If not supplied,
+                     it defaults to the empty octet string ("").
+- ph (OPTIONAL), an octet string containing the presentation header. If
+                 not supplied, it defaults to the empty octet
+                 string ("").
+- L (OPTIONAL), an integer, representing the total number of Signer
+                known messages if not supplied it defaults to 0.
+- disclosed_messages (OPTIONAL), a vector of octet strings. If not
+                                 supplied, it defaults to the empty
+                                 array ("()").
+- disclosed_indexes (OPTIONAL), vector of unsigned integers in ascending
+                                order. Indexes of disclosed messages. If
+                                not supplied, it defaults to the empty
+                                array ("()").
+
+Parameters:
+
+- api_id, the octet string ciphersuite_id || "H2G_HM2S_", where
+          ciphersuite_id is defined by the ciphersuite and "H2G_HM2S_"is
+          an ASCII string comprised of 9 bytes.
+- (octet_point_length, octet_scalar_length), defined by the ciphersuite.
+
+Outputs:
+
+- result, either VALID or INVALID.
+
+Deserialization:
+
+1. proof_len_floor = 3 * octet_point_length + 4 * octet_scalar_length
+2. if length(proof) < proof_len_floor, return INVALID
+3. U = floor((length(proof) - proof_len_floor) / octet_scalar_length)
+4. total_no_messages = length(disclosed_indexes) +
+                                 length(disclosed_committed_indexes) + U - 1
+5. M = total_no_messages - L
+
+Procedure:
+
+1. (message_scalars, generators) = Blind.prepare_parameters(
+                                           disclosed_messages,
+                                           disclosed_committed_messages,
+                                           L + 1,
+                                           M + 1,
+                                           NONE,
+                                           api_id)
+
+2. indexes = ()
+3. indexes.append(disclosed_indexes)
+4. for j in disclosed_commitment_indexes: indexes.append(j + L + 1)
+
+5. result = CoreProofVerifyWithNym(PK,
                                     proof,
                                     pseudonym,
                                     context_id,
-                                    generators.append(blind_generators),
+                                    generators,
                                     header,
                                     ph,
                                     message_scalars,
                                     indexes,
                                     api_id)
+6. return result
 ```
-
-The `ProofVerifyWithNym` operation is described in detail in Appendix (#detailed-proof-verification-with-pseudonym).
 
 # Core Operations
 
@@ -1958,247 +2141,3 @@ TODO acknowledge.
    <author><organization>IETF</organization></author>
  </front>
 </reference>
-
-
-# Detailed Operations
-
-## Detailed Blind Signature Generation with Pseudonym
-
-```
-BlindSignWithNym(SK, PK, commitment_with_proof, signer_nym_entropy,
-                  header, messages)
-
-Inputs:
-
-- SK (REQUIRED), a secret key in the form outputted by the KeyGen
-                 operation.
-- PK (REQUIRED), an octet string of the form outputted by SkToPk
-                 provided the above SK as input.
-- commitment_with_proof (OPTIONAL), an octet string, representing a
-                                    serialized commitment and
-                                    commitment_proof, as the first
-                                    element outputted by the CommitWithNym
-                                    operation. If not supplied, it
-                                    defaults to the empty string ("").
-- signer_nym_entropy (REQUIRED), a scalar value.
-- header (OPTIONAL), an octet string containing context and application
-                     specific information. If not supplied, it defaults
-                     to an empty string ("").
-- messages (OPTIONAL), a vector of octet strings. If not supplied, it
-                       defaults to the empty array ("()").
-
-Deserialization:
-
-1. L = length(messages)
-
-// calculate the number of blind generators used by the commitment,
-// if any.
-2. M = length(commitment_with_proof)
-3. if M != 0, M = M - octet_point_length - octet_scalar_length
-4. M = M / octet_scalar_length
-5. if M < 0, return INVALID
-
-Procedure:
-
-1.  generators = BBS.create_generators(L + 1, api_id)
-2.  blind_generators = BBS.create_generators(M, "BLIND_" || api_id)
-
-3.  commit = Blind.deserialize_and_validate_commit(commitment_with_proof,
-                                               blind_generators, api_id)
-4.  if commit is INVALID, return INVALID
-
-5.  message_scalars = BBS.messages_to_scalars(messages, api_id)
-
-6.  res = B_calculate(signer_nym_entropy, message_scalars,
-                      generators, blind_generators[-1])
-7.  if res is INVALID, return INVALID
-8.  B = res
-
-9.  blind_sig = Blind.FinalizeBlindSign(SK,
-                                  PK,
-                                  B,
-                                  generators,
-                                  blind_generators,
-                                  header,
-                                  api_id)
-
-10. if blind_sig is INVALID, return INVALID
-11. return blind_sig
-```
-
-## Detailed Proof Generation with Pseudonym
-
-```
-(proof, pseudonym) = ProofGenWithNym(PK,
-                        signature,
-                        header,
-                        ph,
-                        nym_secret,
-                        context_id,
-                        messages,
-                        committed_messages,
-                        disclosed_indexes,
-                        disclosed_commitment_indexes,
-                        secret_prover_blind)
-
-Inputs:
-
-- PK (REQUIRED), an octet string of the form outputted by the SkToPk
-                 operation.
-- signature (REQUIRED), an octet string of the form outputted by the
-                        Sign operation.
-- header (OPTIONAL), an octet string containing context and application
-                     specific information. If not supplied, it defaults
-                     to an empty string.
-- ph (OPTIONAL), an octet string containing the presentation header. If
-                 not supplied, it defaults to an empty string.
-- messages (OPTIONAL), a vector of octet strings. If not supplied, it
-                       defaults to the empty array "()".
-- committed_messages (OPTIONAL), a vector of octet strings. If not
-                                 supplied, it defaults to the empty
-                                 array "()".
-- disclosed_indexes (OPTIONAL), vector of unsigned integers in ascending
-                                order. Indexes of disclosed messages. If
-                                not supplied, it defaults to the empty
-                                array "()".
-- disclosed_commitment_indexes (OPTIONAL), vector of unsigned integers
-                                           in ascending order. Indexes
-                                           of disclosed committed
-                                           messages. If not supplied, it
-                                           defaults to the empty array
-                                           "()".
-- secret_prover_blind (OPTIONAL), a scalar value. If not supplied it
-                                  defaults to zero "0".
-
-
-Parameters:
-
-- api_id, the octet string ciphersuite_id || "BLIND_H2G_HM2S_", where
-          ciphersuite_id is defined by the ciphersuite and
-          "BLIND_H2G_HM2S_"is an ASCII string composed of 15 bytes.
-
-
-Outputs:
-
-- proof, an octet string; or INVALID.
-
-Deserialization:
-
-1. L = length(messages)
-2. M = length(committed_messages)
-3. if length(disclosed_indexes) > L, return INVALID
-4. for i in disclosed_indexes, if i < 0 or i >= L, return INVALID
-5. if length(disclosed_commitment_indexes) > M, return INVALID
-6. for j in disclosed_commitment_indexes,
-                               if i < 0 or i >= M, return INVALID
-
-Procedure:
-
-1. (message_scalars, generators) = Blind.prepare_parameters(
-                                         messages,
-                                         committed_messages,
-                                         L + 1,
-                                         M + 2,
-                                         secret_prover_blind,
-                                         api_id)
-2. message_scalars.append(nym_secret)
-
-3. indexes = ()
-4. indexes.append(disclosed_indexes)
-5. for j in disclosed_commitment_indexes: indexes.append(j + L + 1)
-
-6. (proof, pseudonym) = CoreProofGenWithNym(PK,
-                               signature,
-                               generators.append(blind_generators),
-                               header,
-                               ph,
-                               context_id,
-                               message_scalars.append(committed_message_scalars),
-                               indexes,
-                               api_id)
-7. return (proof, pseudonym)
-```
-
-## Detailed Proof Verification with Pseudonym
-
-```
-result = ProofVerifyWithNym(PK,
-                                  proof,
-                                  header,
-                                  ph,
-                                  pseudonym,
-                                  context_id,
-                                  L,
-                                  disclosed_messages,
-                                  disclosed_committed_messages,
-                                  disclosed_indexes,
-                                  disclosed_committed_indexes)
-
-Inputs:
-
-- PK (REQUIRED), an octet string of the form outputted by the SkToPk
-                 operation.
-- proof (REQUIRED), an octet string of the form outputted by the
-                    ProofGen operation.
-- header (OPTIONAL), an optional octet string containing context and
-                     application specific information. If not supplied,
-                     it defaults to the empty octet string ("").
-- ph (OPTIONAL), an octet string containing the presentation header. If
-                 not supplied, it defaults to the empty octet
-                 string ("").
-- L (OPTIONAL), an integer, representing the total number of Signer
-                known messages if not supplied it defaults to 0.
-- disclosed_messages (OPTIONAL), a vector of octet strings. If not
-                                 supplied, it defaults to the empty
-                                 array ("()").
-- disclosed_indexes (OPTIONAL), vector of unsigned integers in ascending
-                                order. Indexes of disclosed messages. If
-                                not supplied, it defaults to the empty
-                                array ("()").
-
-Parameters:
-
-- api_id, the octet string ciphersuite_id || "H2G_HM2S_", where
-          ciphersuite_id is defined by the ciphersuite and "H2G_HM2S_"is
-          an ASCII string comprised of 9 bytes.
-- (octet_point_length, octet_scalar_length), defined by the ciphersuite.
-
-Outputs:
-
-- result, either VALID or INVALID.
-
-Deserialization:
-
-1. proof_len_floor = 3 * octet_point_length + 4 * octet_scalar_length
-2. if length(proof) < proof_len_floor, return INVALID
-3. U = floor((length(proof) - proof_len_floor) / octet_scalar_length)
-4. total_no_messages = length(disclosed_indexes) +
-                                 length(disclosed_committed_indexes) + U - 1
-5. M = total_no_messages - L
-
-Procedure:
-
-1. (message_scalars, generators) = Blind.prepare_parameters(
-                                           disclosed_messages,
-                                           disclosed_committed_messages,
-                                           L + 1,
-                                           M + 1,
-                                           NONE,
-                                           api_id)
-
-2. indexes = ()
-3. indexes.append(disclosed_indexes)
-4. for j in disclosed_commitment_indexes: indexes.append(j + L + 1)
-
-5. result = CoreProofVerifyWithNym(PK,
-                                    proof,
-                                    pseudonym,
-                                    context_id,
-                                    generators,
-                                    header,
-                                    ph,
-                                    message_scalars,
-                                    indexes,
-                                    api_id)
-6. return result
-```
