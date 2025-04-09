@@ -69,6 +69,8 @@ To bind a pseudonym to a BBS signature we have the *signer* utilzed Blind BBS si
 
 As in [@Lys00] we are concerned with the possibility of a dishonest user and hence require that that the *nym_secret* = *prover_nym* + *signer_nym_entropy* be the sum of two parts where the *prover_nym* is a provers secret and only sent to the *signer* in a binding and hiding commitment. The *signer_nym_entropy* is "blindly added" in by the *signer* during the signing procedure and sent back to the *prover* along with the signature. Note the order of operations. The *prover* chooses their (random) *prover_nym* and commits to it. They then send the commitment along with a ZKP proof that the *prover_nym* makes this commitment. The *signer* verifies the commitment to the *prover_nym* then generates the *signer_nym_entropy* and "blindly adds" it to the *prover_nym* during the signature process. Note that this can be done since we sign over the commitment and we know the generator for the commitment.
 
+This document will define new BBS Interfaces for use with pseudonyms, however it will not define new ciphersuites. Rather it will re-use the ciphersuites defined in [Section 6](https://www.ietf.org/archive/id/draft-irtf-cfrg-bbs-signatures-03.html#name-ciphersuites) of [@!I-D.irtf-cfrg-bbs-signatures]).
+
 ## Cryptographic Pseudonyms: A Short History
 
 The discussion of cryptographic pseudonyms for privacy preservation has a long history, with Chaum's 1985 popular article “Security without identification: transaction systems to make big brother obsolete” [@Chaum85] addressesing many of the features of such systems such as unlinkability and constraints on their use such as one pseudonym per organization and accountability for pseudonym use. Although Chaum's proposal makes use of different cryptographic primitives than we will use here, one can see similarities in the use of both secret and "public" information being combined to create a cryptographic pseudonym.
@@ -85,23 +87,31 @@ The BBS based pseudonyms in our draft are aimed primarily at providing the funct
 
 ### Certifiable Pseudonyms
 
-*Notes*: Who gets what: *prover* gets unique *psuedonym* per *prover* chosen *context_id*, this is backed by BBS signature and verified using the signers public key. *prover* makes up the *context_id*. *nym_secret* is guaranteed unique to and by the issuer, though not known to the issuer. The *prover* can present the *context_id* plus the pseudonym to identify themselves along with whatever attribute (message) that they choose to reveal. No one else without the *nym_secret* and signature can produce a proof that they "own" the *pseudonym*. The *prover* can create as many different, unlinkable pseudonyms by coming up with different values for the *context_id*. Note that no one else can prove that they are the "owner" of a produced *pseudonym* since they do not know the *nym_secret* (the signature, and other secrets that may be contained in prover committed messages).
+In this case the *prover* gets to choose and assert a "pseudonymous identity" bound to a signature (credential) from an *issuer*.
+
+The *prover* can choose this "pseudonymous identity" through its choice of a *context_id* that will then be shared with along with the cryptographic pseudonym with a *verifier*. Note that the combination of (*context_id*, *cryptographic_pseudonym*) forms the "psedonymous identity" that is bound to the BBS signature. By changing the *context_id* the *prover* can choose a new "pseudonymous identity" however, within the cryptographic limitations of BBS and the pseudonym computaions, no other prover should be able to assert this "pseudonymous identity". This is confirmed by the *verifier* during BBS pseudonym proof validation and utilizes the *signers* public key.
+
+The mechanims in this draft permit the *issuer* to guarantee that the *nym_secret* is essentially unique to and by the issuer, though not known to the issuer. Further enhancing the "pseudonymous identity".
+
+The *prover* and no one else without the *nym_secret* and signature can produce a proof that they "own" the "pseudonymous identity".
 
 ### Scope Exclusive Pseudonyms
 
-*Notes*: In this case the verifier or group of verifiers require the use of a specific *context_id*. This allows the verifier (or group of verifiers) to track visits by the *prover* using this credential/pseudonym. A *verifier* can limit data collection, i.e. data retention minimization, by periodically changing the *context_id* since the pseudonyms produced using different *context_ids* cannot be linked. For example a *context_id* like "mywebsite.com/17Nov2024" that changes daily means the verifier could only track visits daily.
+In this case a *verifier* or group of *verifiers* needs to know if the same *prover* is presenting a BBS proof of signature along with some selectively disclosed information (BBS messages) on subsequent presentations.
+
+We assume that no linkable information is contained in the disclosed messages or information that can be obtained from other layers in the application/communications stack.
+
+To do this a *verifier* requires that the *prover* use a *context_id* that the *verifier* specifies. In this case the *verifier* can use the *cryptographic pseudonym* to link subsequent proof presentations from the same *prover*. However, *cryptographic pseudonyms* from *verifiers* that specify different *context_ids* cannot, within the cryptographic assumptions of the pseudonym computation be linked to each other. This provides the *verifier* with limited linkability to a *prover* and a *prover* unlinkability across *verifiers* using **different** *context_ids*.
 
 ### Scope Exclusive Pseudonyms with Monitoring
 
-*Notes*: This is the case where 3rd party monitoring is required. For example (completely ficticious) suppose the credential certifies that the *prover* is qualified to purchase and store some type of controlled substance, e.g., a clas of chemicals. To avoid price fixing or leakage of secret chemical formulas the *prover* purchases these chemicals under a *verifier* (vendor) specific pseudonym. Which prevents the different vendors from colluding on prices or seeing all the chemicals being purchase by a given prover. However for public safety, hording prevention, etc... verifiers/vendors are required to report all purchase to a 3rd party monitor along with the pseudonym under which the purchases were made (and the *context_id* of the vendor). To allow the 3rd party monitor or link these pseudonyms to a prover, the prover would be required to reveal the *nym_secret* associated with this credential only to the *monitor*. Note that this is why we separate *nym_secrets* from other secrets that might be used to "bind" a credential to a holder...
+In this case third party monitoring of interactions between *prover* and *verifier* is required.
 
-## Text Parking place
+For example (completely ficticious) suppose the signature (credential) certifies that the *prover* is qualified to purchase and store some type of controlled substance, e.g., a class of potentially hazardous chemicals. To avoid price fixing or leakage of secret chemical formulas the *prover* purchases these chemicals under a *verifier* (vendor) specific pseudonym. Which prevents the different vendors from colluding on prices or seeing all the chemicals being purchase by a given prover.
 
-To avoid forging requests, the Prover's identifier will be signed by the same BBS signature used to generate the BBS proof. This requires extending the BBS proof generation and verification operations with some additional computations that will be used to prove correctness of the pseudonym, i.e., that it was correctly calculated using the Verifier identifier, as well as, the undisclosed and signed Prover identifier. The Prover identifier MUST be considered secret from the point of view of the Prover, since, if it is revealed, any entity will be able to track the Prover's activity across any Verifiers.
+However for public safety, hording prevention, etc... verifiers (vendors) are required to report all purchase to a 3rd party monitor along with the pseudonym under which the purchases were made (and the *context_id* of the vendor). To allow the third party monitor to link these pseudonyms to a *prover*, the prover would be required to reveal the *nym_secret* associated with this credential only to the *monitor*.
 
-This document will define new BBS Interfaces for use with pseudonyms, however it will not define new ciphersuites. Rather it will re-use the ciphersuites defined in [Section 6](https://www.ietf.org/archive/id/draft-irtf-cfrg-bbs-signatures-03.html#name-ciphersuites) of [@!I-D.irtf-cfrg-bbs-signatures]).
-
-Pseudonyms when used appropriately prevent verifiers from linking prover (proof) presentations between them. We call this verifier-verifier collusion. In addition pseudonyms can be used to prevent the signer from linking prover presentations to a verifier. We call this verifier-signer collusion. This second property is not always desirable in all use cases, for example to allow tracking of purchases a controlled substance by a prover by a central authority while preventing tracking by individual shops.
+Note that this is why this specification separates *nym_secrets* from other secrets (blind BBS messages) that might be used to "bind" a credential to a *prover*.
 
 ## Terminology
 
@@ -205,7 +215,9 @@ The Context Identifier (`context_id`) is an octet string that represents a speci
 
 ## Prover Pseudonym Secret
 
-The prover Pseudonym Secret (`nym_secret`) ... ***More Text to come...***
+The prover pseudonym secret (`nym_secret`) is used in Section (#pseudonym-calculation-procedure). The *prover* needs to keep this information secret as its name indicates. To prevent a *prover* that may have stolen a `nym_secret` from another holder from using that `nym_secret` with a *signer*, the `nym_secret` is computed from two distinct parts: *nym_secret* = *prover_nym* + *signer_nym_entropy*.
+
+where the *prover_nym* is a provers secret and only sent to the *signer* in a binding and hiding commitment. The *signer_nym_entropy* is "blindly added" in by the *signer* during the signing procedure of Section (#blind-issuance) and sent back to the *prover* along with the signature.
 
 ## Pseudonyms
 
