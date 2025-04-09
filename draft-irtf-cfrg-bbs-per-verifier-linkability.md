@@ -215,9 +215,9 @@ The Context Identifier (`context_id`) is an octet string that represents a speci
 
 ## Prover Pseudonym Secret
 
-The prover pseudonym secret (`nym_secret`) is used in Section (#pseudonym-calculation-procedure). The *prover* needs to keep this information secret as its name indicates. To prevent a *prover* that may have stolen a `nym_secret` from another holder from using that `nym_secret` with a *signer*, the `nym_secret` is computed from two distinct parts: *nym_secret* = *prover_nym* + *signer_nym_entropy*.
+The prover pseudonym secret (`nym_secret`) is used in the pseudonym calculation procedure of (#pseudonym-calculation-procedure). The *prover* needs to keep this information secret as its name indicates. To prevent a *prover* that may have stolen a `nym_secret` from another holder from using that `nym_secret` with a *signer*, the `nym_secret` is computed from two distinct parts: *nym_secret* = *prover_nym* + *signer_nym_entropy*.
 
-where the *prover_nym* is a provers secret and only sent to the *signer* in a binding and hiding commitment. The *signer_nym_entropy* is "blindly added" in by the *signer* during the signing procedure of Section (#blind-issuance) and sent back to the *prover* along with the signature.
+where the *prover_nym* is a provers secret and only sent to the *signer* in a binding and hiding commitment. The *signer_nym_entropy* is "blindly added" in by the *signer* during the signing procedure of (#blind-issuance) and sent back to the *prover* along with the signature.
 
 ## Pseudonyms
 
