@@ -58,7 +58,7 @@ BBS pseudonyms extend the BBS signature scheme to "bind" a "pseudonym secret" to
 
 In addition BBS pseudonyms provide for:
 
-1. A essentially unique identifier, a pseudonyms, bound to a proof of signature whose linkability is under the control of the *prover* in conjunction with a *verifier* via the selection of a "context". Such a pseudonym can be used when a *prover* revisits a *verifier* to allow a *verifier* to recognize the prover when they return or for the *prover* to assert their pseudononous identity when visiting a *verifier*
+1. A essentially unique identifier, a pseudonym, bound to a proof of signature whose linkability is under the control of the *prover* in conjunction with a *verifier* via the selection of a "context". Such a pseudonym can be used when a *prover* revisits a *verifier* to allow a *verifier* to recognize the prover when they return or for the *prover* to assert their pseudonomous identity when visiting a *verifier*
 2. Assurance of per *signer* uniqueness of the "pseudonym secret", i.e., the *signer* assures that the pseudonyms that will be guaranteed by the signature have not been used with any other signature issued by the signer (unless a signature is intentionally reissued).
 3. The *signer* cannot track the *prover* presentations to *verifiers* based on pseudonym values.
 4. Colluding *verifiers* sharing BBS proofs with pseudonyms cannot link proofs or pseudonyms across "contexts".
@@ -215,13 +215,13 @@ The Context Identifier (`context_id`) is an octet string that represents a speci
 
 ## Prover Pseudonym Secret
 
-The prover pseudonym secret (`nym_secret`) is used in the pseudonym calculation procedure of (#pseudonym-calculation-procedure). The *prover* needs to keep this information secret as its name indicates. To prevent a *prover* that may have stolen a `nym_secret` from another holder from using that `nym_secret` with a *signer*, the `nym_secret` is computed from two distinct parts: *nym_secret* = *prover_nym* + *signer_nym_entropy*.
+The prover pseudonym secret (`nym_secrets`) is a vector of one or more secret scalars used in the pseudonym calculation procedure of (#pseudonym-calculation-procedure). The *prover* needs to keep this information secret as its name indicates. To prevent a *prover* that may have stolen a `nym_secrets` from another holder from using that `nym_secrets` with a *signer*, the `nym_secrets` is computed from two distinct parts: *nym_secrets[i]* = *prover_nyms[i]* for i = 1 to N-1 and, *nym_secrets[i]* = *prover_nym[i]* + *signer_nym_entropy* for i = N where N is the length of the *prover_nyms*.
 
-where the *prover_nym* is a provers secret and only sent to the *signer* in a binding and hiding commitment. The *signer_nym_entropy* is "blindly added" in by the *signer* during the signing procedure of (#blind-issuance) and sent back to the *prover* along with the signature.
+The *prover_nyms* is a a vector of prover secret scalars and is only sent to the *signer* in a binding and hiding commitment. The *signer_nym_entropy* is "blindly added" in by the *signer* during the signing procedure of (#blind-issuance) and sent back to the *prover* along with the signature.
 
 ## Pseudonyms
 
-The *pseudonym* is a cryptographic value computed by the prover based on the `nym_secret` and the `context_id`. At a high level this is computed by hashing the `context_id` to the elliptic curve group G1 and then multiplying it by the `nym_secret` value. See Section (#pseudonym-calculation-procedure) for details. The pseudonym is sent to a verifier along with the BBS proof.
+The *pseudonym* is a cryptographic value computed by the prover based on the `nym_secrets` and the `context_id`. At a high level this is computed by from a function of the `context_id` and the `nym_secrets` value. See Section (#pseudonym-calculation-procedure) for details. The pseudonym is sent to a verifier along with the BBS proof.
 
 This document defines a pseudonym as point of the G1 group different from the Identity (`Identity_G1`) or the base point (`BP1`) of G1. A pseudonym remains constant for the same context, when combined with the same signature, but is unique (and unlinkable) across different contexts. In other words, when the Prover presents multiple BBS proofs with a pseudonym to a Verifier, the pseudonym value will be constant across those presentations, if the same `context_id` value is used. When presenting a BBS proof with a pseudonym to a different context, the pseudonym value will be different. Note that since pseudonyms are group points, their value will necessarily change if a different a ciphersuite with a different curve will be used. Serialization and deserialization of the pseudonym point MUST be done using the `point_to_octets_g1` and `octets_to_point_g1` defined by the BBS ciphersuite used (see [Section 6](https://www.ietf.org/archive/id/draft-irtf-cfrg-bbs-signatures-03.html#name-ciphersuites) of [@!I-D.irtf-cfrg-bbs-signatures]).
 
@@ -243,31 +243,34 @@ Informally, the above means that each message is mapped to a scalar independentl
 
 # Pseudonym Calculation Procedure
 
-The following section describes how to calculate a pseudonym from a secret held by the Prover and the public context unique identifier. The pseudonym will be unique for different contexts (e.g., unique Verifier identifiers) and constant under constant inputs (i.e., the same `context_id` and `nym_secret`). The `context_id` is an octet string representing the unique identifier of the context in which the pseudonym will have the same value. The `nym_secret` value is a scalar calculated from secret input provided by the Prover and random (but not secret) input provided by the Signer. This will guarantee uniqueness of the `nym_secret` between different signatures and users.
+The following pseudo code describes how the pseudonym is calculated from the `nym_secrets` held by the Prover and the public context identifier. The pseudonym will be unique for different contexts (e.g., unique Verifier identifiers) and constant under constant inputs (i.e., the same `context_id` and `nym_secrets`). The `context_id` is an octet string representing the unique identifier of the context in which the pseudonym will have the same value. The `nym_secrets` value is a vector of scalars calculated from secret input provided by the Prover and random (but not secret) input provided by the Signer. This will guarantee uniqueness of the `nym_secrets` between different signatures and users.
 
 ```
-pseudonym = hash_to_curve_g1(context_id) * nym_secret
+OP = hash_to_curve_g1(context_id) // a point in the curve group G1
+z = hash_to_scalar(context_id)
+poly = sum i = 0 to N-1 of nym_secrets[i]*z^i // in the scalar field
+pseudonym = OP*poly // in the curve group G1
 ```
 
-Additionally, the `nym_secret` value will be signed by the BBS Signature. This will bind the pseudonym to a specific signature, held by the Prover. During proof generation, along the normal BBS proof, the Prover will generate a proof of correctness of the pseudonym, i.e., that it has the form described above, and that it was constructed using a `nym_secret` signed by the BBS signature used to generate that proof.
+Additionally, the `nym_secrets` value will be signed by the BBS Signature. This will bind the pseudonym to a specific signature, held by the Prover. During proof generation, along the normal BBS proof, the Prover will generate a proof of correctness of the pseudonym, i.e., that it has the form described above, and that it was constructed from the `nym_secrets` signed by the BBS signature used to generate that proof.
 
 # High Level Procedures and Information Flows
 
 To prevent forgeries in all cases all BBS messages are signed with the inclusion of some form of the provider pseudonym secret (`nym_secret`). In addition the pseudonym is always computed by the prover and sent with the proof to the verifier. While two different variations of signature and proof generation are given below based on the previously discussed unlinkability requirements there MUST be only one verification algorithm for the verifier to use.
 
-1. The Prover computes their input for the `nym_secret` (called `prover_nym`) and retained for use when calculating the `nym_secret` value.
-2. The Prover will wrap up in a cryptographic commitment using the *CommitWithNym* procedures of Blind BBS the messages they want to include in the signature (`committed_messages`) and the `prover_nym` value, generating a `commitment_with_proof` and a `secret_prover_blind`.
-3. The `commitment_with_proof` is conveyed to the signer which then uses the signing procedures in Section (#signature-generation-and-verification-with-pseudonym) to create a BBS signature and their input for the `nym_secret` value, called `signer_nym_entropy`. They will convey both to the Prover.
-4. On receipt of the signature and the `signer_nym_entropy` value, the Prover verifies the signature using the procedure of section (#signature-generation-and-verification-with-pseudonym) and calculates the `nym_secret` value by adding their `prover_nym` secret and the provided `signer_nym_entropy` values.
-5. The Prover computes the *pseudonym* based on the `nym_secret` and the pseudonym's context identifier `context_id`.
-6. The Prover generates a proof using `nym_secret`, `secret_prover_blind`, `signature`, `messages`, `committed_messages` and the indexes of the messages to be reveled from those two lists (i.e., `disclosed_indexes` and `disclosed_committed_indexes`)  using the procedures of Section (#proof-generation-with-pseudonym).
+1. The Prover computes their input for the `nym_secrets` (called `prover_nyms`) and retained for use when calculating the `nym_secrets` value.
+2. The Prover will wrap up in a cryptographic commitment using the *CommitWithNym* procedures of Blind BBS the messages they want to include in the signature (`committed_messages`) and the `prover_nyms` value, generating a `commitment_with_proof` and a `secret_prover_blind`.
+3. The `commitment_with_proof` is conveyed to the signer which then uses the signing procedures in Section (#signature-generation-and-verification-with-pseudonym) to create a BBS signature and their input for the `nym_secrets` value, called `signer_nym_entropy`. They will convey both to the Prover.
+4. On receipt of the signature and the `signer_nym_entropy` value, the Prover verifies the signature using the procedure of section (#signature-generation-and-verification-with-pseudonym) and calculates the `nym_secrets` value by adding their `prover_nyms` secret and the provided `signer_nym_entropy` values as detailed in later sections.
+5. The Prover computes the *pseudonym* based on the `nym_secrets` and the pseudonym's context identifier `context_id`.
+6. The Prover generates a proof using `nym_secrets`, `secret_prover_blind`, `signature`, `messages`, `committed_messages` and the indexes of the messages to be reveled from those two lists (i.e., `disclosed_indexes` and `disclosed_committed_indexes`)  using the procedures of Section (#proof-generation-with-pseudonym).
 7. The Prover conveys the `proof` and `pseudonym` to the verifier. The verifier uses the procedure of Section (#proof-verification-with-pseudonym) to verify the proof.
 
 # BBS Pseudonym Interface
 
-The following section defines a BBS Interface that will make use of per-origin pseudonyms where the `nym_secret` value is only known to the prover. The identifier of the Interface, api_id,  is defined as `ciphersuite_id || H2G_HM2S_PSEUDONYM_`, where `ciphersuite_id` the unique identifier of the BBS ciphersuite used, as is defined in [Section 6](https://www.ietf.org/archive/id/draft-irtf-cfrg-bbs-signatures-03.html#name-ciphersuites) of [@!I-D.irtf-cfrg-bbs-signatures]).
+The following section defines a BBS Interface that will make use of per-origin pseudonyms where the `nym_secrets` value is only known to the prover. The identifier of the Interface, api_id,  is defined as `ciphersuite_id || H2G_HM2S_PSEUDONYM_`, where `ciphersuite_id` the unique identifier of the BBS ciphersuite used, as is defined in [Section 6](https://www.ietf.org/archive/id/draft-irtf-cfrg-bbs-signatures-03.html#name-ciphersuites) of [@!I-D.irtf-cfrg-bbs-signatures]).
 
-The prover create a `nym_secret` value and keeps it secret. Only sending a commitment with the proof of the `nym_secret` that the signer will used when creating the signature.
+The prover create a `prover_nyms` value and keeps it secret. Only sending a commitment with the proof of the `prover_nyms` that the signer will used when creating the signature.
 
 ## Signature Generation and Verification with Pseudonym
 
@@ -282,7 +285,7 @@ Initially, the Prover will chose a set of messages `committed_messages` that the
 ```
 (commitment_with_proof, secret_prover_blind) = CommitWithNym(
                                                    committed_messages,
-                                                   prover_nym,
+                                                   prover_nyms,
                                                    api_id)
 
 Inputs:
@@ -290,8 +293,7 @@ Inputs:
 - committed_messages (OPTIONAL), a vector of octet strings. If not
                                  supplied it defaults to the empty
                                  array ("()").
-- prover_nym (OPTIONAL), a random scalar value. If not supplied, it
-                         defaults to the zero scalar (0).
+- prover_nyms (REQUIRED), a vector of random scalar values.
 - api_id (OPTIONAL), octet string. If not supplied it defaults to the
                      empty octet string ("").
 
@@ -306,7 +308,7 @@ Procedure:
 
 1. committed_message_scalars = BBS.messages_to_scalars(
                                              committed_messages, api_id)
-2. committed_message_scalars.append(prover_nym)
+2. committed_message_scalars.concat(prover_nyms)
 
 3. blind_generators = BBS.create_generators(
                                   length(committed_message_scalars) + 1,
@@ -979,6 +981,8 @@ Procedure:
 2. c_octs = serialize(c_arr) || I2OSP(length(ph), 8) || ph
 3. return hash_to_scalar(c_octs, challenge_dst)
 ```
+
+# Privacy Considerations
 
 # Security Considerations
 
