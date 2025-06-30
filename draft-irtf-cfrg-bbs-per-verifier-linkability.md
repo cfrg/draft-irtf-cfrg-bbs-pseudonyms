@@ -416,10 +416,9 @@ Deserialization:
 Procedure:
 
 1. B = Q_1 + H_1 * msg_1 + ... + H_L * msg_L + commitment
-2. signer_nym_entropy = get_random(1)
-3. B = B + nym_generator * signer_nym_entropy
-4. If B is Identity_G1, return INVALID
-5. return B
+2. B = B + nym_generator * signer_nym_entropy
+3. If B is Identity_G1, return INVALID
+4. return B
 ```
 
 ### Verification and Finalization
