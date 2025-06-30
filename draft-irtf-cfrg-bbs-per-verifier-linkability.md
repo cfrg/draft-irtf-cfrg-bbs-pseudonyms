@@ -320,15 +320,15 @@ Procedure:
 
 ### Blind Issuance
 
-The Signer generate a signature from a secret key (SK), the commitment with proof, the signer_nym_entropy and optionally over a `header` and vector of `messages` using
-the BlindSignWithNym procedure shown below.
+The Signer generate a signature from a secret key (SK), the commitment with proof, the length_nym_vector, the signer_nym_entropy and optionally over a `header` and vector of `messages` using
+the BlindSignWithNym procedure shown below. The length of the nym vector parameter MUST be furnished by the prover along with the commitment with proof. See the security considerations section for the need for this parameter.
 
 Typically the signer_nym_entropy will be a fresh random scalar, however in the case of
 "reissue" of a signature for a prover who wants to keep their same pseudonymous identity this value can be reused for the same prover if desired.
 
 ```
-BlindSignWithNym(SK, PK, commitment_with_proof, signer_nym_entropy,
-                  header, messages)
+BlindSignWithNym(SK, PK, commitment_with_proof, length_nym_vector,
+                 signer_nym_entropy, header, messages)
 
 Inputs:
 
@@ -342,6 +342,7 @@ Inputs:
                                     element outputted by the CommitWithNym
                                     operation. If not supplied, it
                                     defaults to the empty string ("").
+- lengh_nym_vector (REQUIRED), the length of the prover_nyms secret vector.
 - signer_nym_entropy (REQUIRED), a scalar value.
 - header (OPTIONAL), an octet string containing context and application
                      specific information. If not supplied, it defaults
@@ -375,17 +376,17 @@ Procedure:
                       generators, blind_generators[-1])
 7.  if res is INVALID, return INVALID
 8.  B = res
-
-9.  blind_sig = Blind.FinalizeBlindSign(SK,
+9.  combined_header = concat(header, i2osp(length_nym_vector, 8))
+10.  blind_sig = Blind.FinalizeBlindSign(SK,
                                   PK,
                                   B,
                                   generators,
                                   blind_generators,
-                                  header,
+                                  combined_header,
                                   api_id)
 
-10. if blind_sig is INVALID, return INVALID
-11. return blind_sig
+11. if blind_sig is INVALID, return INVALID
+12. return blind_sig
 ```
 
 #### Calculate B
@@ -985,6 +986,10 @@ Procedure:
 # Privacy Considerations
 
 # Security Considerations
+
+## Preventing Sybil Attacks
+
+Assuming an honest issuer, to prevent sybil attacks by a malicious prover, we require that the prover use the same set of nym_secrets in computing pseudonyms. In particular, the prover declares the length of the prover_nyms/nym_secrets vectors, N, in their commitment with proof and this value gets bound to the signature from the issuer. In verifying the proof of the pseudonym the verifier will be checking that the N values of the nym_secrets vector was actually used in the computation.
 
 TODO Security
 
