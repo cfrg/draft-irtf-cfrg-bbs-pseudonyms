@@ -436,7 +436,7 @@ nym_secret = VerifyFinalizeWithNym(PK,
                       header,
                       messages,
                       committed_messages,
-                      prover_nym,
+                      prover_nyms,
                       signer_nym_entropy,
                       secret_prover_blind)
 
@@ -454,8 +454,7 @@ Inputs:
 - committed_messages (OPTIONAL), a vector of octet strings. If not
                                  supplied, it defaults to the empty
                                  array "()".
-- prover_nym (OPTIONAL), scalar value. If not supplied, it defaults to
-                         the zero scalar (0).
+- prover_nyms (REQUIRED), a vector of scalar values.
 - signer_nym_entropy (OPTIONAL), a scalar value. If not supplied, it
                                  defaults to the zero scalar (0).
 - secret_prover_blind (OPTIONAL), a scalar value. If not supplied it
@@ -463,26 +462,28 @@ Inputs:
 
 Outputs:
 
-- nym_secret, a scalar value; or INVALID.
+- nym_secrets, a vector of scalar values; or INVALID.
 
 Procedure:
 
-1. (message_scalars, generators) = Blind.prepare_parameters(
-                                        messages,
-                                        committed_messages,
-                                        length(messages) + 1,
-                                        length(committed_messages) + 2,
-                                        secret_prover_blind,
-                                        api_id)
+1. N = length(prover_nyms)
+2. (message_scalars, generators) = Blind.prepare_parameters(
+                                            messages,
+                                            committed_messages,
+                                            length(messages) + 1,
+                                            length(committed_messages) + N + 1,
+                                            secret_prover_blind,
+                                            api_id)
 
-2. nym_secret = prover_nym + signer_nym_entropy (modulo r)
-3. message_scalars.append(nym_secret)
-
-4. res = BBS.CoreVerify(PK, signature, generators, header,
+3. nym_secrets = prover_nym.copy()
+4. nym_secrets[N-1] = prover_nyms[N-1] + signer_nym_entropy // in scalar field
+5. message_scalars.concat(nym_secrets)
+6. combined_header = concat(header, i2osp(N, 8));
+7. res = BBS.CoreVerify(PK, signature, generators, combined_header,
                                                 message_scalars, api_id)
 
-5. if res is INVALID, return INVALID
-6. return nym_secret
+8. if res is INVALID, return INVALID
+9. return nym_secrets
 ```
 
 ## Proof Generation with Pseudonym
