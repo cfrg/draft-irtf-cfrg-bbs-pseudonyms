@@ -599,6 +599,7 @@ result = ProofVerifyWithNym(PK,
                                   ph,
                                   pseudonym,
                                   context_id,
+                                  length_nym_vector,
                                   L,
                                   disclosed_messages,
                                   disclosed_committed_messages,
@@ -617,6 +618,9 @@ Inputs:
 - ph (OPTIONAL), an octet string containing the presentation header. If
                  not supplied, it defaults to the empty octet
                  string ("").
+- pseudonym (REQUIRED), the pseudonym (element of group G1).
+- context_id (REQUIRED), an octet string.
+- length_nym_vector (REQUIRED), integer.
 - L (OPTIONAL), an integer, representing the total number of Signer
                 known messages if not supplied it defaults to 0.
 - disclosed_messages (OPTIONAL), a vector of octet strings. If not
@@ -665,6 +669,7 @@ Procedure:
                                     proof,
                                     pseudonym,
                                     context_id,
+                                    length_nym_vector,
                                     generators,
                                     header,
                                     ph,
@@ -800,6 +805,7 @@ result = CoreProofVerifyWithNym(PK,
                                       proof,
                                       pseudonym,
                                       context_id,
+                                      length_nym_vector,
                                       generators,
                                       header,
                                       ph,
@@ -818,6 +824,8 @@ Inputs:
                         operation.
 - context_id (REQUIRED), an octet string, representing the unique proof
                          Verifier identifier.
+- length_nym_vector (REQUIRED), the length of the nym secrets vector from the
+                                Prover.
 - generators (REQUIRED), vector of points in G1.
 - header (OPTIONAL), an optional octet string containing context and
                      application specific information. If not supplied,
@@ -858,12 +866,13 @@ ABORT if:
 
 Procedure:
 
-1. init_res = BBS.ProofVerifyInit(PK, proof_result, header, generators,
+1. combined_header = concat(header, i2osp(length_nym_vector, 8))
+2. init_res = BBS.ProofVerifyInit(PK, proof_result, combined_header, generators,
                                     messages, disclosed_indexes, api_id)
 
-2. pseudonym_init_res = PseudonymProofVerifyInit(pseudonym,
+3. pseudonym_init_res = PseudonymProofVerifyInit(pseudonym,
                                                  context_id,
-                                                 commitments[-1],
+                                                 commitments[-length_nym_vector],
                                                  cp)
 3. if pseudonym_init_res is INVALID, return INVALID
 
@@ -922,14 +931,14 @@ Procedure:
 ```
 pseudonym_init_res = PseudonymProofVerifyInit(pseudonym,
                                               context_id,
-                                              nym_secret_commitment
+                                              nym_secret_commitments
                                               proof_challenge)
 
 Inputs:
 
 - pseudonym (REQUIRED), an element of the G1 group.
 - context_id (REQUIRED), an octet string.
-- nym_secret_commitment (REQUIRED), a scalar value.
+- nym_secret_commitments (REQUIRED), a vector of scalar values.
 - proof_challenge (REQUIRED), a scalar value.
 
 Outputs:
@@ -938,12 +947,21 @@ Outputs:
 
 Procedure:
 
-1. OP = hash_to_curve_g1(context_id)
-2. Uv = OP * nym_secret_commitment - pseudonym * proof_challenge
-3. if Uv == Identity_G1, return INVALID
-4. return (pseudonym, OP, Uv)
+1. OP = hash_to_curve_g1(context_id, api_id)
+2. dst = api_id + 'VECT_NYM_SECRETS'
+3  z = await hash_to_scalar(context_id, dst1, api_id);
+4. // Polynomial evaluation over nym_secrets and random_scalars, this can be
+   // done in any way desired, e.g., Horner's rule.
+5.  poly_eval_proof = random_scalars[0];
+6.  z_n = z;
+7.  for(let i = 1; i < nym_secrets.length; i++) {
+        poly_eval_proof += random_scalars[i] * z_n // in scalar field
+        z_n *= z; // in field
+    }
+8. Uv = OP * poly_eval_proof // in group G1
+9. if Uv == Identity_G1, return INVALID
+10. return (pseudonym, context_id, Uv)
 ```
-
 
 # Utility Operations
 
@@ -998,18 +1016,30 @@ ABORT if:
 
 Procedure:
 1. c_arr = (R, i1, msg_i1, i2, msg_i2, ..., iR, msg_iR, Abar, Bbar,
-                                   D, T1, T2, pseudonym, context_id, Ut, domain)
-2. c_octs = serialize(c_arr) || I2OSP(length(ph), 8) || ph
+                                   D, T1, T2, pseudonym, Ut, domain)
+2. c_octs = serialize(c_arr) || I2OSP(length(ph), 8) || ph ||
+                                    I2OSP(length(context_id), 8) || context_id
 3. return hash_to_scalar(c_octs, challenge_dst)
 ```
 
 # Privacy Considerations
 
+## Limited Everlasting Unlinkability
+
+BBS pseudonyms are computationally unlinkable under the assumption of the hardness of the discrete log problem. In the presence of a Cryptographically Relevant Quantum Computer (CRQC) BBS pseudonyms can provide "limited" everlasting unlinkability. This is similar to how BBS proofs provide everlasting unlinkability in the presence of a CRQC.
+
+Let *N* be the length of the secret `prover_nyms` vector, let *M* be the number of pseudonyms gathered from colluding verifiers each possessing a unique `context_id`. In the presence of a CRQC if *N* > *M* the pseudonyms will be unlinkable. Proof/Discussion to be furnished...
+
 # Security Considerations
+
+## Preventing Impersonation Attacks
+
+Assuming an honest issuer, to prevent impersonation attacks by a malicious prover that has obtained the `prover_nyms` from another prover, the issuer SHOULD use a different `signer_nym_entropy` for each different prover that it provides a pseudonym backed signature.
 
 ## Preventing Sybil Attacks
 
 Assuming an honest issuer, to prevent sybil attacks by a malicious prover, we require that the prover use the same set of nym_secrets in computing pseudonyms. In particular, the prover declares the length of the prover_nyms/nym_secrets vectors, N, in their commitment with proof and this value gets bound to the signature from the issuer. In verifying the proof of the pseudonym the verifier will be checking that the N values of the nym_secrets vector was actually used in the computation.
+
 
 TODO Security
 
