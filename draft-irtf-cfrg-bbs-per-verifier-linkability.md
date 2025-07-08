@@ -34,9 +34,7 @@ organization = "Grotto Networking"
 
 .# Abstract
 
-The BBS Signatures scheme defined in [@!I-D.irtf-cfrg-bbs-signatures], describes a multi-message digital signature, that supports selectively disclosing the messages through unlinkable presentations, built using zero-knowledge proofs. Each BBS proof reveals no information other than the signed messages that the Prover chooses to disclose in that specific instance. As such, the Verifier (i.e., the recipient) of the BBS proof, may not be able to track those presentations over time. Although in many applications this is desirable, there are use cases that require the Verifier be able to track the BBS proofs they receive from the same Prover. Examples include monitoring the use of access credentials for abnormal activity, monetization etc.. This document presents the use of pseudonyms with BBS proofs.
-
-A pseudonym, is a value that will remain constant each time a Prover presents a BBS proof to the same Verifier, but will be different (and unlinkable), when the Prover interacts with a different Verifier. This provides a way for a recipient (Verifier) to track the presentations intended for them, while also hindering them from tracking the Prover's interactions with other Verifiers.
+The BBS Signatures scheme defined in [@!I-D.irtf-cfrg-bbs-signatures], describes a multi-message digital signature, that supports selectively disclosing the messages through unlinkable presentations, built using zero-knowledge proofs. Each BBS proof reveals no information other than the signed messages that the Prover chooses to disclose in that specific instance. As such, the Verifier (i.e., the recipient) of the BBS proof, may not be able to track those presentations over time. Although in many applications this is desirable, there are use cases that require the Verifier be able to track the BBS proofs they receive from the same Prover. Examples include monitoring the use of access credentials for abnormal activity, assertion of pseudonymous identity, monetization, etc.. This document provides a mechanism for binding prover secret material for pseudonym creation to a BBS signature and shows how to use this bound information for the creation of context dependent pseudonyms in BBS proofs.
 
 {mainmatter}
 
@@ -46,15 +44,74 @@ The BBS Signature Scheme, originally described in the academic work by Dan Boneh
 
 The BBS Proof is by design unlinkable, meaning that given two different BBS proofs, there is no way to tell if they originated from the same BBS signature. This means that if a Prover does not reveal any other identifying information (for example if they are using proxies to hide their IP address etc.), the Verifier of the proof will not be able "track" or "correlate" the different proof presentations  or the Provers activity via cryptographic artifacts. This helps enhance user privacy in applications where the Verifier only needs to know that the Prover is in possession of a valid BBS signature over a list of disclosed messages.
 
-In some applications, however, the Verifier needs to track the presentations made by the Prover over time, as to provide security monitoring, monetization services, configuration persistance etc.. To promote privacy reason, the Prover should not reveal or be bound to a unique identifier that would remain constant across proof presentations to different Verifiers and which could be used to link a Provers interactions with different Verifiers.
+In some applications, however, a Verifier needs to track the presentations made by the Prover over time, as to provide security monitoring, monetization services, configuration persistance etc.. In other applications a Prover may wish to assert a pseudonymous identity associated with a signature from an issuer. To promote privacy, the Prover should not be forced to reveal or be bound to a unique identifier that would remain constant across proof presentations to different Verifiers and which could be used to link a Provers interactions with different Verifiers.
 
-The goal of this document is to provide a way for a Verifier to track the proof presentations that are intended for them, while at the same time not allowing the tracking of the Prover's activities with other Verifiers. This is done through the use of pseudonyms. A pseudonym as defined by this document, is a value that will be constant when the Prover presents BBS proofs to the same Verifier, but will change when the Prover interacts with different recipients (with no way to link the two distinct pseudonym values together). This is done by constructing the pseudonym value by combining a unique Verifier identifier with a unique Prover identifier.
+The goal of this document is to provide a way for a Verifier to track the proof presentations that are intended for them, while at the same time not allowing the tracking of the Prover's activities with other Verifiers. This is done through the use of a cryptographic pseudonyms.
 
-To avoid forging requests, the Prover's identifier will be signed by the same BBS signature used to generate the BBS proof. This requires extending the BBS proof generation and verification operations with some additional computations that will be used to prove correctness of the pseudonym, i.e., that it was correctly calculated using the Verifier identifier, as well as, the undisclosed and signed Prover identifier. The Prover identifier MUST be considered secret from the point of view of the Prover, since, if it is revealed, any entity will be able to track the Prover's activity across any Verifiers.
+A cryptographic pseudonym, or pseudonym for short, as defined by this document, is a value that will be computed from two parts. One part is the pseudonym secret value (`nym_secret`) which is known only to the prover and a context value (`context_id`) that must be known by both prover and verifier. The pseudonym value is computed in such a way that it is computationally infeasable to link to pseudonyms to the same pseudonym secret, i.e., holder for two different context values.
+
+## Pseudonyms Bound to BBS Signatures
+
+The BBS signature scheme is based on a three party model of *signer* (aka issuer), *prover* (aka user or holder), and *verifier*.  A *prover* obtains a BBS signature from a *signer* over a list of *messages* and presents a BBS proof (of signature possession) along with a selectively disclosed subset of the BBS *messages* to a verifier. Each BBS proof generated is unlinkable to other BBS proofs derived from the same signature and from the BBS signature itself. If the disclosed subset of BBS *messages* are not linkable then the presentations cannot be linked.
+
+BBS pseudonyms extend the BBS signature scheme to "bind" a "pseudonym secret" to a BBS signature retaining all the properties of the BBS signature scheme: (a) a short signature over multiple messages, (b) selective disclosure of a subset of messages from *prover* to *verifier*, (c) unlinkable proofs.
+
+In addition BBS pseudonyms provide for:
+
+1. A essentially unique identifier, a pseudonym, bound to a proof of signature whose linkability is under the control of the *prover* in conjunction with a *verifier* via the selection of a "context". Such a pseudonym can be used when a *prover* revisits a *verifier* to allow a *verifier* to recognize the prover when they return or for the *prover* to assert their pseudononous identity when visiting a *verifier*
+2. Assurance of per *signer* uniqueness of the "pseudonym secret", i.e., the *signer* assures that the pseudonyms that will be guaranteed by the signature have not been used with any other signature issued by the signer (unless a signature is intentionally reissued).
+3. The *signer* cannot track the *prover* presentations to *verifiers* based on pseudonym values.
+4. Colluding *verifiers* sharing BBS proofs with pseudonyms cannot link proofs or pseudonyms across "contexts".
+
+To realize the above feature set we embed a two part pseudonym capability into the BBS signature scheme. The pseudonym's cryptographic value will be computed from a secret part, which we call the *`nym_secret`* and a part that is public or at least shared between the *prover* and one or more *verifiers*. The public part we call the *`context_id`*. The pseudonym is calculated from these two pieces using discrete exponentiation. This is similar to the computations in [@Lys00] and [@ABC14]. The pseudonym is presented to the *verifier* along with a ZKP that the *prover* knows the *`nym_secret`* and used it and the *`context_id`* to compute the pseudonym value. A similar proof mechanism was used in [@Lys00].
+
+To bind a pseudonym to a BBS signature we have the *signer* utilzed Blind BBS signatures and essentially sign over a commitment to the *`nym_secret`*. Hence only a prover that knows the *`nym_secret`* can generate a BBS proof from the signature (and also generate the pseudonym proof).
+
+As in [@Lys00] we are concerned with the possibility of a dishonest user and hence require that the *`nym_secret`* = *`prover_nym`* + *`signer_nym_entropy`* be the sum of two parts where the *`prover_nym`* is a provers secret and only sent to the *signer* in a binding and hiding commitment. The *`signer_nym_entropy`* is "blindly added" in by the *signer* during the signing procedure and sent back to the *prover* along with the signature. Note the order of operations. The *prover* chooses their (random) *`prover_nym`* and commits to it. They then send the commitment along with a ZKP proof that the commitment is correctly calculated. The *signer* verifies the commitment to the *`prover_nym`* then generates the *`signer_nym_entropy`* and "blindly adds" it to the *`prover_nym`* during the signature process. Note that this can be done since we sign over the commitment and we know the generator for the commitment.
 
 This document will define new BBS Interfaces for use with pseudonyms, however it will not define new ciphersuites. Rather it will re-use the ciphersuites defined in [Section 6](https://www.ietf.org/archive/id/draft-irtf-cfrg-bbs-signatures-03.html#name-ciphersuites) of [@!I-D.irtf-cfrg-bbs-signatures]).
 
-Pseudonyms when used appropriately prevent verifiers from linking prover (proof) presentations between them. We call this verifier-verifier collusion. In addition pseudonyms can be used to prevent the signer from linking prover presentations to a verifier. We call this verifier-signer collusion. This second property is not always desirable in all use cases, for example to allow tracking of purchases a controlled substance by a prover by a central authority while preventing tracking by individual shops.
+## Cryptographic Pseudonyms: A Short History
+
+The discussion of cryptographic pseudonyms for privacy preservation has a long history, with Chaum's 1985 popular article “Security without identification: transaction systems to make big brother obsolete” [@Chaum85] addressesing many of the features of such systems such as unlinkability and constraints on their use such as one pseudonym per organization and accountability for pseudonym use. Although Chaum's proposal makes use of different cryptographic primitives than we will use here, one can see similarities in the use of both secret and "public" information being combined to create a cryptographic pseudonym.
+
+Lysyanskaya's 2000 paper [@Lys00] also addresses the unlinkable aspects of pseudonyms but also provides protections against dishonest users. In addition they provide practical contructions similar to those used in our draft based on discrete logarithm and sigma protocol based ZKPs. Finally as part of the ABC4Trust project [@ABC14] three flavors of pseudonyms were defined:
+
+1. *Verifiable pseudonyms* are pseudonyms derived from an underlying secret key.
+2. *Certified pseudonyms* are verifiable pseudonyms derived from a secret key that also underlies an issued credential.
+3. *Scope-exclusive pseudonyms* are verifiable pseudonyms that are guaranteed to be unique per scope string and per secret key.
+
+The BBS based pseudonyms in our draft are aimed primarily at providing the functionality of the pseudonym flavors 2. and 3. above.
+
+## BBS Pseudonym Example Applications
+
+### Certifiable Pseudonyms
+
+In this case the *prover* gets to choose and assert a "pseudonymous identity" bound to a signature (credential) from an *issuer*.
+
+The *prover* can choose this "pseudonymous identity" through its choice of a *context_id* that will then be shared with along with the cryptographic pseudonym with a *verifier*. Note that the combination of (*context_id*, *cryptographic_pseudonym*) forms the "psedonymous identity" that is bound to the BBS signature. By changing the *context_id* the *prover* can choose a new "pseudonymous identity" however, within the cryptographic limitations of BBS and the pseudonym computaions, no other prover should be able to assert this "pseudonymous identity". This is confirmed by the *verifier* during BBS pseudonym proof validation and utilizes the *signers* public key.
+
+The mechanims in this draft permit the *issuer* to guarantee that the *nym_secret* is essentially unique to and by the issuer, though not known to the issuer. Further enhancing the "pseudonymous identity".
+
+The *prover* and no one else without the *nym_secret* and signature can produce a proof that they "own" the "pseudonymous identity".
+
+### Scope Exclusive Pseudonyms
+
+In this case a *verifier* or group of *verifiers* needs to know if the same *prover* is presenting a BBS proof of signature along with some selectively disclosed information (BBS messages) on subsequent presentations.
+
+We assume that no linkable information is contained in the disclosed messages or information that can be obtained from other layers in the application/communications stack.
+
+To do this a *verifier* requires that the *prover* use a *context_id* that the *verifier* specifies. In this case the *verifier* can use the *cryptographic pseudonym* to link subsequent proof presentations from the same *prover*. However, *cryptographic pseudonyms* from *verifiers* that specify different *context_ids* cannot, within the cryptographic assumptions of the pseudonym computation be linked to each other. This provides the *verifier* with limited linkability to a *prover* and a *prover* unlinkability across *verifiers* using **different** *context_ids*.
+
+### Scope Exclusive Pseudonyms with Monitoring
+
+In this case third party monitoring of interactions between *prover* and *verifier* is required.
+
+For example (completely ficticious) suppose the signature (credential) certifies that the *prover* is qualified to purchase and store some type of controlled substance, e.g., a class of potentially hazardous chemicals. To avoid price fixing or leakage of secret chemical formulas the *prover* purchases these chemicals under a *verifier* (vendor) specific pseudonym. Which prevents the different vendors from colluding on prices or seeing all the chemicals being purchase by a given prover.
+
+However for public safety, hording prevention, etc... verifiers (vendors) are required to report all purchase to a 3rd party monitor along with the pseudonym under which the purchases were made (and the *context_id* of the vendor). To allow the third party monitor to link these pseudonyms to a *prover*, the prover would be required to reveal the *nym_secret* associated with this credential only to the *monitor*.
+
+Note that this is why this specification separates *nym_secrets* from other secrets (blind BBS messages) that might be used to "bind" a credential to a *prover*.
 
 ## Terminology
 
@@ -155,6 +212,12 @@ A *pseudonym* will be cryptographically generated for each prover-context of usa
 ## Context Identifier
 
 The Context Identifier (`context_id`) is an octet string that represents a specific context of usage, within which, the pseudonym will have a constant value. Context Identifiers can take the form of unique Verifier Identifiers, Session Identifiers etc., depending on the needs of the application. Verifiers will be able to use the pseudonym values to track the presentations generated by a Prover, using the same signature, for that specific context.
+
+## Prover Pseudonym Secret
+
+The prover pseudonym secret (`nym_secret`) is used in the pseudonym calculation procedure of (#pseudonym-calculation-procedure). The *prover* needs to keep this information secret as its name indicates. To prevent a *prover* that may have stolen a `nym_secret` from another holder from using that `nym_secret` with a *signer*, the `nym_secret` is computed from two distinct parts: *nym_secret* = *prover_nym* + *signer_nym_entropy*.
+
+where the *prover_nym* is a provers secret and only sent to the *signer* in a binding and hiding commitment. The *signer_nym_entropy* is "blindly added" in by the *signer* during the signing procedure of (#blind-issuance) and sent back to the *prover* along with the signature.
 
 ## Pseudonyms
 
@@ -353,10 +416,9 @@ Deserialization:
 Procedure:
 
 1. B = Q_1 + H_1 * msg_1 + ... + H_L * msg_L + commitment
-2. signer_nym_entropy = get_random(1)
-3. B = B + nym_generator * signer_nym_entropy
-4. If B is Identity_G1, return INVALID
-5. return B
+2. B = B + nym_generator * signer_nym_entropy
+3. If B is Identity_G1, return INVALID
+4. return B
 ```
 
 ### Verification and Finalization
@@ -2139,5 +2201,46 @@ TODO acknowledge.
  <front>
    <title> Blind BBS Signatures</title>
    <author><organization>IETF</organization></author>
+ </front>
+</reference>
+
+<reference anchor="Chaum85" target="https://dl.acm.org/doi/pdf/10.1145/4372.4373">
+ <front>
+   <title>Security without identification: transaction systems to make big brother obsolete</title>
+   <author initials="D." surname="Chaum" fullname="David Chaum">
+    </author>
+    <date year="1985"/>
+ </front>
+ <seriesInfo name="In" value="Commun. ACM"/>
+ <seriesInfo name="vol" value="10" />
+ <seriesInfo name="pages" value="1030-1044"/>
+</reference>
+
+<reference anchor="Lys00" target="https://link.springer.com/chapter/10.1007/3-540-46513-8_14">
+ <front>
+   <title>Pseudonym Systems</title>
+   <author initials="A." surname="Lysyanskaya" fullname="Anna Lysyanskaya">
+    </author>
+    <author initials="R. L." surname="Rivest" fullname="Ronald L. Rivest">
+    </author>
+    <author initials="A." surname="Sahai" fullname="Amit Sahai">
+    </author>
+    <author initials="S." surname="Wolf" fullname="Stefan Wolf">
+    </author>
+    <date year="2000"/>
+ </front>
+ <seriesInfo name="In" value="Selected Areas in Cryptography"/>
+ <seriesInfo name="vol" value="1758" />
+ <seriesInfo name="pages" value="184-199"/>
+</reference>
+
+<reference anchor="ABC14" target="https://abc4trust.eu/download/Deliverable_D2.2.pdf.">
+ <front>
+   <title>D2.2 - Architecture for Attribute-based Credential Technologies - Final Version,</title>
+   <author initials="P." surname="Bichsel" fullname="P. Pichsel">
+    </author>
+    <author initials="et al">
+    </author>
+     <date year="2014"/>
  </front>
 </reference>
