@@ -950,12 +950,12 @@ Procedure:
 1. OP = hash_to_curve_g1(context_id, api_id)
 2. dst = api_id + 'VECT_NYM_SECRETS'
 3  z = await hash_to_scalar(context_id, dst1, api_id);
-4. // Polynomial evaluation over nym_secrets and random_scalars, this can be
+4. // Polynomial evaluation over nym_secret_commitments, this can be
    // done in any way desired, e.g., Horner's rule.
-5.  poly_eval_proof = random_scalars[0];
+5.  poly_eval_proof = nym_secret_commitments[0];
 6.  z_n = z;
-7.  for(let i = 1; i < nym_secrets.length; i++) {
-        poly_eval_proof += random_scalars[i] * z_n // in scalar field
+7.  for(let i = 1; i < nym_secret_commitments.length; i++) {
+        poly_eval_proof += nym_secret_commitments[i] * z_n // in scalar field
         z_n *= z; // in field
     }
 8. Uv = OP * poly_eval_proof // in group G1
