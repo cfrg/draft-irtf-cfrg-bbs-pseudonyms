@@ -478,7 +478,7 @@ Procedure:
 3. nym_secrets = prover_nym.copy()
 4. nym_secrets[N-1] = prover_nyms[N-1] + signer_nym_entropy // in scalar field
 5. message_scalars.concat(nym_secrets)
-6. combined_header = concat(header, i2osp(N, 8));
+6. combined_header = concat(header, I2OSP(N, 8));
 7. res = BBS.CoreVerify(PK, signature, generators, combined_header,
                                                 message_scalars, api_id)
 
