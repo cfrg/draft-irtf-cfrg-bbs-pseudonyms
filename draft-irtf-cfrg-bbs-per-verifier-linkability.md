@@ -1028,7 +1028,9 @@ Procedure:
 
 BBS pseudonyms are computationally unlinkable under the assumption of the hardness of the discrete log problem. In the presence of a Cryptographically Relevant Quantum Computer (CRQC) BBS pseudonyms can provide "limited" everlasting unlinkability. This is similar to how BBS proofs provide everlasting unlinkability in the presence of a CRQC.
 
-Let *N* be the length of the secret `prover_nyms` vector, let *M* be the number of pseudonyms gathered from colluding verifiers each possessing a unique `context_id`. In the presence of a CRQC if *N* > *M* the pseudonyms will be unlinkable. Proof/Discussion to be furnished...
+Let `N` be the length of the secret `prover_nyms` vector, let `M` be the number of pseudonyms gathered from colluding verifiers each possessing a unique `context_id`. In the presence of a CRQC if `N > M` the pseudonyms will be unlinkable. In other words, as long as the *Prover* does not generate (different) pseudonyms for more than `N` unique context identifiers (i.e., `N` different `context_id` values, for example, for `N` different Verifiers), unlinkability of the pseudonyms will hold, even in the presence of a CRQC.
+
+ TODO:  Proof/Discussion to be furnished
 
 # Security Considerations
 
