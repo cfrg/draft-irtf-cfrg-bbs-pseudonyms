@@ -270,7 +270,7 @@ To prevent forgeries in all cases all BBS messages are signed with the inclusion
 
 The following section defines a BBS Interface that will make use of per-origin pseudonyms where the `nym_secrets` value is only known to the prover. The identifier of the Interface, api_id,  is defined as `ciphersuite_id || H2G_HM2S_PSEUDONYM_`, where `ciphersuite_id` the unique identifier of the BBS ciphersuite used, as is defined in [Section 6](https://www.ietf.org/archive/id/draft-irtf-cfrg-bbs-signatures-03.html#name-ciphersuites) of [@!I-D.irtf-cfrg-bbs-signatures]).
 
-The prover create a `prover_nyms` value and keeps it secret. Only sending a commitment with the proof of the `prover_nyms` that the signer will used when creating the signature.
+The prover create a `prover_nyms` value and keeps it secret. Only sending a commitment on the `prover_nyms`, with the corresponding proof of correctness, that the signer will use when creating the signature.
 
 ## Signature Generation and Verification with Pseudonym
 
