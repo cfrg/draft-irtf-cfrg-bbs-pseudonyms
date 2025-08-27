@@ -376,7 +376,7 @@ Procedure:
                       generators, blind_generators[-1])
 7.  if res is INVALID, return INVALID
 8.  B = res
-9.  combined_header = concat(header, i2osp(length_nym_vector, 8))
+9.  combined_header = concat(header, I2OSP(length_nym_vector, 8))
 10.  blind_sig = Blind.FinalizeBlindSign(SK,
                                   PK,
                                   B,
