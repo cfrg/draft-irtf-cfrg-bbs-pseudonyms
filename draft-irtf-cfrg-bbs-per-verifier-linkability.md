@@ -215,7 +215,7 @@ The Context Identifier (`context_id`) is an octet string that represents a speci
 
 ## Prover Pseudonym Secret
 
-The prover pseudonym secret (`nym_secrets`) is a vector of one or more secret scalars used in the pseudonym calculation procedure of (#pseudonym-calculation-procedure). The *prover* needs to keep this information secret as its name indicates. To prevent a *prover* that may have stolen a `nym_secrets` from another holder from using that `nym_secrets` with a *signer*, the `nym_secrets` is computed from two distinct parts: *nym_secrets[i]* = *prover_nyms[i]* for i = 1 to N-1 and, *nym_secrets[i]* = *prover_nym[i]* + *signer_nym_entropy* for i = N where N is the length of the *prover_nyms*.
+The *Prover* pseudonym secret (`nym_secrets`) is a vector of one or more secret scalars used in the pseudonym calculation procedure of (#pseudonym-calculation-procedure). The *Prover* needs to keep this information secret as its name indicates. For a BBS signature that supports pseudonyms to be generated, the blind issuance procedure described in BBS Blind Signatures ([@BlindBBS]) will be used, where the *Prover* will send a commitment to the `nym_secrets` vector to the *Signer*. The last value of the `nym_secrets` list will be updated with entropy chosen by the *Signer* (called `signer_nym_entropy`). This prevents malicious actors from re-using a stolen `nym_secrets` vector or *Prover* commitment. 
 
 The *prover_nyms* is a a vector of prover secret scalars and is only sent to the *signer* in a binding and hiding commitment. The *signer_nym_entropy* is "blindly added" in by the *signer* during the signing procedure of (#blind-issuance) and sent back to the *prover* along with the signature.
 
