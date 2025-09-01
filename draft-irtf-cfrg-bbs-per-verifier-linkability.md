@@ -215,13 +215,13 @@ The Context Identifier (`context_id`) is an octet string that represents a speci
 
 ## Prover Pseudonym Secret
 
-The prover pseudonym secret (`nym_secret`) is used in the pseudonym calculation procedure of (#pseudonym-calculation-procedure). The *prover* needs to keep this information secret as its name indicates. To prevent a *prover* that may have stolen a `nym_secret` from another holder from using that `nym_secret` with a *signer*, the `nym_secret` is computed from two distinct parts: *nym_secret* = *prover_nym* + *signer_nym_entropy*.
+The *Prover* pseudonym secret (`nym_secrets`) is a vector of one or more secret scalars used in the pseudonym calculation procedure of (#pseudonym-calculation-procedure). The *Prover* needs to keep this information secret as its name indicates. For a BBS signature that supports pseudonyms to be generated, the blind issuance procedure described in BBS Blind Signatures ([@BlindBBS]) will be used, where the *Prover* will send a commitment to the `nym_secrets` vector to the *Signer*. The last value of the `nym_secrets` list will be updated with entropy chosen by the *Signer* (called `signer_nym_entropy`). This prevents malicious actors from re-using a stolen `nym_secrets` vector or *Prover* commitment. 
 
-where the *prover_nym* is a provers secret and only sent to the *signer* in a binding and hiding commitment. The *signer_nym_entropy* is "blindly added" in by the *signer* during the signing procedure of (#blind-issuance) and sent back to the *prover* along with the signature.
+The *prover_nyms* is a a vector of prover secret scalars and is only sent to the *signer* in a binding and hiding commitment. The *signer_nym_entropy* is "blindly added" in by the *signer* during the signing procedure of (#blind-issuance) and sent back to the *prover* along with the signature.
 
 ## Pseudonyms
 
-The *pseudonym* is a cryptographic value computed by the prover based on the `nym_secret` and the `context_id`. At a high level this is computed by hashing the `context_id` to the elliptic curve group G1 and then multiplying it by the `nym_secret` value. See Section (#pseudonym-calculation-procedure) for details. The pseudonym is sent to a verifier along with the BBS proof.
+The *pseudonym* is a cryptographic value computed by the prover based on the `nym_secrets` and the `context_id`. At a high level this is computed as a function of the `context_id` and the `nym_secrets` value. See Section (#pseudonym-calculation-procedure) for details. The pseudonym is sent to a verifier along with the BBS proof.
 
 This document defines a pseudonym as point of the G1 group different from the Identity (`Identity_G1`) or the base point (`BP1`) of G1. A pseudonym remains constant for the same context, when combined with the same signature, but is unique (and unlinkable) across different contexts. In other words, when the Prover presents multiple BBS proofs with a pseudonym to a Verifier, the pseudonym value will be constant across those presentations, if the same `context_id` value is used. When presenting a BBS proof with a pseudonym to a different context, the pseudonym value will be different. Note that since pseudonyms are group points, their value will necessarily change if a different a ciphersuite with a different curve will be used. Serialization and deserialization of the pseudonym point MUST be done using the `point_to_octets_g1` and `octets_to_point_g1` defined by the BBS ciphersuite used (see [Section 6](https://www.ietf.org/archive/id/draft-irtf-cfrg-bbs-signatures-03.html#name-ciphersuites) of [@!I-D.irtf-cfrg-bbs-signatures]).
 
@@ -243,31 +243,34 @@ Informally, the above means that each message is mapped to a scalar independentl
 
 # Pseudonym Calculation Procedure
 
-The following section describes how to calculate a pseudonym from a secret held by the Prover and the public context unique identifier. The pseudonym will be unique for different contexts (e.g., unique Verifier identifiers) and constant under constant inputs (i.e., the same `context_id` and `nym_secret`). The `context_id` is an octet string representing the unique identifier of the context in which the pseudonym will have the same value. The `nym_secret` value is a scalar calculated from secret input provided by the Prover and random (but not secret) input provided by the Signer. This will guarantee uniqueness of the `nym_secret` between different signatures and users.
+The following pseudo code describes how the pseudonym is calculated from the `nym_secrets` held by the Prover and the public context identifier. The pseudonym will be unique for different contexts (e.g., unique Verifier identifiers) and constant under constant inputs (i.e., the same `context_id` and `nym_secrets`). The `context_id` is an octet string representing the unique identifier of the context in which the pseudonym will have the same value. The `nym_secrets` value is a vector of scalars calculated from secret input provided by the Prover and random (but not secret) input provided by the Signer. This will guarantee uniqueness of the `nym_secrets` between different signatures and users.
 
 ```
-pseudonym = hash_to_curve_g1(context_id) * nym_secret
+OP = hash_to_curve_g1(context_id) // a point in the curve group G1
+z = hash_to_scalar(context_id)
+poly = sum i = 0 to N-1 of nym_secrets[i]*z^i // in the scalar field
+pseudonym = OP*poly // in the curve group G1
 ```
 
-Additionally, the `nym_secret` value will be signed by the BBS Signature. This will bind the pseudonym to a specific signature, held by the Prover. During proof generation, along the normal BBS proof, the Prover will generate a proof of correctness of the pseudonym, i.e., that it has the form described above, and that it was constructed using a `nym_secret` signed by the BBS signature used to generate that proof.
+Additionally, the `nym_secrets` value will be signed by the BBS Signature. This will bind the pseudonym to a specific signature, held by the Prover. During proof generation, along the normal BBS proof, the Prover will generate a proof of correctness of the pseudonym, i.e., that it has the form described above, and that it was constructed from the `nym_secrets` signed by the BBS signature used to generate that proof.
 
 # High Level Procedures and Information Flows
 
 To prevent forgeries in all cases all BBS messages are signed with the inclusion of some form of the provider pseudonym secret (`nym_secret`). In addition the pseudonym is always computed by the prover and sent with the proof to the verifier. While two different variations of signature and proof generation are given below based on the previously discussed unlinkability requirements there MUST be only one verification algorithm for the verifier to use.
 
-1. The Prover computes their input for the `nym_secret` (called `prover_nym`) and retained for use when calculating the `nym_secret` value.
-2. The Prover will wrap up in a cryptographic commitment using the *CommitWithNym* procedures of Blind BBS the messages they want to include in the signature (`committed_messages`) and the `prover_nym` value, generating a `commitment_with_proof` and a `secret_prover_blind`.
-3. The `commitment_with_proof` is conveyed to the signer which then uses the signing procedures in Section (#signature-generation-and-verification-with-pseudonym) to create a BBS signature and their input for the `nym_secret` value, called `signer_nym_entropy`. They will convey both to the Prover.
-4. On receipt of the signature and the `signer_nym_entropy` value, the Prover verifies the signature using the procedure of section (#signature-generation-and-verification-with-pseudonym) and calculates the `nym_secret` value by adding their `prover_nym` secret and the provided `signer_nym_entropy` values.
-5. The Prover computes the *pseudonym* based on the `nym_secret` and the pseudonym's context identifier `context_id`.
-6. The Prover generates a proof using `nym_secret`, `secret_prover_blind`, `signature`, `messages`, `committed_messages` and the indexes of the messages to be reveled from those two lists (i.e., `disclosed_indexes` and `disclosed_committed_indexes`)  using the procedures of Section (#proof-generation-with-pseudonym).
+1. The Prover computes their input for the `nym_secrets` (called `prover_nyms`) and retained for use when calculating the `nym_secrets` value.
+2. The Prover will wrap up in a cryptographic commitment using the *CommitWithNym* procedures of Blind BBS the messages they want to include in the signature (`committed_messages`) and the `prover_nyms` value, generating a `commitment_with_proof` and a `secret_prover_blind`.
+3. The `commitment_with_proof` is conveyed to the signer which then uses the signing procedures in Section (#signature-generation-and-verification-with-pseudonym) to create a BBS signature and their input for the `nym_secrets` value, called `signer_nym_entropy`. They will convey both to the Prover.
+4. On receipt of the signature and the `signer_nym_entropy` value, the Prover verifies the signature using the procedure of section (#signature-generation-and-verification-with-pseudonym) and calculates the `nym_secrets` value by adding their `prover_nyms` secret and the provided `signer_nym_entropy` values as detailed in later sections.
+5. The Prover computes the *pseudonym* based on the `nym_secrets` and the pseudonym's context identifier `context_id`.
+6. The Prover generates a proof using `nym_secrets`, `secret_prover_blind`, `signature`, `messages`, `committed_messages` and the indexes of the messages to be reveled from those two lists (i.e., `disclosed_indexes` and `disclosed_committed_indexes`)  using the procedures of Section (#proof-generation-with-pseudonym).
 7. The Prover conveys the `proof` and `pseudonym` to the verifier. The verifier uses the procedure of Section (#proof-verification-with-pseudonym) to verify the proof.
 
 # BBS Pseudonym Interface
 
-The following section defines a BBS Interface that will make use of per-origin pseudonyms where the `nym_secret` value is only known to the prover. The identifier of the Interface, api_id,  is defined as `ciphersuite_id || H2G_HM2S_PSEUDONYM_`, where `ciphersuite_id` the unique identifier of the BBS ciphersuite used, as is defined in [Section 6](https://www.ietf.org/archive/id/draft-irtf-cfrg-bbs-signatures-03.html#name-ciphersuites) of [@!I-D.irtf-cfrg-bbs-signatures]).
+The following section defines a BBS Interface that will make use of per-origin pseudonyms where the `nym_secrets` value is only known to the prover. The identifier of the Interface, api_id,  is defined as `ciphersuite_id || H2G_HM2S_PSEUDONYM_`, where `ciphersuite_id` the unique identifier of the BBS ciphersuite used, as is defined in [Section 6](https://www.ietf.org/archive/id/draft-irtf-cfrg-bbs-signatures-03.html#name-ciphersuites) of [@!I-D.irtf-cfrg-bbs-signatures]).
 
-The prover create a `nym_secret` value and keeps it secret. Only sending a commitment with the proof of the `nym_secret` that the signer will used when creating the signature.
+The prover create a `prover_nyms` value and keeps it secret. Only sending a commitment on the `prover_nyms`, with the corresponding proof of correctness, that the signer will use when creating the signature.
 
 ## Signature Generation and Verification with Pseudonym
 
@@ -282,7 +285,7 @@ Initially, the Prover will chose a set of messages `committed_messages` that the
 ```
 (commitment_with_proof, secret_prover_blind) = CommitWithNym(
                                                    committed_messages,
-                                                   prover_nym,
+                                                   prover_nyms,
                                                    api_id)
 
 Inputs:
@@ -290,8 +293,7 @@ Inputs:
 - committed_messages (OPTIONAL), a vector of octet strings. If not
                                  supplied it defaults to the empty
                                  array ("()").
-- prover_nym (OPTIONAL), a random scalar value. If not supplied, it
-                         defaults to the zero scalar (0).
+- prover_nyms (REQUIRED), a vector of random scalar values.
 - api_id (OPTIONAL), octet string. If not supplied it defaults to the
                      empty octet string ("").
 
@@ -306,7 +308,7 @@ Procedure:
 
 1. committed_message_scalars = BBS.messages_to_scalars(
                                              committed_messages, api_id)
-2. committed_message_scalars.append(prover_nym)
+2. committed_message_scalars.concat(prover_nyms)
 
 3. blind_generators = BBS.create_generators(
                                   length(committed_message_scalars) + 1,
@@ -318,15 +320,15 @@ Procedure:
 
 ### Blind Issuance
 
-The Signer generate a signature from a secret key (SK), the commitment with proof, the signer_nym_entropy and optionally over a `header` and vector of `messages` using
-the BlindSignWithNym procedure shown below.
+The Signer generate a signature from a secret key (SK), the commitment with proof, the length_nym_vector, the signer_nym_entropy and optionally over a `header` and vector of `messages` using
+the BlindSignWithNym procedure shown below. The length of the nym vector parameter MUST be furnished by the prover along with the commitment with proof. See the security considerations section for the need for this parameter.
 
 Typically the signer_nym_entropy will be a fresh random scalar, however in the case of
 "reissue" of a signature for a prover who wants to keep their same pseudonymous identity this value can be reused for the same prover if desired.
 
 ```
-BlindSignWithNym(SK, PK, commitment_with_proof, signer_nym_entropy,
-                  header, messages)
+BlindSignWithNym(SK, PK, commitment_with_proof, length_nym_vector,
+                 signer_nym_entropy, header, messages)
 
 Inputs:
 
@@ -340,6 +342,7 @@ Inputs:
                                     element outputted by the CommitWithNym
                                     operation. If not supplied, it
                                     defaults to the empty string ("").
+- lengh_nym_vector (REQUIRED), the length of the prover_nyms secret vector.
 - signer_nym_entropy (REQUIRED), a scalar value.
 - header (OPTIONAL), an octet string containing context and application
                      specific information. If not supplied, it defaults
@@ -373,17 +376,17 @@ Procedure:
                       generators, blind_generators[-1])
 7.  if res is INVALID, return INVALID
 8.  B = res
-
-9.  blind_sig = Blind.FinalizeBlindSign(SK,
+9.  combined_header = concat(header, I2OSP(length_nym_vector, 8))
+10.  blind_sig = Blind.FinalizeBlindSign(SK,
                                   PK,
                                   B,
                                   generators,
                                   blind_generators,
-                                  header,
+                                  combined_header,
                                   api_id)
 
-10. if blind_sig is INVALID, return INVALID
-11. return blind_sig
+11. if blind_sig is INVALID, return INVALID
+12. return blind_sig
 ```
 
 #### Calculate B
@@ -433,7 +436,7 @@ nym_secret = VerifyFinalizeWithNym(PK,
                       header,
                       messages,
                       committed_messages,
-                      prover_nym,
+                      prover_nyms,
                       signer_nym_entropy,
                       secret_prover_blind)
 
@@ -451,8 +454,7 @@ Inputs:
 - committed_messages (OPTIONAL), a vector of octet strings. If not
                                  supplied, it defaults to the empty
                                  array "()".
-- prover_nym (OPTIONAL), scalar value. If not supplied, it defaults to
-                         the zero scalar (0).
+- prover_nyms (REQUIRED), a vector of scalar values.
 - signer_nym_entropy (OPTIONAL), a scalar value. If not supplied, it
                                  defaults to the zero scalar (0).
 - secret_prover_blind (OPTIONAL), a scalar value. If not supplied it
@@ -460,31 +462,33 @@ Inputs:
 
 Outputs:
 
-- nym_secret, a scalar value; or INVALID.
+- nym_secrets, a vector of scalar values; or INVALID.
 
 Procedure:
 
-1. (message_scalars, generators) = Blind.prepare_parameters(
-                                        messages,
-                                        committed_messages,
-                                        length(messages) + 1,
-                                        length(committed_messages) + 2,
-                                        secret_prover_blind,
-                                        api_id)
+1. N = length(prover_nyms)
+2. (message_scalars, generators) = Blind.prepare_parameters(
+                                            messages,
+                                            committed_messages,
+                                            length(messages) + 1,
+                                            length(committed_messages) + N + 1,
+                                            secret_prover_blind,
+                                            api_id)
 
-2. nym_secret = prover_nym + signer_nym_entropy (modulo r)
-3. message_scalars.append(nym_secret)
-
-4. res = BBS.CoreVerify(PK, signature, generators, header,
+3. nym_secrets = prover_nym.copy()
+4. nym_secrets[N-1] = prover_nyms[N-1] + signer_nym_entropy // in scalar field
+5. message_scalars.concat(nym_secrets)
+6. combined_header = concat(header, I2OSP(N, 8));
+7. res = BBS.CoreVerify(PK, signature, generators, combined_header,
                                                 message_scalars, api_id)
 
-5. if res is INVALID, return INVALID
-6. return nym_secret
+8. if res is INVALID, return INVALID
+9. return nym_secrets
 ```
 
 ## Proof Generation with Pseudonym
 
-This section defines the `ProofGenWithNym` operations, for calculating a BBS proof with a pseudonym. The BBS proof is extended to include a zero-knowledge proof of correctness of the pseudonym value, i.e., that is correctly calculated using the (undisclosed) pseudonym secret (`nym_secret`), and that is "bound" to the underlying BBS signature (i.e., that the `nym_secret` value is signed by the Signer).
+This section defines the `ProofGenWithNym` operations, for calculating a BBS proof with a pseudonym. The BBS proof is extended to include a zero-knowledge proof of correctness of the pseudonym value, i.e., that is correctly calculated using the (undisclosed) pseudonym secret (`nym_secrets`), and that is "bound" to the underlying BBS signature (i.e., that the `nym_secrets` value is signed by the Signer).
 
 Validating the proof (see `ProofVerifyWithNym` defined in (#proof-verification-with-pseudonym)), guarantees authenticity and integrity of the header, presentation header and disclosed messages, knowledge of a valid BBS signature as well as correctness and ownership of the pseudonym.
 
@@ -495,7 +499,7 @@ To support pseudonyms, the `ProofGenWithNym` procedure takes the pseudonym secre
                         signature,
                         header,
                         ph,
-                        nym_secret,
+                        nym_secrets,
                         context_id,
                         messages,
                         committed_messages,
@@ -514,6 +518,8 @@ Inputs:
                      to an empty string.
 - ph (OPTIONAL), an octet string containing the presentation header. If
                  not supplied, it defaults to an empty string.
+- nym_secrets (REQUIRED), the vector of nym secret scalars, known to prover.
+- context_id (REQUIRED), an octet string.
 - messages (OPTIONAL), a vector of octet strings. If not supplied, it
                        defaults to the empty array "()".
 - committed_messages (OPTIONAL), a vector of octet strings. If not
@@ -560,10 +566,10 @@ Procedure:
                                          messages,
                                          committed_messages,
                                          L + 1,
-                                         M + 2,
+                                         M + length(nym_secrets) + 1,
                                          secret_prover_blind,
                                          api_id)
-2. message_scalars.append(nym_secret)
+2. message_scalars.concat(nym_secrets)
 
 3. indexes = ()
 4. indexes.append(disclosed_indexes)
@@ -577,6 +583,7 @@ Procedure:
                                context_id,
                                message_scalars.append(committed_message_scalars),
                                indexes,
+                               length(nym_secrets),
                                api_id)
 7. return (proof, pseudonym)
 ```
@@ -592,6 +599,7 @@ result = ProofVerifyWithNym(PK,
                                   ph,
                                   pseudonym,
                                   context_id,
+                                  length_nym_vector,
                                   L,
                                   disclosed_messages,
                                   disclosed_committed_messages,
@@ -610,6 +618,9 @@ Inputs:
 - ph (OPTIONAL), an octet string containing the presentation header. If
                  not supplied, it defaults to the empty octet
                  string ("").
+- pseudonym (REQUIRED), the pseudonym (element of group G1).
+- context_id (REQUIRED), an octet string.
+- length_nym_vector (REQUIRED), integer.
 - L (OPTIONAL), an integer, representing the total number of Signer
                 known messages if not supplied it defaults to 0.
 - disclosed_messages (OPTIONAL), a vector of octet strings. If not
@@ -658,6 +669,7 @@ Procedure:
                                     proof,
                                     pseudonym,
                                     context_id,
+                                    length_nym_vector,
                                     generators,
                                     header,
                                     ph,
@@ -671,7 +683,7 @@ Procedure:
 
 ## Core Proof Generation
 
-This operations computes a BBS proof and a zero-knowledge proof of correctness of the pseudonym in "parallel" (meaning using common randomness), as to both create a proof that the pseudonym was correctly calculated using an undisclosed value that the Prover knows (i.e., the `nym_secret` value), but also that this value is "signed" by the BBS signature (the last undisclosed message). As a result, validating the proof guarantees that the pseudonym is correctly computed and that it was computed using the Prover identifier that was included in the BBS signature.
+This operations computes a BBS proof and a zero-knowledge proof of correctness of the pseudonym in "parallel" (meaning using common randomness), as to both create a proof that the pseudonym was correctly calculated using an undisclosed value that the Prover knows (i.e., the `nym_secrets` value), but also that this value is "signed" by the BBS signature (the last undisclosed message). As a result, validating the proof guarantees that the pseudonym is correctly computed and that it was computed using the Prover identifier that was included in the BBS signature.
 
 The operation uses the `BBS.ProofInit` and `BBS.ProofFinalize` operations defined in [Section 3.7.1](https://www.ietf.org/archive/id/draft-irtf-cfrg-bbs-signatures-07.html#name-proof-initialization) and [Section 3.7.2](https://www.ietf.org/archive/id/draft-irtf-cfrg-bbs-signatures-07.html#name-proof-finalization) correspondingly of [@!I-D.irtf-cfrg-bbs-signatures], the `PseudonymProofInit` operation defined in (#pseudonym-proof-generation-initialization) and the `ProofWithPseudonymChallengeCalculate` defined in (#challenge-calculation).
 
@@ -685,6 +697,7 @@ The operation uses the `BBS.ProofInit` and `BBS.ProofFinalize` operations define
                                   ph,
                                   messages,
                                   disclosed_indexes,
+                                  length_nym_secrets
                                   api_id)
 
 Inputs:
@@ -712,6 +725,7 @@ Inputs:
                                 order. Indexes of disclosed messages. If
                                 not supplied, it defaults to the empty
                                 array "()".
+- length_nym_secrets (REQUIRED), the length of the nym_secrets vector.
 - api_id (OPTIONAL), an octet string. If not supplied it defaults to the
                      empty octet string ("").
 
@@ -751,31 +765,33 @@ ABORT if:
 Procedure:
 
 1. random_scalars = calculate_random_scalars(5+U)
-2. init_res = BBS.ProofInit(PK,
+2. combined_header = concat(header, i2osp(length_nym_vector, 8))
+3. init_res = BBS.ProofInit(PK,
                         signature_res,
-                        header,
+                        combined_header,
                         random_scalars,
                         generators,
                         message_scalars,
                         undisclosed_indexes,
                         api_id)
-3. if init_res is INVALID, return INVALID
+4. if init_res is INVALID, return INVALID
+5. end_msg_scalars = length(message_scalars) - 1 //zero indexed
+6. end_rand_scalars = length(random_scalars) - 1
+7. pseudonym_init_res = PseudonymProofInit(context_id,
+      message_scalars[end_msg_scalars - length_nym_secrets,.. end_msg_scalars],
+      random_scalars[end_rand_scalars - length_nym_secrets,.., end_rand_scalars])
+8. if pseudonym_init_res is INVALID, return INVALID
+9. pseudonym = pseudonym_init_res[0]
 
-4. pseudonym_init_res = PseudonymProofInit(context_id,
-                                           message_scalars[-1],
-                                           random_scalars[-1])
-5. if pseudonym_init_res is INVALID, return INVALID
-6. pseudonym = pseudonym_init_res[0]
-
-7. challenge = ProofWithPseudonymChallengeCalculate(init_res,
+10. challenge = ProofWithPseudonymChallengeCalculate(init_res,
                                                     pseudonym_init_res,
                                                     disclosed_indexes,
                                                     disclosed_messages,
                                                     ph,
                                                     api_id)
-8. proof = BBS.ProofFinalize(init_res, challenge, e_value,
+11. proof = BBS.ProofFinalize(init_res, challenge, e_value,
                                    random_scalars, undisclosed_messages)
-9. return (proof, pseudonym)
+12. return (proof, pseudonym)
 ```
 
 ## Core Proof Verification
@@ -789,6 +805,7 @@ result = CoreProofVerifyWithNym(PK,
                                       proof,
                                       pseudonym,
                                       context_id,
+                                      length_nym_vector,
                                       generators,
                                       header,
                                       ph,
@@ -807,6 +824,8 @@ Inputs:
                         operation.
 - context_id (REQUIRED), an octet string, representing the unique proof
                          Verifier identifier.
+- length_nym_vector (REQUIRED), the length of the nym secrets vector from the
+                                Prover.
 - generators (REQUIRED), vector of points in G1.
 - header (OPTIONAL), an optional octet string containing context and
                      application specific information. If not supplied,
@@ -847,12 +866,13 @@ ABORT if:
 
 Procedure:
 
-1. init_res = BBS.ProofVerifyInit(PK, proof_result, header, generators,
+1. combined_header = concat(header, i2osp(length_nym_vector, 8))
+2. init_res = BBS.ProofVerifyInit(PK, proof_result, combined_header, generators,
                                     messages, disclosed_indexes, api_id)
 
-2. pseudonym_init_res = PseudonymProofVerifyInit(pseudonym,
+3. pseudonym_init_res = PseudonymProofVerifyInit(pseudonym,
                                                  context_id,
-                                                 commitments[-1],
+                                                 commitments[-length_nym_vector],
                                                  cp)
 3. if pseudonym_init_res is INVALID, return INVALID
 
@@ -873,13 +893,13 @@ Procedure:
 
 ```
 pseudonym_init_res = PseudonymProofInit(context_id,
-                                          nym_secret, random_scalar)
+                                          nym_secrets, random_scalars)
 
 Inputs:
 
 - context_id (REQUIRED), an octet string
-- nym_secret (REQUIRED), a scalar value
-- random_scalar (REQUIRED), a scalar value
+- nym_secrets (REQUIRED), a scalar value
+- random_scalars (REQUIRED), a scalar value
 
 Outputs:
 
@@ -888,10 +908,22 @@ Outputs:
 Procedure:
 
 1. OP = hash_to_curve_g1(context_id, api_id)
-2. pseudonym = OP * nym_secret
-3. Ut = OP * random_scalar
-4. if pseudonym == Identity_G1 or Ut == Identity_G1, return INVALID
-5. return (pseudonym, OP, Ut)
+2. dst = api_id + 'VECT_NYM_SECRETS'
+3  z = await hash_to_scalar(context_id, dst1, api_id);
+4. // Polynomial evaluation over nym_secrets and random_scalars, this can be
+   // done in any way desired, e.g., Horner's rule.
+5.  poly_eval_pseudo = nym_secrets[0];
+6.  poly_eval_proof = random_scalars[0];
+7.  z_n = z;
+8.  for(let i = 1; i < nym_secrets.length; i++) {
+        poly_eval_pseudo += nym_secrets[i] * z_n // in scalar field
+        poly_eval_proof += random_scalars[i] * z_n // in scalar field
+        z_n *= z; // in field
+    }
+9. pseudonym = OP * poly_eval_pseudo // in group G1
+10. Ut = OP * poly_eval_proof // in group G1
+11. if pseudonym == Identity_G1 or Ut == Identity_G1, return INVALID
+12. return (pseudonym, context_id, Ut)
 ```
 
 ### Pseudonym Proof Verification Initialization
@@ -899,14 +931,14 @@ Procedure:
 ```
 pseudonym_init_res = PseudonymProofVerifyInit(pseudonym,
                                               context_id,
-                                              nym_secret_commitment
+                                              nym_secret_commitments
                                               proof_challenge)
 
 Inputs:
 
 - pseudonym (REQUIRED), an element of the G1 group.
 - context_id (REQUIRED), an octet string.
-- nym_secret_commitment (REQUIRED), a scalar value.
+- nym_secret_commitments (REQUIRED), a vector of scalar values.
 - proof_challenge (REQUIRED), a scalar value.
 
 Outputs:
@@ -915,12 +947,21 @@ Outputs:
 
 Procedure:
 
-1. OP = hash_to_curve_g1(context_id)
-2. Uv = OP * nym_secret_commitment - pseudonym * proof_challenge
-3. if Uv == Identity_G1, return INVALID
-4. return (pseudonym, OP, Uv)
+1. OP = hash_to_curve_g1(context_id, api_id)
+2. dst = api_id + 'VECT_NYM_SECRETS'
+3  z = await hash_to_scalar(context_id, dst1, api_id);
+4. // Polynomial evaluation over nym_secret_commitments, this can be
+   // done in any way desired, e.g., Horner's rule.
+5.  poly_eval_proof = nym_secret_commitments[0];
+6.  z_n = z;
+7.  for(let i = 1; i < nym_secret_commitments.length; i++) {
+        poly_eval_proof += nym_secret_commitments[i] * z_n // in scalar field
+        z_n *= z; // in field
+    }
+8. Uv = OP * poly_eval_proof // in group G1
+9. if Uv == Identity_G1, return INVALID
+10. return (pseudonym, context_id, Uv)
 ```
-
 
 # Utility Operations
 
@@ -940,7 +981,7 @@ Inputs:
                        scalar value, in that order.
 - pseudonym_init_res (REQUIRED), vector representing the value returned
                                  after initializing the pseudonym proof,
-                                 consisting of 3 points of G1.
+                                 consisting of (pseudonym, context_id, Ut).
 - i_array (REQUIRED), array of non-negative integers (the indexes of
                       the disclosed messages).
 - msg_array (REQUIRED), array of scalars (the disclosed messages after
@@ -966,7 +1007,7 @@ Deserialization:
 2. (i1, ..., iR) = i_array
 3. (msg_i1, ..., msg_iR) = msg_array
 4. (Abar, Bbar, D, T1, T2, domain) = init_res
-5. (pseudonym, OP, Ut) = pseudonym_init_res
+5. (pseudonym, context_id, Ut) = pseudonym_init_res
 
 ABORT if:
 
@@ -975,12 +1016,32 @@ ABORT if:
 
 Procedure:
 1. c_arr = (R, i1, msg_i1, i2, msg_i2, ..., iR, msg_iR, Abar, Bbar,
-                                   D, T1, T2, pseudonym, OP, Ut, domain)
-2. c_octs = serialize(c_arr) || I2OSP(length(ph), 8) || ph
+                                   D, T1, T2, pseudonym, Ut, domain)
+2. c_octs = serialize(c_arr) || I2OSP(length(ph), 8) || ph ||
+                                    I2OSP(length(context_id), 8) || context_id
 3. return hash_to_scalar(c_octs, challenge_dst)
 ```
 
+# Privacy Considerations
+
+## Limited Everlasting Unlinkability
+
+BBS pseudonyms are computationally unlinkable under the assumption of the hardness of the discrete log problem. In the presence of a Cryptographically Relevant Quantum Computer (CRQC) BBS pseudonyms can provide "limited" everlasting unlinkability. This is similar to how BBS proofs provide everlasting unlinkability in the presence of a CRQC.
+
+Let `N` be the length of the secret `prover_nyms` vector, let `M` be the number of pseudonyms gathered from colluding verifiers each possessing a unique `context_id`. In the presence of a CRQC if `N > M` the pseudonyms will be unlinkable. In other words, as long as the *Prover* does not generate (different) pseudonyms for more than `N` unique context identifiers (i.e., `N` different `context_id` values, for example, for `N` different Verifiers), unlinkability of the pseudonyms will hold, even in the presence of a CRQC.
+
+ TODO:  Proof/Discussion to be furnished
+
 # Security Considerations
+
+## Preventing Impersonation Attacks
+
+Assuming an honest issuer, to prevent impersonation attacks by a malicious prover that has obtained the `prover_nyms` from another prover, the issuer SHOULD use a different `signer_nym_entropy` for each different prover that it provides a pseudonym backed signature.
+
+## Preventing Sybil Attacks
+
+Assuming an honest issuer, to prevent sybil attacks by a malicious prover, we require that the prover use the same set of nym_secrets in computing pseudonyms. In particular, the prover declares the length of the prover_nyms/nym_secrets vectors, N, in their commitment with proof and this value gets bound to the signature from the issuer. In verifying the proof of the pseudonym the verifier will be checking that the N values of the nym_secrets vector was actually used in the computation.
+
 
 TODO Security
 
