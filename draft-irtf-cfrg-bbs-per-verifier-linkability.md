@@ -308,14 +308,14 @@ Procedure:
 
 1. committed_message_scalars = BBS.messages_to_scalars(
                                              committed_messages, api_id)
-2. committed_message_scalars.concat(prover_nyms)
+2. committed_message_scalars.append(prover_nyms)
 
 3. blind_generators = BBS.create_generators(
                                   length(committed_message_scalars) + 1,
                                   "BLIND_" || api_id)
 
 4. return Blind.CoreCommit(committed_message_scalars,
-                             blind_generators, api_id)
+                                               blind_generators, api_id)
 ```
 
 ### Blind Issuance
@@ -339,10 +339,12 @@ Inputs:
 - commitment_with_proof (OPTIONAL), an octet string, representing a
                                     serialized commitment and
                                     commitment_proof, as the first
-                                    element outputted by the CommitWithNym
-                                    operation. If not supplied, it
-                                    defaults to the empty string ("").
-- lengh_nym_vector (REQUIRED), the length of the prover_nyms secret vector.
+                                    element outputted by the
+                                    CommitWithNym operation. If not
+                                    supplied, it defaults to the empty
+                                    string ("").
+- length_nym_vector (REQUIRED), the length of the prover_nyms secret
+                                vector.
 - signer_nym_entropy (REQUIRED), a scalar value.
 - header (OPTIONAL), an octet string containing context and application
                      specific information. If not supplied, it defaults
@@ -366,18 +368,18 @@ Procedure:
 1.  generators = BBS.create_generators(L + 1, api_id)
 2.  blind_generators = BBS.create_generators(M, "BLIND_" || api_id)
 
-3.  commit = Blind.deserialize_and_validate_commit(commitment_with_proof,
-                                               blind_generators, api_id)
+3.  commit = Blind.deserialize_and_validate_commit(
+                        commitment_with_proof, blind_generators, api_id)
 4.  if commit is INVALID, return INVALID
 
 5.  message_scalars = BBS.messages_to_scalars(messages, api_id)
 
-6.  res = B_calculate(signer_nym_entropy, message_scalars,
-                      generators, blind_generators[-1])
-7.  if res is INVALID, return INVALID
-8.  B = res
-9.  combined_header = concat(header, I2OSP(length_nym_vector, 8))
-10.  blind_sig = Blind.FinalizeBlindSign(SK,
+6.  B = Blind.B_calculate(generators, commit, message_scalars)
+7.  if B is INVALID, return INVALID
+8.  B = B + blind_generators[-1] * signer_nym_entropy
+
+9.  combined_header = header || I2OSP(length_nym_vector, 8)
+10. blind_sig = Blind.FinalizeBlindSign(SK,
                                   PK,
                                   B,
                                   generators,
@@ -389,56 +391,21 @@ Procedure:
 12. return blind_sig
 ```
 
-#### Calculate B
-
-The `B_calculate_with_nym` operation is defined as follows,
-
-```
-B = B_calculate_with_nym(signer_nym_entropy, generators,
-                                                commitment,
-                                                nym_generator,
-                                                message_scalars)
-
-Inputs:
-
-- signer_nym_entropy (REQUIRED), a scalar.
-- generators (REQUIRED), an array of at least one point from the
-                         G1 group.
-- commitment (REQUIRED), a point from the G1 group
-- nym_generator (REQUIRED), a point from the G1 group
-- message_scalars (OPTIONAL), an array of scalar values. If not
-                              supplied, it defaults to the empty
-                              array ("()").
-
-Deserialization:
-
-1. L = length(messages)
-2. if length(generators) != L + 1, return INVALID
-3. (Q_1, H_1, ..., H_L) = generators
-
-Procedure:
-
-1. B = Q_1 + H_1 * msg_1 + ... + H_L * msg_L + commitment
-2. B = B + nym_generator * signer_nym_entropy
-3. If B is Identity_G1, return INVALID
-4. return B
-```
-
 ### Verification and Finalization
 
 The following operation both verifies the generated blind signature, as well as calculating and returning the final `nym_secret`, used to calculate the pseudonym value during proof generation.
 
-This operation uses the `BlindBBS.Verify` function as defined in [Section 4.2.2](https://www.ietf.org/archive/id/draft-kalos-bbs-blind-signatures-01.html#name-blind-signature-verificatio) of the Blind BBS document [@BlindBBS]
+This operation uses the `Blind.Verify` function as defined in [Section 4.2.2](https://www.ietf.org/archive/id/draft-kalos-bbs-blind-signatures-01.html#name-blind-signature-verificatio) of the Blind BBS document [@BlindBBS]
 
 ```
 nym_secret = VerifyFinalizeWithNym(PK,
-                      signature,
-                      header,
-                      messages,
-                      committed_messages,
-                      prover_nyms,
-                      signer_nym_entropy,
-                      secret_prover_blind)
+                                   signature,
+                                   header,
+                                   messages,
+                                   committed_messages,
+                                   prover_nyms,
+                                   signer_nym_entropy,
+                                   secret_prover_blind)
 
 Inputs:
 
@@ -466,24 +433,24 @@ Outputs:
 
 Procedure:
 
-1. N = length(prover_nyms)
-2. (message_scalars, generators) = Blind.prepare_parameters(
-                                            messages,
-                                            committed_messages,
-                                            length(messages) + 1,
-                                            length(committed_messages) + N + 1,
-                                            secret_prover_blind,
-                                            api_id)
+1. (message_scalars, generators) = Blind.prepare_parameters(
+                                     messages,
+                                     committed_messages,
+                                     length(messages) + 1,
+                                     length(committed_messages) + N + 1,
+                                     secret_prover_blind,
+                                     api_id)
 
-3. nym_secrets = prover_nym.copy()
-4. nym_secrets[N-1] = prover_nyms[N-1] + signer_nym_entropy // in scalar field
-5. message_scalars.concat(nym_secrets)
-6. combined_header = concat(header, I2OSP(N, 8));
-7. res = BBS.CoreVerify(PK, signature, generators, combined_header,
+2. nym_secrets = prover_nym.copy()
+3. nym_secrets[-1] = prover_nyms[-1] + signer_nym_entropy // in scalar
+                                                          // field
+4. message_scalars.append(nym_secrets)
+5. combined_header = header || I2OSP(length(prover_nyms), 8)
+6. res = BBS.CoreVerify(PK, signature, generators, combined_header,
                                                 message_scalars, api_id)
 
-8. if res is INVALID, return INVALID
-9. return nym_secrets
+7. if res is INVALID, return INVALID
+8. return nym_secrets
 ```
 
 ## Proof Generation with Pseudonym
@@ -496,16 +463,16 @@ To support pseudonyms, the `ProofGenWithNym` procedure takes the pseudonym secre
 
 ```
 (proof, pseudonym) = ProofGenWithNym(PK,
-                        signature,
-                        header,
-                        ph,
-                        nym_secrets,
-                        context_id,
-                        messages,
-                        committed_messages,
-                        disclosed_indexes,
-                        disclosed_commitment_indexes,
-                        secret_prover_blind)
+                                     signature,
+                                     header,
+                                     ph,
+                                     nym_secrets,
+                                     context_id,
+                                     messages,
+                                     committed_messages,
+                                     disclosed_indexes,
+                                     disclosed_commitment_indexes,
+                                     secret_prover_blind)
 
 Inputs:
 
@@ -518,7 +485,8 @@ Inputs:
                      to an empty string.
 - ph (OPTIONAL), an octet string containing the presentation header. If
                  not supplied, it defaults to an empty string.
-- nym_secrets (REQUIRED), the vector of nym secret scalars, known to prover.
+- nym_secrets (REQUIRED), the vector of nym secret scalars, known to
+                          Prover.
 - context_id (REQUIRED), an octet string.
 - messages (OPTIONAL), a vector of octet strings. If not supplied, it
                        defaults to the empty array "()".
@@ -563,29 +531,29 @@ Deserialization:
 Procedure:
 
 1. (message_scalars, generators) = Blind.prepare_parameters(
-                                         messages,
-                                         committed_messages,
-                                         L + 1,
-                                         M + length(nym_secrets) + 1,
-                                         secret_prover_blind,
-                                         api_id)
-2. message_scalars.concat(nym_secrets)
+                                            messages,
+                                            committed_messages,
+                                            L + 1,
+                                            M + length(nym_secrets) + 1,
+                                            secret_prover_blind,
+                                            api_id)
 
-3. indexes = ()
-4. indexes.append(disclosed_indexes)
-5. for j in disclosed_commitment_indexes: indexes.append(j + L + 1)
+2. indexes = ()
+3. indexes.append(disclosed_indexes)
+4. for j in disclosed_commitment_indexes: indexes.append(j + L + 1)
 
-6. (proof, pseudonym) = CoreProofGenWithNym(PK,
-                               signature,
-                               generators.append(blind_generators),
-                               header,
-                               ph,
-                               context_id,
-                               message_scalars.append(committed_message_scalars),
-                               indexes,
-                               length(nym_secrets),
-                               api_id)
-7. return (proof, pseudonym)
+5. (proof, pseudonym) = CoreProofGenWithNym(
+                      PK,
+                      signature,
+                      generators.append(blind_generators),
+                      header,
+                      ph,
+                      context_id,
+                      message_scalars.append(nym_secrets)
+                      indexes,
+                      length(nym_secrets),
+                      api_id)
+6. return (proof, pseudonym)
 ```
 
 ## Proof Verification with Pseudonym
@@ -648,7 +616,7 @@ Deserialization:
 2. if length(proof) < proof_len_floor, return INVALID
 3. U = floor((length(proof) - proof_len_floor) / octet_scalar_length)
 4. total_no_messages = length(disclosed_indexes) +
-                                 length(disclosed_committed_indexes) + U - 1
+                             length(disclosed_committed_indexes) + U - 1
 5. M = total_no_messages - L
 
 Procedure:
@@ -764,34 +732,35 @@ ABORT if:
 
 Procedure:
 
-1. random_scalars = calculate_random_scalars(5+U)
-2. combined_header = concat(header, i2osp(length_nym_vector, 8))
-3. init_res = BBS.ProofInit(PK,
-                        signature_res,
-                        combined_header,
-                        random_scalars,
-                        generators,
-                        message_scalars,
-                        undisclosed_indexes,
-                        api_id)
-4. if init_res is INVALID, return INVALID
-5. end_msg_scalars = length(message_scalars) - 1 //zero indexed
-6. end_rand_scalars = length(random_scalars) - 1
-7. pseudonym_init_res = PseudonymProofInit(context_id,
-      message_scalars[end_msg_scalars - length_nym_secrets,.. end_msg_scalars],
-      random_scalars[end_rand_scalars - length_nym_secrets,.., end_rand_scalars])
-8. if pseudonym_init_res is INVALID, return INVALID
-9. pseudonym = pseudonym_init_res[0]
+1.  random_scalars = calculate_random_scalars(5+U)
+2.  combined_header = header || I2OSP(length_nym_vector, 8)
+3.  init_res = BBS.ProofInit(PK,
+                             signature_res,
+                             combined_header,
+                             random_scalars,
+                             generators,
+                             message_scalars,
+                             undisclosed_indexes,
+                             api_id)
+4.  if init_res is INVALID, return INVALID
 
-10. challenge = ProofWithPseudonymChallengeCalculate(init_res,
-                                                    pseudonym_init_res,
-                                                    disclosed_indexes,
-                                                    disclosed_messages,
-                                                    ph,
-                                                    api_id)
-11. proof = BBS.ProofFinalize(init_res, challenge, e_value,
+5.  pseudonym_init_res = PseudonymProofInit(
+                                   context_id,
+                                   message_scalars[-length_nym_secrets],
+                                   random_scalars[-length_nym_secrets])
+
+6.  if pseudonym_init_res is INVALID, return INVALID
+7.  pseudonym = pseudonym_init_res[0]
+
+8.  challenge = ProofWithPseudonymChallengeCalculate(init_res,
+                                                     pseudonym_init_res,
+                                                     disclosed_indexes,
+                                                     disclosed_messages,
+                                                     ph,
+                                                     api_id)
+9.  proof = BBS.ProofFinalize(init_res, challenge, e_value,
                                    random_scalars, undisclosed_messages)
-12. return (proof, pseudonym)
+10. return (proof, pseudonym)
 ```
 
 ## Core Proof Verification
@@ -802,16 +771,16 @@ The operation uses the `BBS.ProofVerifyInit` operation defined [Section 3.7.3](h
 
 ```
 result = CoreProofVerifyWithNym(PK,
-                                      proof,
-                                      pseudonym,
-                                      context_id,
-                                      length_nym_vector,
-                                      generators,
-                                      header,
-                                      ph,
-                                      disclosed_messages,
-                                      disclosed_indexes,
-                                      api_id)
+                                proof,
+                                pseudonym,
+                                context_id,
+                                length_nym_vector,
+                                generators,
+                                header,
+                                ph,
+                                disclosed_messages,
+                                disclosed_indexes,
+                                api_id)
 
 Inputs:
 
@@ -824,8 +793,8 @@ Inputs:
                         operation.
 - context_id (REQUIRED), an octet string, representing the unique proof
                          Verifier identifier.
-- length_nym_vector (REQUIRED), the length of the nym secrets vector from the
-                                Prover.
+- length_nym_vector (REQUIRED), the length of the nym secrets vector
+                                from the Prover.
 - generators (REQUIRED), vector of points in G1.
 - header (OPTIONAL), an optional octet string containing context and
                      application specific information. If not supplied,
@@ -866,25 +835,31 @@ ABORT if:
 
 Procedure:
 
-1. combined_header = concat(header, i2osp(length_nym_vector, 8))
-2. init_res = BBS.ProofVerifyInit(PK, proof_result, combined_header, generators,
-                                    messages, disclosed_indexes, api_id)
+1. combined_header = header || I2OSP(length_nym_vector, 8)
+2. init_res = BBS.ProofVerifyInit(PK,
+                                  proof_result,
+                                  combined_header,
+                                  generators,
+                                  messages,
+                                  disclosed_indexes,
+                                  api_id)
 
-3. pseudonym_init_res = PseudonymProofVerifyInit(pseudonym,
-                                                 context_id,
-                                                 commitments[-length_nym_vector],
-                                                 cp)
-3. if pseudonym_init_res is INVALID, return INVALID
+3. pseudonym_init_res = PseudonymProofVerifyInit(
+                                        pseudonym,
+                                        context_id,
+                                        commitments[-length_nym_vector],
+                                        cp)
+4. if pseudonym_init_res is INVALID, return INVALID
 
-4. challenge = ProofWithPseudonymChallengeCalculate(init_res,
+5. challenge = ProofWithPseudonymChallengeCalculate(init_res,
                                                     pseudonym_init_res,
                                                     disclosed_indexes,
                                                     messages,
                                                     ph,
                                                     api_id)
-5. if cp != challenge, return INVALID
-6. if e(Abar, W) * e(Bbar, -BP2) != Identity_GT, return INVALID
-7. return VALID
+6. if cp != challenge, return INVALID
+7. if e(Abar, W) * e(Bbar, -BP2) != Identity_GT, return INVALID
+8. return VALID
 ```
 
 ## Pseudonym Proof Generation Utilities
@@ -893,7 +868,7 @@ Procedure:
 
 ```
 pseudonym_init_res = PseudonymProofInit(context_id,
-                                          nym_secrets, random_scalars)
+                                            nym_secrets, random_scalars)
 
 Inputs:
 
@@ -907,23 +882,23 @@ Outputs:
 
 Procedure:
 
-1. OP = hash_to_curve_g1(context_id, api_id)
-2. dst = api_id + 'VECT_NYM_SECRETS'
-3  z = await hash_to_scalar(context_id, dst1, api_id);
-4. // Polynomial evaluation over nym_secrets and random_scalars, this can be
-   // done in any way desired, e.g., Horner's rule.
-5.  poly_eval_pseudo = nym_secrets[0];
-6.  poly_eval_proof = random_scalars[0];
-7.  z_n = z;
-8.  for(let i = 1; i < nym_secrets.length; i++) {
+1.  OP = hash_to_curve_g1(context_id, api_id)
+2.  z = hash_to_scalar(context_id, api_id || 'VECT_NYM_SECRETS')
+ 
+// Polynomial evaluation over nym_secrets and random_scalars, this can
+// be done in any way desired, e.g., Horner's rule.
+3.  poly_eval_pseudo = nym_secrets[0]
+4.  poly_eval_proof = random_scalars[0]
+5.  z_n = z;
+6.  for(let i = 1; i < nym_secrets.length; i++) {
         poly_eval_pseudo += nym_secrets[i] * z_n // in scalar field
         poly_eval_proof += random_scalars[i] * z_n // in scalar field
-        z_n *= z; // in field
+        z_n *= z; // in scalar field
     }
-9. pseudonym = OP * poly_eval_pseudo // in group G1
-10. Ut = OP * poly_eval_proof // in group G1
-11. if pseudonym == Identity_G1 or Ut == Identity_G1, return INVALID
-12. return (pseudonym, context_id, Ut)
+7.  pseudonym = OP * poly_eval_pseudo // in group G1
+8.  Ut = OP * poly_eval_proof // in group G1
+9.  if pseudonym == Identity_G1 or Ut == Identity_G1, return INVALID
+10. return (pseudonym, context_id, Ut)
 ```
 
 ### Pseudonym Proof Verification Initialization
@@ -948,19 +923,20 @@ Outputs:
 Procedure:
 
 1. OP = hash_to_curve_g1(context_id, api_id)
-2. dst = api_id + 'VECT_NYM_SECRETS'
-3  z = await hash_to_scalar(context_id, dst1, api_id);
-4. // Polynomial evaluation over nym_secret_commitments, this can be
-   // done in any way desired, e.g., Horner's rule.
-5.  poly_eval_proof = nym_secret_commitments[0];
-6.  z_n = z;
-7.  for(let i = 1; i < nym_secret_commitments.length; i++) {
-        poly_eval_proof += nym_secret_commitments[i] * z_n // in scalar field
-        z_n *= z; // in field
+2. z = hash_to_scalar(context_id, api_id || 'VECT_NYM_SECRETS');
+
+// Polynomial evaluation over nym_secret_commitments, this can be
+// done in any way desired, e.g., Horner's rule.
+3. poly_eval_proof = nym_secret_commitments[0]
+4. z_n = z;
+5. for(let i = 1; i < nym_secret_commitments.length; i++) {
+        poly_eval_proof += nym_secret_commitments[i] * z_n // in scalar
+                                                           // field
+        z_n *= z; // in scalar field
     }
-8. Uv = OP * poly_eval_proof // in group G1
-9. if Uv == Identity_G1, return INVALID
-10. return (pseudonym, context_id, Uv)
+6. Uv = OP * poly_eval_proof - pseudonym * proof_challenge // in G1
+7. if Uv == Identity_G1, return INVALID
+8. return (pseudonym, context_id, Uv)
 ```
 
 # Utility Operations
@@ -981,7 +957,8 @@ Inputs:
                        scalar value, in that order.
 - pseudonym_init_res (REQUIRED), vector representing the value returned
                                  after initializing the pseudonym proof,
-                                 consisting of (pseudonym, context_id, Ut).
+                                 consisting of
+                                 (pseudonym, context_id, Ut).
 - i_array (REQUIRED), array of non-negative integers (the indexes of
                       the disclosed messages).
 - msg_array (REQUIRED), array of scalars (the disclosed messages after
@@ -1018,7 +995,7 @@ Procedure:
 1. c_arr = (R, i1, msg_i1, i2, msg_i2, ..., iR, msg_iR, Abar, Bbar,
                                    D, T1, T2, pseudonym, Ut, domain)
 2. c_octs = serialize(c_arr) || I2OSP(length(ph), 8) || ph ||
-                                    I2OSP(length(context_id), 8) || context_id
+                              I2OSP(length(context_id), 8) || context_id
 3. return hash_to_scalar(c_octs, challenge_dst)
 ```
 
