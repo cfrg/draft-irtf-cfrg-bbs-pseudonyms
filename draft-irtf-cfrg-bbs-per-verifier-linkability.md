@@ -160,8 +160,8 @@ I \\ J
 X\[a..b\]
 : Denotes a slice of the array `X` containing all elements from and including the value at index `a` until and including the value at index `b`. Note when this syntax is applied to an octet string, each element in the array `X` is assumed to be a single byte.
 
-X\[-1\]
-: Denotes the last element of the array X
+X\[-n\]
+: Denotes the last `n` element of the array X
 
 range(a, b)
 : For integers a and b, with a <= b, denotes the ascending ordered list of all integers between a and b inclusive (i.e., the integers "i" such that a <= i <= b).
@@ -2211,6 +2211,23 @@ This document has no IANA actions.
 # Acknowledgments
 
 TODO acknowledge.
+
+# Document History
+
+-00
+
+* Initial Version
+
+-01
+
+* Editorial updates
+* First set of test vectors
+
+-02
+
+* Added n-use unlinkable pseudonyms against a CRPQC based on polynomial
+  commitments
+* Updated test vectors
 
 
 <reference anchor="BBS04" target="https://link.springer.com/chapter/10.1007/978-3-540-28628-8_3">
