@@ -11,6 +11,7 @@ keyword = [""]
 name = "Internet-Draft"
 value = "draft-irtf-cfrg-bbs-per-verifier-linkability-latest"
 status = "informational"
+stream = "IRTF"
 
 [[author]]
 initials = "V."
@@ -48,7 +49,7 @@ In some applications, however, a Verifier needs to track the presentations made 
 
 The goal of this document is to provide a way for a Verifier to track the proof presentations that are intended for them, while at the same time not allowing the tracking of the Prover's activities with other Verifiers. This is done through the use of a cryptographic pseudonyms.
 
-A cryptographic pseudonym, or pseudonym for short, as defined by this document, is a value that will be computed from two parts. One part is the pseudonym secret value (`nym_secret`) which is known only to the prover and a context value (`context_id`) that must be known by both prover and verifier. The pseudonym value is computed in such a way that it is computationally infeasable to link to pseudonyms to the same pseudonym secret, i.e., holder for two different context values.
+A cryptographic pseudonym, or pseudonym for short, as defined by this document, is a value that will be computed from two parts. One part is the pseudonym secret value (`nym_secret`) which is known only to the prover and a context value (`context_id`) that must be known by both prover and verifier. The pseudonym value is computed in such a way that it is computationally infeasible to link to pseudonyms to the same pseudonym secret, i.e., holder for two different context values.
 
 ## Pseudonyms Bound to BBS Signatures
 
@@ -58,14 +59,14 @@ BBS pseudonyms extend the BBS signature scheme to "bind" a "pseudonym secret" to
 
 In addition BBS pseudonyms provide for:
 
-1. A essentially unique identifier, a pseudonym, bound to a proof of signature whose linkability is under the control of the *prover* in conjunction with a *verifier* via the selection of a "context". Such a pseudonym can be used when a *prover* revisits a *verifier* to allow a *verifier* to recognize the prover when they return or for the *prover* to assert their pseudononous identity when visiting a *verifier*
+1. A essentially unique identifier, a pseudonym, bound to a proof of signature whose linkability is under the control of the *prover* in conjunction with a *verifier* via the selection of a "context". Such a pseudonym can be used when a *prover* revisits a *verifier* to allow a *verifier* to recognize the prover when they return or for the *prover* to assert their pseudonymous identity when visiting a *verifier*
 2. Assurance of per *signer* uniqueness of the "pseudonym secret", i.e., the *signer* assures that the pseudonyms that will be guaranteed by the signature have not been used with any other signature issued by the signer (unless a signature is intentionally reissued).
 3. The *signer* cannot track the *prover* presentations to *verifiers* based on pseudonym values.
 4. Colluding *verifiers* sharing BBS proofs with pseudonyms cannot link proofs or pseudonyms across "contexts".
 
 To realize the above feature set we embed a two part pseudonym capability into the BBS signature scheme. The pseudonym's cryptographic value will be computed from a secret part, which we call the *`nym_secret`* and a part that is public or at least shared between the *prover* and one or more *verifiers*. The public part we call the *`context_id`*. The pseudonym is calculated from these two pieces using discrete exponentiation. This is similar to the computations in [@Lys00] and [@ABC14]. The pseudonym is presented to the *verifier* along with a ZKP that the *prover* knows the *`nym_secret`* and used it and the *`context_id`* to compute the pseudonym value. A similar proof mechanism was used in [@Lys00].
 
-To bind a pseudonym to a BBS signature we have the *signer* utilzed Blind BBS signatures and essentially sign over a commitment to the *`nym_secret`*. Hence only a prover that knows the *`nym_secret`* can generate a BBS proof from the signature (and also generate the pseudonym proof).
+To bind a pseudonym to a BBS signature we have the *signer* utilized Blind BBS signatures and essentially sign over a commitment to the *`nym_secret`*. Hence only a prover that knows the *`nym_secret`* can generate a BBS proof from the signature (and also generate the pseudonym proof).
 
 As in [@Lys00] we are concerned with the possibility of a dishonest user and hence require that the *`nym_secret`* = *`prover_nym`* + *`signer_nym_entropy`* be the sum of two parts where the *`prover_nym`* is a provers secret and only sent to the *signer* in a binding and hiding commitment. The *`signer_nym_entropy`* is "blindly added" in by the *signer* during the signing procedure and sent back to the *prover* along with the signature. Note the order of operations. The *prover* chooses their (random) *`prover_nym`* and commits to it. They then send the commitment along with a ZKP proof that the commitment is correctly calculated. The *signer* verifies the commitment to the *`prover_nym`* then generates the *`signer_nym_entropy`* and "blindly adds" it to the *`prover_nym`* during the signature process. Note that this can be done since we sign over the commitment and we know the generator for the commitment.
 
@@ -91,7 +92,7 @@ In this case the *prover* gets to choose and assert a "pseudonymous identity" bo
 
 The *prover* can choose this "pseudonymous identity" through its choice of a *context_id* that will then be shared with along with the cryptographic pseudonym with a *verifier*. Note that the combination of (*context_id*, *cryptographic_pseudonym*) forms the "psedonymous identity" that is bound to the BBS signature. By changing the *context_id* the *prover* can choose a new "pseudonymous identity" however, within the cryptographic limitations of BBS and the pseudonym computaions, no other prover should be able to assert this "pseudonymous identity". This is confirmed by the *verifier* during BBS pseudonym proof validation and utilizes the *signers* public key.
 
-The mechanims in this draft permit the *issuer* to guarantee that the *nym_secret* is essentially unique to and by the issuer, though not known to the issuer. Further enhancing the "pseudonymous identity".
+The mechanisms in this draft permit the *issuer* to guarantee that the *nym_secret* is essentially unique to and by the issuer, though not known to the issuer. Further enhancing the "pseudonymous identity".
 
 The *prover* and no one else without the *nym_secret* and signature can produce a proof that they "own" the "pseudonymous identity".
 
@@ -107,7 +108,7 @@ To do this a *verifier* requires that the *prover* use a *context_id* that the *
 
 In this case third party monitoring of interactions between *prover* and *verifier* is required.
 
-For example (completely ficticious) suppose the signature (credential) certifies that the *prover* is qualified to purchase and store some type of controlled substance, e.g., a class of potentially hazardous chemicals. To avoid price fixing or leakage of secret chemical formulas the *prover* purchases these chemicals under a *verifier* (vendor) specific pseudonym. Which prevents the different vendors from colluding on prices or seeing all the chemicals being purchase by a given prover.
+For example (completely fictitious) suppose the signature (credential) certifies that the *prover* is qualified to purchase and store some type of controlled substance, e.g., a class of potentially hazardous chemicals. To avoid price fixing or leakage of secret chemical formulas the *prover* purchases these chemicals under a *verifier* (vendor) specific pseudonym. Which prevents the different vendors from colluding on prices or seeing all the chemicals being purchase by a given prover.
 
 However for public safety, hording prevention, etc... verifiers (vendors) are required to report all purchase to a 3rd party monitor along with the pseudonym under which the purchases were made (and the *context_id* of the vendor). To allow the third party monitor to link these pseudonyms to a *prover*, the prover would be required to reveal the *nym_secret* associated with this credential only to the *monitor*.
 
@@ -215,7 +216,7 @@ The Context Identifier (`context_id`) is an octet string that represents a speci
 
 ## Prover Pseudonym Secret
 
-The *Prover* pseudonym secret (`nym_secrets`) is a vector of one or more secret scalars used in the pseudonym calculation procedure of (#pseudonym-calculation-procedure). The *Prover* needs to keep this information secret as its name indicates. For a BBS signature that supports pseudonyms to be generated, the blind issuance procedure described in BBS Blind Signatures ([@BlindBBS]) will be used, where the *Prover* will send a commitment to the `nym_secrets` vector to the *Signer*. The last value of the `nym_secrets` list will be updated with entropy chosen by the *Signer* (called `signer_nym_entropy`). This prevents malicious actors from re-using a stolen `nym_secrets` vector or *Prover* commitment. 
+The *Prover* pseudonym secret (`nym_secrets`) is a vector of one or more secret scalars used in the pseudonym calculation procedure of (#pseudonym-calculation-procedure). The *Prover* needs to keep this information secret as its name indicates. For a BBS signature that supports pseudonyms to be generated, the blind issuance procedure described in BBS Blind Signatures ([@BlindBBS]) will be used, where the *Prover* will send a commitment to the `nym_secrets` vector to the *Signer*. The last value of the `nym_secrets` list will be updated with entropy chosen by the *Signer* (called `signer_nym_entropy`). This prevents malicious actors from re-using a stolen `nym_secrets` vector or *Prover* commitment.
 
 The *prover_nyms* is a a vector of prover secret scalars and is only sent to the *signer* in a binding and hiding commitment. The *signer_nym_entropy* is "blindly added" in by the *signer* during the signing procedure of (#blind-issuance) and sent back to the *prover* along with the signature.
 
@@ -884,7 +885,7 @@ Procedure:
 
 1.  OP = hash_to_curve_g1(context_id, api_id)
 2.  z = hash_to_scalar(context_id, api_id || 'VECT_NYM_SECRETS')
- 
+
 // Polynomial evaluation over nym_secrets and random_scalars, this can
 // be done in any way desired, e.g., Horner's rule.
 3.  poly_eval_pseudo = nym_secrets[0]
@@ -1018,7 +1019,6 @@ Assuming an honest issuer, to prevent impersonation attacks by a malicious prove
 ## Preventing Sybil Attacks
 
 Assuming an honest issuer, to prevent sybil attacks by a malicious prover, we require that the prover use the same set of nym_secrets in computing pseudonyms. In particular, the prover declares the length of the prover_nyms/nym_secrets vectors, N, in their commitment with proof and this value gets bound to the signature from the issuer. In verifying the proof of the pseudonym the verifier will be checking that the N values of the nym_secrets vector was actually used in the computation.
-
 
 TODO Security
 
