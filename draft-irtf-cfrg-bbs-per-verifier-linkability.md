@@ -51,6 +51,8 @@ The goal of this document is to provide a way for a Verifier to track the proof 
 
 A cryptographic pseudonym, or pseudonym for short, as defined by this document, is a value that will be computed from two parts. One part is the pseudonym secret value (`nym_secret`) which is known only to the prover and a context value (`context_id`) that is known by both prover and verifier. The pseudonym value is computed in such a way that it is computationally infeasible to link to pseudonyms to the same pseudonym secret, i.e., holder for two different context values.
 
+**Editor note**: this document may be updated to add "committed disclosure" functionality. This update would impact proof generation,  proof verification procedures including core proof generation/verification and test vectors.
+
 ## Pseudonyms Bound to BBS Signatures
 
 The BBS signature scheme is based on a three party model of *signer* (aka issuer), *prover* (aka user or holder), and *verifier*.  A *prover* obtains a BBS signature from a *signer* over a list of *messages* and presents a BBS proof (of signature possession) along with a selectively disclosed subset of the BBS *messages* to a verifier. Each BBS proof generated is unlinkable to other BBS proofs derived from the same signature and from the BBS signature itself. If the disclosed subset of BBS *messages* are not linkable then the presentations cannot be linked.
@@ -2228,6 +2230,11 @@ TODO acknowledge.
 * Added n-use unlinkable pseudonyms against a CRPQC based on polynomial
   commitments
 * Updated test vectors
+
+-03
+
+* Spelling and BCP14 editorial fixes.
+* Add note about potential update for "committed disclosure" functionality.
 
 
 <reference anchor="BBS04" target="https://link.springer.com/chapter/10.1007/978-3-540-28628-8_3">
