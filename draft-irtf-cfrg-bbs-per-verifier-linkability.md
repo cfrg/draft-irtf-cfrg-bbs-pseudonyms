@@ -49,7 +49,7 @@ In some applications, however, a Verifier needs to track the presentations made 
 
 The goal of this document is to provide a way for a Verifier to track the proof presentations that are intended for them, while at the same time not allowing the tracking of the Prover's activities with other Verifiers. This is done through the use of a cryptographic pseudonyms.
 
-A cryptographic pseudonym, or pseudonym for short, as defined by this document, is a value that will be computed from two parts. One part is the pseudonym secret value (`nym_secret`) which is known only to the prover and a context value (`context_id`) that must be known by both prover and verifier. The pseudonym value is computed in such a way that it is computationally infeasible to link to pseudonyms to the same pseudonym secret, i.e., holder for two different context values.
+A cryptographic pseudonym, or pseudonym for short, as defined by this document, is a value that will be computed from two parts. One part is the pseudonym secret value (`nym_secret`) which is known only to the prover and a context value (`context_id`) that is known by both prover and verifier. The pseudonym value is computed in such a way that it is computationally infeasible to link to pseudonyms to the same pseudonym secret, i.e., holder for two different context values.
 
 ## Pseudonyms Bound to BBS Signatures
 
@@ -90,7 +90,7 @@ The BBS based pseudonyms in our draft are aimed primarily at providing the funct
 
 In this case the *prover* gets to choose and assert a "pseudonymous identity" bound to a signature (credential) from an *issuer*.
 
-The *prover* can choose this "pseudonymous identity" through its choice of a *context_id* that will then be shared with along with the cryptographic pseudonym with a *verifier*. Note that the combination of (*context_id*, *cryptographic_pseudonym*) forms the "psedonymous identity" that is bound to the BBS signature. By changing the *context_id* the *prover* can choose a new "pseudonymous identity" however, within the cryptographic limitations of BBS and the pseudonym computaions, no other prover should be able to assert this "pseudonymous identity". This is confirmed by the *verifier* during BBS pseudonym proof validation and utilizes the *signers* public key.
+The *prover* can choose this "pseudonymous identity" through its choice of a *context_id* that will then be shared with along with the cryptographic pseudonym with a *verifier*. Note that the combination of (*context_id*, *cryptographic_pseudonym*) forms the "pseudonymous identity" that is bound to the BBS signature. By changing the *context_id* the *prover* can choose a new "pseudonymous identity" however, within the cryptographic limitations of BBS and the pseudonym computations, no other prover should be able to assert this "pseudonymous identity". This is confirmed by the *verifier* during BBS pseudonym proof validation and utilizes the *signers* public key.
 
 The mechanisms in this draft permit the *issuer* to guarantee that the *nym_secret* is essentially unique to and by the issuer, though not known to the issuer. Further enhancing the "pseudonymous identity".
 
@@ -146,7 +146,7 @@ presentation\_header (ph)
 : A payload generated and bound to the context of a specific spk.
 
 INVALID, ABORT
-: Error indicators. INVALID refers to an error encountered during the Deserialization or Procedure steps of an operation. An INVALID value can be returned by a subroutine and handled by the calling operation. ABORT indicates that one or more of the initial constraints defined by the operation are not met. In that case, the operation will stop execution. An operation calling a subroutine that aborted must also immediately abort.
+: Error indicators. INVALID refers to an error encountered during the Deserialization or Procedure steps of an operation. An INVALID value can be returned by a subroutine and handled by the calling operation. ABORT indicates that one or more of the initial constraints defined by the operation are not met. In that case, the operation will stop execution. An operation calling a subroutine that aborted **MUST** also immediately abort.
 
 ## Notation
 
@@ -224,13 +224,13 @@ The *prover_nyms* is a a vector of prover secret scalars and is only sent to the
 
 The *pseudonym* is a cryptographic value computed by the prover based on the `nym_secrets` and the `context_id`. At a high level this is computed as a function of the `context_id` and the `nym_secrets` value. See Section (#pseudonym-calculation-procedure) for details. The pseudonym is sent to a verifier along with the BBS proof.
 
-This document defines a pseudonym as point of the G1 group different from the Identity (`Identity_G1`) or the base point (`BP1`) of G1. A pseudonym remains constant for the same context, when combined with the same signature, but is unique (and unlinkable) across different contexts. In other words, when the Prover presents multiple BBS proofs with a pseudonym to a Verifier, the pseudonym value will be constant across those presentations, if the same `context_id` value is used. When presenting a BBS proof with a pseudonym to a different context, the pseudonym value will be different. Note that since pseudonyms are group points, their value will necessarily change if a different a ciphersuite with a different curve will be used. Serialization and deserialization of the pseudonym point MUST be done using the `point_to_octets_g1` and `octets_to_point_g1` defined by the BBS ciphersuite used (see [Section 6](https://www.ietf.org/archive/id/draft-irtf-cfrg-bbs-signatures-03.html#name-ciphersuites) of [@!I-D.irtf-cfrg-bbs-signatures]).
+This document defines a pseudonym as point of the G1 group different from the Identity (`Identity_G1`) or the base point (`BP1`) of G1. A pseudonym remains constant for the same context, when combined with the same signature, but is unique (and unlinkable) across different contexts. In other words, when the Prover presents multiple BBS proofs with a pseudonym to a Verifier, the pseudonym value will be constant across those presentations, if the same `context_id` value is used. When presenting a BBS proof with a pseudonym to a different context, the pseudonym value will be different. Note that since pseudonyms are group points, their value will necessarily change if a different a ciphersuite with a different curve will be used. Serialization and deserialization of the pseudonym point **MUST** be done using the `point_to_octets_g1` and `octets_to_point_g1` defined by the BBS ciphersuite used (see [Section 6](https://www.ietf.org/archive/id/draft-irtf-cfrg-bbs-signatures-03.html#name-ciphersuites) of [@!I-D.irtf-cfrg-bbs-signatures]).
 
 This document specifies pseudonyms to be BBS Interface specific (see Section TBD of [@!I-D.irtf-cfrg-bbs-signatures] for the definition of the BBS Interface). It is outside the scope of this document to provide a procedure for "linking" the pseudonyms that are used by different Interfaces or that are based on different ciphersuites. An option is for the Prover to present both pseudonyms with the relevant BBS proofs to the Verifier, and upon validation of both, the Verifier to internally link the 2 pseudonyms together.
 
 ## Mapping Messages to Scalars
 
-Each BBS Interface defines an operation that will map the inputted messages to scalar values, required by the core BBS operations. Each Interface can use a different mapping procedure, as long as it comforts to the requirements outlined in [@!I-D.irtf-cfrg-bbs-signatures]. For using BBS with pseudonyms, the mapping operation used by the interface is REQUIRED to additionally adhere the following rule;
+Each BBS Interface defines an operation that will map the inputted messages to scalar values, required by the core BBS operations. Each Interface can use a different mapping procedure, as long as it comforts to the requirements outlined in [@!I-D.irtf-cfrg-bbs-signatures]. For using BBS with pseudonyms, the mapping operation used by the interface is **REQUIRED** to additionally adhere the following rule;
 
 ```
 For each set of messages and separate message msg',
@@ -257,7 +257,7 @@ Additionally, the `nym_secrets` value will be signed by the BBS Signature. This 
 
 # High Level Procedures and Information Flows
 
-To prevent forgeries in all cases all BBS messages are signed with the inclusion of some form of the provider pseudonym secret (`nym_secret`). In addition the pseudonym is always computed by the prover and sent with the proof to the verifier. While two different variations of signature and proof generation are given below based on the previously discussed unlinkability requirements there MUST be only one verification algorithm for the verifier to use.
+To prevent forgeries in all cases all BBS messages are signed with the inclusion of some form of the provider pseudonym secret (`nym_secret`). In addition the pseudonym is always computed by the prover and sent with the proof to the verifier. While two different variations of signature and proof generation are given below based on the previously discussed unlinkability requirements there **MUST** be only one verification algorithm for the verifier to use.
 
 1. The Prover computes their input for the `nym_secrets` (called `prover_nyms`) and retained for use when calculating the `nym_secrets` value.
 2. The Prover will wrap up in a cryptographic commitment using the *CommitWithNym* procedures of Blind BBS the messages they want to include in the signature (`committed_messages`) and the `prover_nyms` value, generating a `commitment_with_proof` and a `secret_prover_blind`.
@@ -291,11 +291,11 @@ Initially, the Prover will chose a set of messages `committed_messages` that the
 
 Inputs:
 
-- committed_messages (OPTIONAL), a vector of octet strings. If not
+- committed_messages (**OPTIONAL**), a vector of octet strings. If not
                                  supplied it defaults to the empty
                                  array ("()").
-- prover_nyms (REQUIRED), a vector of random scalar values.
-- api_id (OPTIONAL), octet string. If not supplied it defaults to the
+- prover_nyms (**REQUIRED**), a vector of random scalar values.
+- api_id (**OPTIONAL**), octet string. If not supplied it defaults to the
                      empty octet string ("").
 
 Outputs:
@@ -322,7 +322,7 @@ Procedure:
 ### Blind Issuance
 
 The Signer generate a signature from a secret key (SK), the commitment with proof, the length_nym_vector, the signer_nym_entropy and optionally over a `header` and vector of `messages` using
-the BlindSignWithNym procedure shown below. The length of the nym vector parameter MUST be furnished by the prover along with the commitment with proof. See the security considerations section for the need for this parameter.
+the BlindSignWithNym procedure shown below. The length of the nym vector parameter **MUST** be furnished by the prover along with the commitment with proof. See the security considerations section for the need for this parameter.
 
 Typically the signer_nym_entropy will be a fresh random scalar, however in the case of
 "reissue" of a signature for a prover who wants to keep their same pseudonymous identity this value can be reused for the same prover if desired.
@@ -333,24 +333,24 @@ BlindSignWithNym(SK, PK, commitment_with_proof, length_nym_vector,
 
 Inputs:
 
-- SK (REQUIRED), a secret key in the form outputted by the KeyGen
+- SK (**REQUIRED**), a secret key in the form outputted by the KeyGen
                  operation.
-- PK (REQUIRED), an octet string of the form outputted by SkToPk
+- PK (**REQUIRED**), an octet string of the form outputted by SkToPk
                  provided the above SK as input.
-- commitment_with_proof (OPTIONAL), an octet string, representing a
+- commitment_with_proof (**OPTIONAL**), an octet string, representing a
                                     serialized commitment and
                                     commitment_proof, as the first
                                     element outputted by the
                                     CommitWithNym operation. If not
                                     supplied, it defaults to the empty
                                     string ("").
-- length_nym_vector (REQUIRED), the length of the prover_nyms secret
+- length_nym_vector (**REQUIRED**), the length of the prover_nyms secret
                                 vector.
-- signer_nym_entropy (REQUIRED), a scalar value.
-- header (OPTIONAL), an octet string containing context and application
+- signer_nym_entropy (**REQUIRED**), a scalar value.
+- header (**OPTIONAL**), an octet string containing context and application
                      specific information. If not supplied, it defaults
                      to an empty string ("").
-- messages (OPTIONAL), a vector of octet strings. If not supplied, it
+- messages (**OPTIONAL**), a vector of octet strings. If not supplied, it
                        defaults to the empty array ("()").
 
 Deserialization:
@@ -410,22 +410,22 @@ nym_secret = VerifyFinalizeWithNym(PK,
 
 Inputs:
 
-- PK (REQUIRED), an octet string of the form outputted by the SkToPk
+- PK (**REQUIRED**), an octet string of the form outputted by the SkToPk
                  operation.
-- signature (REQUIRED), an octet string of the form outputted by the
+- signature (**REQUIRED**), an octet string of the form outputted by the
                         Sign operation.
-- header (OPTIONAL), an octet string containing context and application
+- header (**OPTIONAL**), an octet string containing context and application
                      specific information. If not supplied, it defaults
                      to an empty string.
-- messages (OPTIONAL), a vector of octet strings. If not supplied, it
+- messages (**OPTIONAL**), a vector of octet strings. If not supplied, it
                        defaults to the empty array "()".
-- committed_messages (OPTIONAL), a vector of octet strings. If not
+- committed_messages (**OPTIONAL**), a vector of octet strings. If not
                                  supplied, it defaults to the empty
                                  array "()".
-- prover_nyms (REQUIRED), a vector of scalar values.
-- signer_nym_entropy (OPTIONAL), a scalar value. If not supplied, it
+- prover_nyms (**REQUIRED**), a vector of scalar values.
+- signer_nym_entropy (**OPTIONAL**), a scalar value. If not supplied, it
                                  defaults to the zero scalar (0).
-- secret_prover_blind (OPTIONAL), a scalar value. If not supplied it
+- secret_prover_blind (**OPTIONAL**), a scalar value. If not supplied it
                                   defaults to zero "0".
 
 Outputs:
@@ -477,34 +477,34 @@ To support pseudonyms, the `ProofGenWithNym` procedure takes the pseudonym secre
 
 Inputs:
 
-- PK (REQUIRED), an octet string of the form outputted by the SkToPk
+- PK (**REQUIRED**), an octet string of the form outputted by the SkToPk
                  operation.
-- signature (REQUIRED), an octet string of the form outputted by the
+- signature (**REQUIRED**), an octet string of the form outputted by the
                         Sign operation.
-- header (OPTIONAL), an octet string containing context and application
+- header (**OPTIONAL**), an octet string containing context and application
                      specific information. If not supplied, it defaults
                      to an empty string.
-- ph (OPTIONAL), an octet string containing the presentation header. If
+- ph (**OPTIONAL**), an octet string containing the presentation header. If
                  not supplied, it defaults to an empty string.
-- nym_secrets (REQUIRED), the vector of nym secret scalars, known to
+- nym_secrets (**REQUIRED**), the vector of nym secret scalars, known to
                           Prover.
-- context_id (REQUIRED), an octet string.
-- messages (OPTIONAL), a vector of octet strings. If not supplied, it
+- context_id (**REQUIRED**), an octet string.
+- messages (**OPTIONAL**), a vector of octet strings. If not supplied, it
                        defaults to the empty array "()".
-- committed_messages (OPTIONAL), a vector of octet strings. If not
+- committed_messages (**OPTIONAL**), a vector of octet strings. If not
                                  supplied, it defaults to the empty
                                  array "()".
-- disclosed_indexes (OPTIONAL), vector of unsigned integers in ascending
+- disclosed_indexes (**OPTIONAL**), vector of unsigned integers in ascending
                                 order. Indexes of disclosed messages. If
                                 not supplied, it defaults to the empty
                                 array "()".
-- disclosed_commitment_indexes (OPTIONAL), vector of unsigned integers
+- disclosed_commitment_indexes (**OPTIONAL**), vector of unsigned integers
                                            in ascending order. Indexes
                                            of disclosed committed
                                            messages. If not supplied, it
                                            defaults to the empty array
                                            "()".
-- secret_prover_blind (OPTIONAL), a scalar value. If not supplied it
+- secret_prover_blind (**OPTIONAL**), a scalar value. If not supplied it
                                   defaults to zero "0".
 
 
@@ -577,25 +577,25 @@ result = ProofVerifyWithNym(PK,
 
 Inputs:
 
-- PK (REQUIRED), an octet string of the form outputted by the SkToPk
+- PK (**REQUIRED**), an octet string of the form outputted by the SkToPk
                  operation.
-- proof (REQUIRED), an octet string of the form outputted by the
+- proof (**REQUIRED**), an octet string of the form outputted by the
                     ProofGen operation.
-- header (OPTIONAL), an optional octet string containing context and
+- header (**OPTIONAL**), an optional octet string containing context and
                      application specific information. If not supplied,
                      it defaults to the empty octet string ("").
-- ph (OPTIONAL), an octet string containing the presentation header. If
+- ph (**OPTIONAL**), an octet string containing the presentation header. If
                  not supplied, it defaults to the empty octet
                  string ("").
-- pseudonym (REQUIRED), the pseudonym (element of group G1).
-- context_id (REQUIRED), an octet string.
-- length_nym_vector (REQUIRED), integer.
-- L (OPTIONAL), an integer, representing the total number of Signer
+- pseudonym (**REQUIRED**), the pseudonym (element of group G1).
+- context_id (**REQUIRED**), an octet string.
+- length_nym_vector (**REQUIRED**), integer.
+- L (**OPTIONAL**), an integer, representing the total number of Signer
                 known messages if not supplied it defaults to 0.
-- disclosed_messages (OPTIONAL), a vector of octet strings. If not
+- disclosed_messages (**OPTIONAL**), a vector of octet strings. If not
                                  supplied, it defaults to the empty
                                  array ("()").
-- disclosed_indexes (OPTIONAL), vector of unsigned integers in ascending
+- disclosed_indexes (**OPTIONAL**), vector of unsigned integers in ascending
                                 order. Indexes of disclosed messages. If
                                 not supplied, it defaults to the empty
                                 array ("()").
@@ -671,31 +671,31 @@ The operation uses the `BBS.ProofInit` and `BBS.ProofFinalize` operations define
 
 Inputs:
 
-- PK (REQUIRED), an octet string of the form outputted by the SkToPk
+- PK (**REQUIRED**), an octet string of the form outputted by the SkToPk
                  operation.
-- signature (REQUIRED), an octet string of the form outputted by the
+- signature (**REQUIRED**), an octet string of the form outputted by the
                         Sign operation.
-- pseudonym (REQUIRED), A point of G1, different from the Identity of
+- pseudonym (**REQUIRED**), A point of G1, different from the Identity of
                         G1, as outputted by the CalculatePseudonym
                         operation.
-- context_id (REQUIRED), an octet string, representing the unique proof
+- context_id (**REQUIRED**), an octet string, representing the unique proof
                           Verifier identifier.
-- generators (REQUIRED), vector of points in G1.
-- header (OPTIONAL), an octet string containing context and application
+- generators (**REQUIRED**), vector of points in G1.
+- header (**OPTIONAL**), an octet string containing context and application
                      specific information. If not supplied, it defaults
                      to an empty string.
-- ph (OPTIONAL), an octet string containing the presentation header. If
+- ph (**OPTIONAL**), an octet string containing the presentation header. If
                  not supplied, it defaults to an empty string.
-- message_scalars (OPTIONAL), a vector of scalars representing the
+- message_scalars (**OPTIONAL**), a vector of scalars representing the
                               messages. If not supplied, it defaults to
-                              the empty array "()" must include the
+                              the empty array "()" **MUST** include the
                               nym_secret scalar as last element.
-- disclosed_indexes (OPTIONAL), vector of unsigned integers in ascending
+- disclosed_indexes (**OPTIONAL**), vector of unsigned integers in ascending
                                 order. Indexes of disclosed messages. If
                                 not supplied, it defaults to the empty
                                 array "()".
-- length_nym_secrets (REQUIRED), the length of the nym_secrets vector.
-- api_id (OPTIONAL), an octet string. If not supplied it defaults to the
+- length_nym_secrets (**REQUIRED**), the length of the nym_secrets vector.
+- api_id (**OPTIONAL**), an octet string. If not supplied it defaults to the
                      empty octet string ("").
 
 Parameters:
@@ -785,31 +785,31 @@ result = CoreProofVerifyWithNym(PK,
 
 Inputs:
 
-- PK (REQUIRED), an octet string of the form outputted by the SkToPk
+- PK (**REQUIRED**), an octet string of the form outputted by the SkToPk
                  operation.
-- proof (REQUIRED), an octet string of the form outputted by the
+- proof (**REQUIRED**), an octet string of the form outputted by the
                     ProofGen operation.
-- pseudonym (REQUIRED), A point of G1, different from the Identity of
+- pseudonym (**REQUIRED**), A point of G1, different from the Identity of
                         G1, as outputted by the CalculatePseudonym
                         operation.
-- context_id (REQUIRED), an octet string, representing the unique proof
+- context_id (**REQUIRED**), an octet string, representing the unique proof
                          Verifier identifier.
-- length_nym_vector (REQUIRED), the length of the nym secrets vector
+- length_nym_vector (**REQUIRED**), the length of the nym secrets vector
                                 from the Prover.
-- generators (REQUIRED), vector of points in G1.
-- header (OPTIONAL), an optional octet string containing context and
+- generators (**REQUIRED**), vector of points in G1.
+- header (**OPTIONAL**), an optional octet string containing context and
                      application specific information. If not supplied,
                      it defaults to an empty string.
-- ph (OPTIONAL), an octet string containing the presentation header. If
+- ph (**OPTIONAL**), an octet string containing the presentation header. If
                  not supplied, it defaults to an empty string.
-- disclosed_messages (OPTIONAL), a vector of scalars representing the
+- disclosed_messages (**OPTIONAL**), a vector of scalars representing the
                                  messages. If not supplied, it defaults
                                  to the empty array "()".
-- disclosed_indexes (OPTIONAL), vector of unsigned integers in ascending
+- disclosed_indexes (**OPTIONAL**), vector of unsigned integers in ascending
                                 order. Indexes of disclosed messages. If
                                 not supplied, it defaults to the empty
                                 array "()".
-- api_id (OPTIONAL), an octet string. If not supplied it defaults to the
+- api_id (**OPTIONAL**), an octet string. If not supplied it defaults to the
                      empty octet string ("").
 
 Parameters:
@@ -873,9 +873,9 @@ pseudonym_init_res = PseudonymProofInit(context_id,
 
 Inputs:
 
-- context_id (REQUIRED), an octet string
-- nym_secrets (REQUIRED), a scalar value
-- random_scalars (REQUIRED), a scalar value
+- context_id (**REQUIRED**), an octet string
+- nym_secrets (**REQUIRED**), a scalar value
+- random_scalars (**REQUIRED**), a scalar value
 
 Outputs:
 
@@ -912,10 +912,10 @@ pseudonym_init_res = PseudonymProofVerifyInit(pseudonym,
 
 Inputs:
 
-- pseudonym (REQUIRED), an element of the G1 group.
-- context_id (REQUIRED), an octet string.
-- nym_secret_commitments (REQUIRED), a vector of scalar values.
-- proof_challenge (REQUIRED), a scalar value.
+- pseudonym (**REQUIRED**), an element of the G1 group.
+- context_id (**REQUIRED**), an octet string.
+- nym_secret_commitments (**REQUIRED**), a vector of scalar values.
+- proof_challenge (**REQUIRED**), a scalar value.
 
 Outputs:
 
@@ -952,21 +952,21 @@ challenge = ProofWithPseudonymChallengeCalculate(init_res,
                                                  ph, api_id)
 
 Inputs:
-- init_res (REQUIRED), vector representing the value returned after
+- init_res (**REQUIRED**), vector representing the value returned after
                        initializing the proof generation or verification
                        operations, consisting of 5 points of G1 and a
                        scalar value, in that order.
-- pseudonym_init_res (REQUIRED), vector representing the value returned
+- pseudonym_init_res (**REQUIRED**), vector representing the value returned
                                  after initializing the pseudonym proof,
                                  consisting of
                                  (pseudonym, context_id, Ut).
-- i_array (REQUIRED), array of non-negative integers (the indexes of
+- i_array (**REQUIRED**), array of non-negative integers (the indexes of
                       the disclosed messages).
-- msg_array (REQUIRED), array of scalars (the disclosed messages after
+- msg_array (**REQUIRED**), array of scalars (the disclosed messages after
                         mapped to scalars).
-- ph (OPTIONAL), an octet string. If not supplied, it must default to
+- ph (**OPTIONAL**), an octet string. If not supplied, it **MUST** default to
                  the empty octet string ("").
-- api_id (OPTIONAL), an octet string. If not supplied it defaults to the
+- api_id (**OPTIONAL**), an octet string. If not supplied it defaults to the
                      empty octet string ("").
 
 Outputs:
@@ -1014,7 +1014,7 @@ Let `N` be the length of the secret `prover_nyms` vector, let `M` be the number 
 
 ## Preventing Impersonation Attacks
 
-Assuming an honest issuer, to prevent impersonation attacks by a malicious prover that has obtained the `prover_nyms` from another prover, the issuer SHOULD use a different `signer_nym_entropy` for each different prover that it provides a pseudonym backed signature.
+Assuming an honest issuer, to prevent impersonation attacks by a malicious prover that has obtained the `prover_nyms` from another prover, the issuer **SHOULD** use a different `signer_nym_entropy` for each different prover that it provides a pseudonym backed signature.
 
 ## Preventing Sybil Attacks
 
