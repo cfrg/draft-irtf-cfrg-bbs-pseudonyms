@@ -255,11 +255,11 @@ Additionally, the `nym_secrets` value will be signed by the BBS Signature. This 
 To prevent forgeries in all cases all BBS messages are signed with the inclusion of some form of the provider pseudonym secret (`nym_secret`). In addition the pseudonym is always computed by the prover and sent with the proof to the verifier. While two different variations of signature and proof generation are given below based on the previously discussed unlinkability requirements there **MUST** be only one verification algorithm for the verifier to use.
 
 1. The Prover computes their input for the `nym_secrets` (called `prover_nyms`) and retained for use when calculating the `nym_secrets` value.
-2. The Prover will wrap up in a cryptographic commitment using the *CommitWithNym* procedures of Blind BBS the messages they want to include in the signature (`committed_messages`) and the `prover_nyms` value, generating a `commitment_with_proof` and a `secret_prover_blind`.
+2. The Prover will wrap up in a cryptographic commitment using the *CommitWithNym* procedures of Blind BBS the messages they want to include in the signature (`blind_messages`) and the `prover_nyms` value, generating a `commitment_with_proof` and a `secret_prover_blind`.
 3. The `commitment_with_proof` is conveyed to the signer which then uses the signing procedures in Section (#signature-generation-and-verification-with-pseudonym) to create a BBS signature and their input for the `nym_secrets` value, called `signer_nym_entropy`. They will convey both to the Prover.
 4. On receipt of the signature and the `signer_nym_entropy` value, the Prover verifies the signature using the procedure of section (#signature-generation-and-verification-with-pseudonym) and calculates the `nym_secrets` value by adding their `prover_nyms` secret and the provided `signer_nym_entropy` values as detailed in later sections.
 5. The Prover computes the *pseudonym* based on the `nym_secrets` and the pseudonym's context identifier `context_id`.
-6. The Prover generates a proof using `nym_secrets`, `secret_prover_blind`, `signature`, `messages`, `committed_messages` and the indexes of the messages to be reveled from those two lists (i.e., `disclosed_indexes` and `disclosed_committed_indexes`)  using the procedures of Section (#proof-generation-with-pseudonym).
+6. The Prover generates a proof using `nym_secrets`, `secret_prover_blind`, `signature`, `messages`, `blind_messages` and the indexes of the messages to be reveled from those two lists (i.e., `disclosed_indexes` and `disclosed_committed_indexes`)  using the procedures of Section (#proof-generation-with-pseudonym).
 7. The Prover conveys the `proof` and `pseudonym` to the verifier. The verifier uses the procedure of Section (#proof-verification-with-pseudonym) to verify the proof.
 
 # BBS Pseudonym Interface
@@ -272,23 +272,21 @@ The prover create a `prover_nyms` value and keeps it secret. Only sending a comm
 
 ### Blind Commitment
 
-This section will describe the steps with which the Signer will generate a blind signature over an array of messages provided (and committed) by the Prover (`committed_messages`) and a pseudonym secret `prover_nym`, also chosen by the Prover. During signature generation, the Signer will provide their own randomness into the pseudonym secret. This will ensure that the pseudonym secret will always be unique, among different signature generation events.
+This section will describe the steps with which the Signer will generate a blind signature over an array of messages provided (and committed) by the Prover (`blind_messages`) and a pseudonym secret `prover_nym`, also chosen by the Prover. During signature generation, the Signer will add their own randomness into the pseudonym secret. This will ensure that the pseudonym secret will always be unique, among different signature generation events.
 
-This section will provide a high level description of the required operations, by detailing the modifications required in the relevant BBS blind signature operations, to also consider the use of pseudonyms. The full formal description of the operation can be seen at Appendix. We will reference those operations where appropriate in this section.
-
-Initially, the Prover will chose a set of messages `committed_messages` that they want to be included in the signature, without reveling them to the Signer. They will also choose their part of the pseudonym secret `prover_nym` as a random scalar value.
+Initially, the Prover will chose a set of messages `blind_messages` that they want to be included in the signature, without reveling them to the Signer. They will also choose their part of the pseudonym secret `prover_nym` as a random scalar value.
 
 <!-- **TODO** Update with new messages to scalars -->
 
 ```
 (commitment_with_proof, secret_prover_blind) = CommitWithNym(
-                                                   committed_messages,
+                                                   blind_messages,
                                                    prover_nyms,
                                                    api_id)
 
 Inputs:
 
-- committed_messages (**OPTIONAL**), a vector of octet strings. If not
+- blind_messages (**OPTIONAL**), a vector of octet strings. If not
                                  supplied it defaults to the empty
                                  array ("()").
 - prover_nyms (**REQUIRED**), a vector of random scalar values.
@@ -305,7 +303,7 @@ Outputs:
 Procedure:
 
 1. committed_message_scalars = BBS.messages_to_scalars(
-                                             committed_messages, api_id)
+                                             blind_messages, api_id)
 2. committed_message_scalars.append(prover_nyms)
 
 3. blind_generators = BBS.create_generators(
@@ -404,7 +402,7 @@ nym_secret = VerifyFinalizeWithNym(PK,
                                    signature,
                                    header,
                                    messages,
-                                   committed_messages,
+                                   blind_messages,
                                    prover_nyms,
                                    signer_nym_entropy,
                                    secret_prover_blind)
@@ -420,7 +418,7 @@ Inputs:
                      to an empty string.
 - messages (**OPTIONAL**), a vector of octet strings. If not supplied, it
                        defaults to the empty array "()".
-- committed_messages (**OPTIONAL**), a vector of octet strings. If not
+- blind_messages (**OPTIONAL**), a vector of octet strings. If not
                                  supplied, it defaults to the empty
                                  array "()".
 - prover_nyms (**REQUIRED**), a vector of scalar values.
@@ -437,9 +435,9 @@ Procedure:
 
 1. (message_scalars, generators) = Blind.prepare_parameters(
                                      messages,
-                                     committed_messages,
+                                     blind_messages,
                                      length(messages) + 1,
-                                     length(committed_messages) + N + 1,
+                                     length(blind_messages) + N + 1,
                                      secret_prover_blind,
                                      api_id)
 
@@ -473,7 +471,7 @@ To support pseudonyms, the `ProofGenWithNym` procedure takes the pseudonym secre
                                      nym_secrets,
                                      context_id,
                                      messages,
-                                     committed_messages,
+                                     blind_messages,
                                      disclosed_indexes,
                                      disclosed_commitment_indexes,
                                      secret_prover_blind)
@@ -494,7 +492,7 @@ Inputs:
 - context_id (**REQUIRED**), an octet string.
 - messages (**OPTIONAL**), a vector of octet strings. If not supplied, it
                        defaults to the empty array "()".
-- committed_messages (**OPTIONAL**), a vector of octet strings. If not
+- blind_messages (**OPTIONAL**), a vector of octet strings. If not
                                  supplied, it defaults to the empty
                                  array "()".
 - disclosed_indexes (**OPTIONAL**), vector of unsigned integers in ascending
@@ -525,7 +523,7 @@ Outputs:
 Deserialization:
 
 1. L = length(messages)
-2. M = length(committed_messages)
+2. M = length(blind_messages)
 3. if length(disclosed_indexes) > L, return INVALID
 4. for i in disclosed_indexes, if i < 0 or i >= L, return INVALID
 5. if length(disclosed_commitment_indexes) > M, return INVALID
@@ -536,7 +534,7 @@ Procedure:
 
 1. (message_scalars, generators) = Blind.prepare_parameters(
                                             messages,
-                                            committed_messages,
+                                            blind_messages,
                                             L + 1,
                                             M + length(nym_secrets) + 1,
                                             secret_prover_blind,
@@ -576,7 +574,7 @@ result = ProofVerifyWithNym(PK,
                                   length_nym_vector,
                                   L,
                                   disclosed_messages,
-                                  disclosed_committed_messages,
+                                  disclosed_blind_messages,
                                   disclosed_indexes,
                                   disclosed_committed_indexes)
 
@@ -629,7 +627,7 @@ Procedure:
 
 1. (message_scalars, generators) = Blind.prepare_parameters(
                                            disclosed_messages,
-                                           disclosed_committed_messages,
+                                           disclosed_blind_messages,
                                            L + 1,
                                            M + 1,
                                            NONE,
