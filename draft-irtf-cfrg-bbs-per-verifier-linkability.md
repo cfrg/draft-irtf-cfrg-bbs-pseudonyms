@@ -35,7 +35,7 @@ organization = "Grotto Networking"
 
 .# Abstract
 
-The BBS Signatures scheme describes a multi-message digital signature, that supports selectively disclosing the messages through unlinkable presentations, built using zero-knowledge proofs. Each BBS proof reveals no information other than the signed messages that the Prover chooses to disclose in that specific instance. As such, the Verifier (i.e., the recipient) of the BBS proof, may not be able to track those presentations over time. Although in many applications this is desirable, there are use cases that require the Verifier be able to track the BBS proofs they receive from the same Prover. Examples include monitoring the use of access credentials for abnormal activity, assertion of pseudonymous identity, monetization, etc.. This document provides a mechanism for binding prover secret material for pseudonym creation to a BBS signature and shows how to use this bound information for the creation of context dependent pseudonyms in BBS proofs.
+The BBS Signatures scheme describes a multi-message digital signature, that supports selectively disclosing the messages through unlinkable presentations, built using zero-knowledge proofs. Each BBS proof reveals no information other than the signed messages that the Prover chooses to disclose in that specific instance. As such, the Verifier (i.e., the recipient) of the BBS proof, may not be able to track those presentations over time. Although in many applications this is desirable, there are use cases that require the Verifier be able to track the BBS proofs they receive from the same Prover. Examples include monitoring the use of access credentials for abnormal activity, assertion of pseudonymous identity, monetization, etc. This document provides a mechanism for binding prover secret material for pseudonym creation to a BBS signature and shows how to use this bound information for the creation of context dependent pseudonyms in BBS proofs.
 
 {mainmatter}
 
@@ -43,15 +43,15 @@ The BBS Signatures scheme describes a multi-message digital signature, that supp
 
 The BBS Signature Scheme, originally described in the academic work by Dan Boneh, Xavier Boyen, and Hovav Shacham [@?BBS04], is a signature scheme able to sign multiple messages at once, allowing for selectively disclosing those message while not revealing the signature it self. It does so by creating unlinkable, zero-knowledge proofs-of-knowledge of a signature value on (among other) the disclosed set of messages. More specifically, the BBS Prover, will create a BBS proof that if validated by the Verifier, guarantees that the prover knows a BBS signature on the disclosed messages, guaranteeing the revealed messages authenticity and integrity.
 
-The BBS Proof is by design unlinkable, meaning that given two different BBS proofs, there is no way to tell if they originated from the same BBS signature. This means that if a Prover does not reveal any other identifying information (for example if they are using proxies to hide their IP address etc.), the Verifier of the proof will not be able "track" or "correlate" the different proof presentations  or the Provers activity via cryptographic artifacts. This helps enhance user privacy in applications where the Verifier only needs to know that the Prover is in possession of a valid BBS signature over a list of disclosed messages.
+The BBS Proof is by design unlinkable, meaning that given two different BBS proofs, there is no way to tell if they originated from the same BBS signature. This means that if a Prover does not reveal any other identifying information (for example if they are using proxies to hide their IP address etc.), the Verifier of the proof will not be able "track" or "correlate" the different proof presentations or the Provers activity via cryptographic artifacts. This helps enhance user privacy in applications where the Verifier only needs to know that the Prover is in possession of a valid BBS signature over a list of disclosed messages.
 
-In some applications, however, a Verifier needs to track the presentations made by the Prover over time, as to provide security monitoring, monetization services, configuration persistance etc.. In other applications a Prover may wish to assert a pseudonymous identity associated with a signature from an issuer. To promote privacy, the Prover should not be forced to reveal or be bound to a unique identifier that would remain constant across proof presentations to different Verifiers and which could be used to link a Provers interactions with different Verifiers.
+In some applications, however, a Verifier needs to track the presentations made by the Prover over time, as to provide security monitoring, monetization services, configuration persistence etc. In other applications a Prover may wish to assert a pseudonymous identity associated with a signature from an issuer. To promote privacy, the Prover should not be forced to reveal or be bound to a unique identifier that would remain constant across proof presentations to different Verifiers and which could be used to link a Provers interactions with different Verifiers.
 
 The goal of this document is to provide a way for a Verifier to track the proof presentations that are intended for them, while at the same time not allowing the tracking of the Prover's activities with other Verifiers. This is done through the use of a cryptographic pseudonyms.
 
 A cryptographic pseudonym, or pseudonym for short, as defined by this document, is a value that will be computed from two parts. One part is the pseudonym secret value (`nym_secret`) which is known only to the prover and a context value (`context_id`) that is known by both prover and verifier. The pseudonym value is computed in such a way that it is computationally infeasible to link to pseudonyms to the same pseudonym secret, i.e., holder for two different context values.
 
-**Editor note**: this document may be updated to add "committed disclosure" functionality. This update would impact proof generation,  proof verification procedures including core proof generation/verification and test vectors.
+**Editor note**: this is being updated to add "committed disclosure" functionality and to reuse the updated Blind BBS core and utility functions. This note  will be removed when the process is completed.
 
 ## Pseudonyms Bound to BBS Signatures
 
@@ -208,6 +208,13 @@ octets\_to\_point\_g1(ostr) -> P, octets\_to\_point\_g2(ostr) -> P
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in BCP 14 [@!RFC2119] [@!RFC8174] when, and only when, they appear in all capitals, as shown here.
 
+# BBS and Blind BBS Signature Scheme Operations
+
+This document makes use of various operations defined by the BBS Signature Scheme document [@!I-D.irtf-cfrg-bbs-signatures] and [@!I-D.irtf-cfrg-bbs-blind-signatures]. For clarity, whenever an operation will be used defined in [@!I-D.irtf-cfrg-bbs-signatures] or [@!I-D.irtf-cfrg-bbs-blind-signatures], it will be prefixed by "BBS." or "BlindBBS." (e.g., "BBS.CoreVerify" etc.). More specifically, the operations used are the following:
+
+- `BlindBBS.messages_to_scalars`: Refers to the `messages_to_scalars` operation defined in [@!I-D.irtf-cfrg-bbs-blind-signatures, section 5.1].
+- `BlindBBS.CoreCommit`: Refers to the `CoreCommit` operation defined in [@!I-D.irtf-cfrg-bbs-blind-signatures, section 4.3.1].
+
 # Key Concepts
 
 A *pseudonym* will be cryptographically generated for each prover-context of usage pair. Its value is dependent on a pseudonym secret (`nym_secret`) and a context identifier (`context_id`).
@@ -230,23 +237,9 @@ This document defines a pseudonym as point of the G1 group different from the Id
 
 This document specifies pseudonyms to be BBS Interface specific (see Section TBD of [@!I-D.irtf-cfrg-bbs-signatures] for the definition of the BBS Interface). It is outside the scope of this document to provide a procedure for "linking" the pseudonyms that are used by different Interfaces or that are based on different ciphersuites. An option is for the Prover to present both pseudonyms with the relevant BBS proofs to the Verifier, and upon validation of both, the Verifier to internally link the 2 pseudonyms together.
 
-## Mapping Messages to Scalars
-
-Each BBS Interface defines an operation that will map the inputted messages to scalar values, required by the core BBS operations. Each Interface can use a different mapping procedure, as long as it comforts to the requirements outlined in [@!I-D.irtf-cfrg-bbs-signatures]. For using BBS with pseudonyms, the mapping operation used by the interface is **REQUIRED** to additionally adhere the following rule;
-
-```
-For each set of messages and separate message msg',
-if C1 = messages_to_scalars(messages.push(msg')),
-and msg_prime_scalar = messages_to_scalars((msg')),
-and C2 = messages_to_scalars(messages).push(msg_prime_scalar),
-it will always hold that C1 == C2.
-```
-
-Informally, the above means that each message is mapped to a scalar independently from all the other messages. For example, if `a = messages_to_scalars((msg_1))` and `b = messages_to_scalars((msg_2))`, then `(a, b) = messages_to_scalars((msg_1, msg_2))`. Its trivial to see that the `messages_to_scalars` operation that is defined in Section TBD of [@!I-D.irtf-cfrg-bbs-signatures], has the required property. That operation will be used by the Interface defined in this document to map the messages to scalars. Note that the above operation (and hence the defined by this document Interface), only accepts messages that are octet strings.
-
 # Pseudonym Calculation Procedure
 
-The following pseudo code describes how the pseudonym is calculated from the `nym_secrets` held by the Prover and the public context identifier. The pseudonym will be unique for different contexts (e.g., unique Verifier identifiers) and constant under constant inputs (i.e., the same `context_id` and `nym_secrets`). The `context_id` is an octet string representing the unique identifier of the context in which the pseudonym will have the same value. The `nym_secrets` value is a vector of scalars calculated from secret input provided by the Prover and random (but not secret) input provided by the Signer. This will guarantee uniqueness of the `nym_secrets` between different signatures and users.
+The following pseudo-code describes how the pseudonym is calculated from the `nym_secrets` held by the Prover and the public context identifier. The pseudonym will be unique for different contexts (e.g., unique Verifier identifiers) and constant under constant inputs (i.e., the same `context_id` and `nym_secrets`). The `context_id` is an octet string representing the unique identifier of the context in which the pseudonym will have the same value. The `nym_secrets` value is a vector of scalars calculated from secret input provided by the Prover and random (but not secret) input provided by the Signer. This will guarantee uniqueness of the `nym_secrets` between different signatures and users.
 
 ```
 OP = hash_to_curve_g1(context_id) // a point in the curve group G1
@@ -277,13 +270,15 @@ The prover create a `prover_nyms` value and keeps it secret. Only sending a comm
 
 ## Signature Generation and Verification with Pseudonym
 
-### Commitment
+### Blind Commitment
 
 This section will describe the steps with which the Signer will generate a blind signature over an array of messages provided (and committed) by the Prover (`committed_messages`) and a pseudonym secret `prover_nym`, also chosen by the Prover. During signature generation, the Signer will provide their own randomness into the pseudonym secret. This will ensure that the pseudonym secret will always be unique, among different signature generation events.
 
 This section will provide a high level description of the required operations, by detailing the modifications required in the relevant BBS blind signature operations, to also consider the use of pseudonyms. The full formal description of the operation can be seen at Appendix. We will reference those operations where appropriate in this section.
 
 Initially, the Prover will chose a set of messages `committed_messages` that they want to be included in the signature, without reveling them to the Signer. They will also choose their part of the pseudonym secret `prover_nym` as a random scalar value.
+
+<!-- **TODO** Update with new messages to scalars -->
 
 ```
 (commitment_with_proof, secret_prover_blind) = CommitWithNym(
@@ -328,6 +323,8 @@ the BlindSignWithNym procedure shown below. The length of the nym vector paramet
 
 Typically the signer_nym_entropy will be a fresh random scalar, however in the case of
 "reissue" of a signature for a prover who wants to keep their same pseudonymous identity this value can be reused for the same prover if desired.
+
+<!-- **TODO**: Update! -->
 
 ```
 BlindSignWithNym(SK, PK, commitment_with_proof, length_nym_vector,
@@ -400,6 +397,8 @@ The following operation both verifies the generated blind signature, as well as 
 
 This operation uses the `Blind.Verify` function as defined in [Section 4.2.2](https://www.ietf.org/archive/id/draft-kalos-bbs-blind-signatures-01.html#name-blind-signature-verificatio) of the Blind BBS document [@!BlindBBS]
 
+<!-- **TODO**: Update! -->
+
 ```
 nym_secret = VerifyFinalizeWithNym(PK,
                                    signature,
@@ -463,6 +462,8 @@ This section defines the `ProofGenWithNym` operations, for calculating a BBS pro
 Validating the proof (see `ProofVerifyWithNym` defined in (#proof-verification-with-pseudonym)), guarantees authenticity and integrity of the header, presentation header and disclosed messages, knowledge of a valid BBS signature as well as correctness and ownership of the pseudonym.
 
 To support pseudonyms, the `ProofGenWithNym` procedure takes the pseudonym secret `nym_secret`, as well as the context identifier `context_id`, which the pseudonym will be bounded to.
+
+<!-- **TODO**: Update! -->
 
 ```
 (proof, pseudonym) = ProofGenWithNym(PK,
@@ -563,6 +564,8 @@ Procedure:
 
 This operation validates a BBS proof with a pseudonym, given the Signer's public key (PK), the proof, the pseudonym, the context identifier that was used to create it, a header and presentation header, the disclosed messages and committed messages as well as the, the indexes those messages had in the original vectors of signed messages. Validating the proof also validates the correctness and ownership by the Prover of the received pseudonym.
 
+<!-- **TODO**: Update! -->
+
 ```
 result = ProofVerifyWithNym(PK,
                                   proof,
@@ -657,6 +660,8 @@ Procedure:
 This operations computes a BBS proof and a zero-knowledge proof of correctness of the pseudonym in "parallel" (meaning using common randomness), as to both create a proof that the pseudonym was correctly calculated using an undisclosed value that the Prover knows (i.e., the `nym_secrets` value), but also that this value is "signed" by the BBS signature (the last undisclosed message). As a result, validating the proof guarantees that the pseudonym is correctly computed and that it was computed using the Prover identifier that was included in the BBS signature.
 
 The operation uses the `BBS.ProofInit` and `BBS.ProofFinalize` operations defined in [Section 3.7.1](https://www.ietf.org/archive/id/draft-irtf-cfrg-bbs-signatures-07.html#name-proof-initialization) and [Section 3.7.2](https://www.ietf.org/archive/id/draft-irtf-cfrg-bbs-signatures-07.html#name-proof-finalization) correspondingly of [@!I-D.irtf-cfrg-bbs-signatures], the `PseudonymProofInit` operation defined in (#pseudonym-proof-generation-initialization) and the `ProofWithPseudonymChallengeCalculate` defined in (#challenge-calculation).
+
+<!-- **TODO**: Update! -->
 
 ```
 (proof, pseudonym) = CoreProofGenWithNym(PK,
@@ -772,6 +777,8 @@ This operation validates a BBS proof that also includes a pseudonym. Validating 
 
 The operation uses the `BBS.ProofVerifyInit` operation defined [Section 3.7.3](https://www.ietf.org/archive/id/draft-irtf-cfrg-bbs-signatures-07.html#name-proof-verification-initiali) of [@!I-D.irtf-cfrg-bbs-signatures], the `PseudonymProofVerifyInit` operation defined in (#pseudonym-proof-verification-initialization) and the `ProofWithPseudonymChallengeCalculate` operation defined in (#challenge-calculation).
 
+<!-- **TODO**: Update! -->
+
 ```
 result = CoreProofVerifyWithNym(PK,
                                 proof,
@@ -869,6 +876,8 @@ Procedure:
 
 ### Pseudonym Proof Generation Initialization
 
+<!-- **TODO**: Update! -->
+
 ```
 pseudonym_init_res = PseudonymProofInit(context_id,
                                             nym_secrets, random_scalars)
@@ -905,6 +914,8 @@ Procedure:
 ```
 
 ### Pseudonym Proof Verification Initialization
+
+<!-- **TODO**: Update! -->
 
 ```
 pseudonym_init_res = PseudonymProofVerifyInit(pseudonym,
@@ -945,6 +956,8 @@ Procedure:
 # Utility Operations
 
 ## Challenge Calculation
+
+<!-- **TODO**: Update! -->
 
 ```
 challenge = ProofWithPseudonymChallengeCalculate(init_res,
@@ -1029,6 +1042,8 @@ TODO Security
 This document does not define new BBS ciphersuites. Its ciphersuite defined in [Section 6](https://www.ietf.org/archive/id/draft-irtf-cfrg-bbs-signatures-03.html#name-ciphersuites) of [@!I-D.irtf-cfrg-bbs-signatures]) can be used to instantiate the operations of the described scheme.
 
 # Test Vectors
+
+<!-- **TODO**: Update! -->
 
 ## BLS12-381-SHA-256
 
