@@ -469,11 +469,20 @@ Procedure:
 
 ## Proof Generation with Pseudonym
 
-This section defines the `ProofGenWithNym` operations, for calculating a BBS proof with a pseudonym. The BBS proof is extended to include a zero-knowledge proof of correctness of the pseudonym value, i.e., that is correctly calculated using the (undisclosed) pseudonym secret (`nym_secrets`), and that is "bound" to the underlying BBS signature (i.e., that the `nym_secrets` value is signed by the Signer).
+This section defines the `ProofGenWithNym` operations, for calculating a BBS proof with a pseudonym. The Blind BBS proof procedure is extended to include a zero-knowledge proof of correctness of the pseudonym value, i.e., that is correctly calculated using the (undisclosed) pseudonym secret (`nym_secrets`), and that is "bound" to the underlying BBS signature (i.e., that the `nym_secrets` value is signed by the Signer).
 
 Validating the proof (see `ProofVerifyWithNym` defined in (#proof-verification-with-pseudonym)), guarantees authenticity and integrity of the header, presentation header and disclosed messages, knowledge of a valid BBS signature as well as correctness and ownership of the pseudonym.
 
 To support pseudonyms, the `ProofGenWithNym` procedure takes the pseudonym secret `nym_secret`, as well as the context identifier `context_id`, which the pseudonym will be bounded to.
+
+When this operation furnishes disclosed commitment values it will also return an additional bundle of information for use in external ZKPs [@Vision2025]. This *add_zkp_info* includes the committed message scalars and the random scalars, from these the disclosed commitments may be recomputed. The *add_zkp_info* should never be exposed, i.e., it is NOT to be sent to the verifier. The *add_zkp_info* structure has the following form:
+
+```
+add_zkp_info = {
+  committed_message_scalars: (REQUIRED) Array of Scalars,
+  commitment_rands: (REQUIRED) Array of Scalars
+}
+```
 
 <!-- **TODO**: Update! -->
 
@@ -484,10 +493,10 @@ To support pseudonyms, the `ProofGenWithNym` procedure takes the pseudonym secre
                                      ph,
                                      nym_secrets,
                                      context_id,
-                                     messages,
+                                     issuer_messages,
                                      blind_messages,
-                                     disclosed_indexes,
-                                     disclosed_commitment_indexes,
+                                     issuer_message_disclosures,
+                                     blind_message_disclosures,
                                      secret_prover_blind)
 
 Inputs:
@@ -504,21 +513,22 @@ Inputs:
 - nym_secrets (**REQUIRED**), the vector of nym secret scalars, known to
                           Prover.
 - context_id (**REQUIRED**), an octet string.
-- messages (**OPTIONAL**), a vector of octet strings. If not supplied, it
-                       defaults to the empty array "()".
-- blind_messages (**OPTIONAL**), a vector of octet strings. If not
-                                 supplied, it defaults to the empty
-                                 array "()".
-- disclosed_indexes (**OPTIONAL**), vector of unsigned integers in ascending
-                                order. Indexes of disclosed messages. If
-                                not supplied, it defaults to the empty
-                                array "()".
-- disclosed_commitment_indexes (**OPTIONAL**), vector of unsigned integers
-                                           in ascending order. Indexes
-                                           of disclosed committed
-                                           messages. If not supplied, it
-                                           defaults to the empty array
-                                           "()".
+- issuer_messages (OPTIONAL), a vector of objects of the form
+                    {flag: string, value: octets}, with flag values in
+                    the set ["HASH", "RAW"], and value the raw
+                    individual message octets. If not supplied, it
+                    defaults to the empty array "()".
+- blind_messages (OPTIONAL), a vector of objects of the form
+                    {flag: string, value: octets}, with flag values in
+                    the set ["HASH", "RAW"], and value the raw
+                    individual message octets. If not supplied, it
+                    defaults to the empty array "()".
+- issuer_message_disclosures (OPTIONAL), a vector containing values of
+                            DISCLOSE, HIDE or COMMIT.If not supplied, it
+                            defaults to the empty map "{}".
+- blind_message_disclosures (OPTIONAL), a vector containing values of
+                            DISCLOSE, HIDE or COMMIT.If not supplied, it
+                            defaults to the empty map "{}".
 - secret_prover_blind (**OPTIONAL**), a scalar value. If not supplied it
                                   defaults to zero "0".
 
@@ -533,43 +543,73 @@ Parameters:
 Outputs:
 
 - proof, an octet string; or INVALID.
+- add_zkp_info, a structure containing an array of committed message scalars
+                used in committed disclosure, and the array of random scalars
+                used to create the respective commitments.
 
 Deserialization:
 
 1. L = length(messages)
-2. M = length(blind_messages)
-3. if length(disclosed_indexes) > L, return INVALID
-4. for i in disclosed_indexes, if i < 0 or i >= L, return INVALID
-5. if length(disclosed_commitment_indexes) > M, return INVALID
-6. for j in disclosed_commitment_indexes,
-                               if i < 0 or i >= M, return INVALID
+2. if length(issuer_message_disclosures) != L, return INVALID
+3. M = length(blind_messages)
+4. if length(blind_message_disclosures) != M, return INVALID
+5. if any value in issuer_message_disclosures is not one of DISCLOSE,
+   HIDE, or COMMIT, return INVALID
+6. if any value in blind_message_disclosures is not one of DISCLOSE,
+   HIDE, or COMMIT, return INVALID
+
+7. let issuer_disclosed_indexes be the integers i in 0..L - 1 so
+   that issuer_message_disclosures[i] = DISCLOSE, in
+   ascending order.
+8. let issuer_commitment_indexes be the integers i in 0..L - 1 so
+   that issuer_message_disclosures[i] = COMMIT, in
+   ascending order.
+9. let blind_disclosed_indexes be the integers i in 0..M - 1 so
+   that blind_message_disclosures[i] = DISCLOSE, in
+   ascending order.
+10. let blind_commitment_indexes be the integers i in 0..M - 1 so
+   that blind_message_disclosures[i] = COMMIT, in
+   ascending order.
+11. let N = length(nym_secrets)
 
 Procedure:
 
-1. (message_scalars, generators) = Blind.prepare_parameters(
-                                            messages,
-                                            blind_messages,
-                                            L + 1,
-                                            M + length(nym_secrets) + 1,
-                                            secret_prover_blind,
-                                            api_id)
+1. generators = BBS.create_generators(L + 1, api_id)
+2. blind_generators = BBS.create_generators(M + N + 1, "BLIND_" || api_id)
+3. issuer_scalars = messages_to_scalars(issuer_messages, api_id)
+4. blind_scalars = messages_to_scalars(blind_messages, api_id)
+6. proof_scalars = issuer_scalars.append(secret_prover_blind)
+                                          .append(blind_scalars)
+                                          .append(nym_secrets)
 
-2. indexes = ()
-3. indexes.append(disclosed_indexes)
-4. for j in disclosed_commitment_indexes: indexes.append(j + L + 1)
+7. proof_disclosed_indexes = [] // empty array
+8. proof_commitment_indexes = [] // empty array
 
-5. (proof, pseudonym) = CoreProofGenWithNym(
-                      PK,
+9.  for (i = 0, i < length(issuer_disclosed_indexes), i++)
+      proof_disclosed_indexes.append(issuer_disclosed_indexes[i])
+
+10. for (i = 0, i < length(blind_disclosed_indexes), i++)
+      proof_disclosed_indexes.append(blind_disclosed_indexes[i] + L + 1)
+
+11.  for (i = 0, i < length(issuer_commitment_indexes), i++)
+      proof_commitment_indexes.append(issuer_commitment_indexes[i])
+
+12. for (i = 0, i < length(blind_commitment_indexes), i++)
+      proof_commitment_indexes.append(blind_commitment_indexes[i] + L + 1)
+// Note that in the above no nym_secrets are disclosed or committed
+
+13. (proof_with_add_zkp_info, pseudonym) = CoreProofGenWithNym(PK,
                       signature,
                       generators.append(blind_generators),
                       header,
                       ph,
                       context_id,
-                      message_scalars.append(nym_secrets)
-                      indexes,
+                      proof_scalars,
+                      proof_disclosed_indexes,
+                      proof_commitment_indexes
                       length(nym_secrets),
                       api_id)
-6. return (proof, pseudonym)
+14. return (proof_with_add_zkp_info, pseudonym)
 ```
 
 ## Proof Verification with Pseudonym
@@ -2332,4 +2372,13 @@ TODO acknowledge.
     </author>
      <date year="2014"/>
  </front>
+</reference>
+<reference anchor="Vision2025" target="https://eprint.iacr.org/2025/1981">
+  <front>
+  <title>Vision: A Modular Framework for Anonymous Credential Systems</title>
+  <author surname="Lehmann" fullname="Anja Lehmann" />
+  <author surname="Sidorenko" fullname="Andrey Sidorenko" />
+  <author surname="Zacharakis" fullname="Alexandros Zacharakis" />
+  <date year="2025" />
+  </front>
 </reference>
