@@ -210,10 +210,10 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 # BBS and Blind BBS Signature Scheme Operations
 
-This document makes use of various operations defined by the BBS Signature Scheme document [@!I-D.irtf-cfrg-bbs-signatures] and [@!I-D.irtf-cfrg-bbs-blind-signatures]. For clarity, whenever an operation will be used defined in [@!I-D.irtf-cfrg-bbs-signatures] or [@!I-D.irtf-cfrg-bbs-blind-signatures], it will be prefixed by "BBS." or "BlindBBS." (e.g., "BBS.CoreVerify" etc.). More specifically, the operations used are the following:
+This document makes use of various operations defined by the BBS Signature Scheme document [@!I-D.irtf-cfrg-bbs-signatures] and [@!I-D.irtf-cfrg-bbs-blind-signatures]. For clarity, whenever an operation will be used defined in [@!I-D.irtf-cfrg-bbs-signatures] or [@!I-D.irtf-cfrg-bbs-blind-signatures], it will be prefixed by "BBS." or "Blind." (e.g., "BBS.CoreVerify" etc.). More specifically, the operations used are the following:
 
-- `BlindBBS.messages_to_scalars`: Refers to the `messages_to_scalars` operation defined in [@!I-D.irtf-cfrg-bbs-blind-signatures, section 5.1].
-- `BlindBBS.CoreCommit`: Refers to the `CoreCommit` operation defined in [@!I-D.irtf-cfrg-bbs-blind-signatures, section 4.3.1].
+- `Blind.messages_to_scalars`: Refers to the `messages_to_scalars` operation defined in [@!I-D.irtf-cfrg-bbs-blind-signatures, section 5.1].
+- `Blind.CoreCommit`: Refers to the `CoreCommit` operation defined in [@!I-D.irtf-cfrg-bbs-blind-signatures, section 4.3.1].
 
 # Key Concepts
 
@@ -276,8 +276,6 @@ This section will describe the steps with which the Signer will generate a blind
 
 Initially, the Prover will chose a set of messages `blind_messages` that they want to be included in the signature, without reveling them to the Signer. They will also choose their part of the pseudonym secret `prover_nym` as a random scalar value.
 
-<!-- **TODO** Update with new messages to scalars -->
-
 ```
 (commitment_with_proof, secret_prover_blind) = CommitWithNym(
                                                    blind_messages,
@@ -286,9 +284,11 @@ Initially, the Prover will chose a set of messages `blind_messages` that they wa
 
 Inputs:
 
-- blind_messages (**OPTIONAL**), a vector of octet strings. If not
-                                 supplied it defaults to the empty
-                                 array ("()").
+- blind_messages (OPTIONAL), a vector of objects of the form
+                    {flag: string, value: octets}, with flag values in
+                    the set ["HASH", "RAW"], and value the raw
+                    individual message octets. If not supplied, it
+                    defaults to the empty array "()".
 - prover_nyms (**REQUIRED**), a vector of random scalar values.
 - api_id (**OPTIONAL**), octet string. If not supplied it defaults to the
                      empty octet string ("").
@@ -302,7 +302,7 @@ Outputs:
 
 Procedure:
 
-1. committed_message_scalars = BBS.messages_to_scalars(
+1. committed_message_scalars = Blind.messages_to_scalars(
                                              blind_messages, api_id)
 2. committed_message_scalars.append(prover_nyms)
 
