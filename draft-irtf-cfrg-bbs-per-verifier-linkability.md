@@ -484,8 +484,6 @@ add_zkp_info = {
 }
 ```
 
-<!-- **TODO**: Update! -->
-
 ```
 (proof, pseudonym) = ProofGenWithNym(PK,
                                      signature,
@@ -709,24 +707,24 @@ Procedure:
 
 ## Core Proof Generation
 
-This operations computes a BBS proof and a zero-knowledge proof of correctness of the pseudonym in "parallel" (meaning using common randomness), as to both create a proof that the pseudonym was correctly calculated using an undisclosed value that the Prover knows (i.e., the `nym_secrets` value), but also that this value is "signed" by the BBS signature (the last undisclosed message). As a result, validating the proof guarantees that the pseudonym is correctly computed and that it was computed using the Prover identifier that was included in the BBS signature.
-
-The operation uses the `BBS.ProofInit` and `BBS.ProofFinalize` operations defined in [Section 3.7.1](https://www.ietf.org/archive/id/draft-irtf-cfrg-bbs-signatures-07.html#name-proof-initialization) and [Section 3.7.2](https://www.ietf.org/archive/id/draft-irtf-cfrg-bbs-signatures-07.html#name-proof-finalization) correspondingly of [@!I-D.irtf-cfrg-bbs-signatures], the `PseudonymProofInit` operation defined in (#pseudonym-proof-generation-initialization) and the `ProofWithPseudonymChallengeCalculate` defined in (#challenge-calculation).
+This operations computes a BBS proof and a zero-knowledge proof of correctness of the pseudonym in "parallel" (meaning using common randomness), as to both create a proof that the pseudonym was correctly calculated using an undisclosed value that the Prover knows (i.e., the `nym_secrets` value), but also that this value is "signed" by the BBS signature. As a result, validating the proof guarantees that the pseudonym is correctly computed and that it was computed using the Prover identifier that was included in the BBS signature.
 
 <!-- **TODO**: Update! -->
 
 ```
 (proof, pseudonym) = CoreProofGenWithNym(PK,
                                   signature,
-                                  pseudonym,
-                                  verifier_id,
                                   generators,
                                   header,
                                   ph,
-                                  messages,
-                                  disclosed_indexes,
+                                  context_id,
+                                  proof_scalars,
+                                  proof_disclosed_indexes,
+                                  proof_commitment_indexes
                                   length_nym_secrets
                                   api_id)
+
+<!-- STOPPED HERE -->
 
 Inputs:
 
