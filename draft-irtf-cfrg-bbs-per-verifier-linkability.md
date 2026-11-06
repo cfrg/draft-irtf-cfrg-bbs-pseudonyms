@@ -215,6 +215,8 @@ This document makes use of various operations defined by the BBS Signature Schem
 - `Blind.messages_to_scalars`: Refers to the `messages_to_scalars` operation defined in [@!I-D.irtf-cfrg-bbs-blind-signatures, section 5.1].
 - `Blind.CoreCommit`: Refers to the `CoreCommit` operation defined in [@!I-D.irtf-cfrg-bbs-blind-signatures, section 4.3.1].
 - `Blind.B_calculate`: Refers to the `B_calculate` operation defined in [@!I-D.irtf-cfrg-bbs-blind-signatures, section 5.2].
+- `BBS.create_generators`:
+- `BBS.CoreVerify`:
 
 # Key Concepts
 
@@ -391,10 +393,6 @@ Procedure:
 
 The following operation both verifies the generated blind signature, as well as calculating and returning the final `nym_secret`, used to calculate the pseudonym value during proof generation.
 
-This operation uses the `Blind.Verify` function as defined in [Section 4.2.2](https://www.ietf.org/archive/id/draft-kalos-bbs-blind-signatures-01.html#name-blind-signature-verificatio) of the Blind BBS document [@!BlindBBS]
-
-<!-- **TODO**: Update! -->
-
 ```
 nym_secret = VerifyFinalizeWithNym(PK,
                                    signature,
@@ -414,11 +412,16 @@ Inputs:
 - header (**OPTIONAL**), an octet string containing context and application
                      specific information. If not supplied, it defaults
                      to an empty string.
-- messages (**OPTIONAL**), a vector of octet strings. If not supplied, it
-                       defaults to the empty array "()".
-- blind_messages (**OPTIONAL**), a vector of octet strings. If not
-                                 supplied, it defaults to the empty
-                                 array "()".
+- messages (OPTIONAL), a vector of objects of the form
+                    {flag: string, value: octets}, with flag values in
+                    the set ["HASH", "RAW"], and value the raw
+                    individual message octets. If not supplied, it
+                    defaults to the empty array "()".
+- blind_messages (OPTIONAL), a vector of objects of the form
+                    {flag: string, value: octets}, with flag values in
+                    the set ["HASH", "RAW"], and value the raw
+                    individual message octets. If not supplied, it
+                    defaults to the empty array "()".
 - prover_nyms (**REQUIRED**), a vector of scalar values.
 - signer_nym_entropy (**OPTIONAL**), a scalar value. If not supplied, it
                                  defaults to the zero scalar (0).
@@ -429,23 +432,36 @@ Outputs:
 
 - nym_secrets, a vector of scalar values; or INVALID.
 
+Deserialization:
+
+1. L = length(messages)
+2. M = length(blind_messages)
+3. N = length(prover_nyms)
+
+
 Procedure:
 
-1. (message_scalars, generators) = Blind.prepare_parameters(
-                                     messages,
-                                     blind_messages,
-                                     length(messages) + 1,
-                                     length(blind_messages) + N + 1,
-                                     secret_prover_blind,
-                                     api_id)
+1. generators = BBS.create_generators(L + 1, api_id)
+2. blind_generators = BBS.create_generators(M + N + 1, "BLIND_" || api_id)
 
-2. nym_secrets = prover_nym.copy()
-3. nym_secrets[-1] = prover_nyms[-1] + signer_nym_entropy // in scalar
-                                                          // field
-4. message_scalars.append(nym_secrets)
-5. combined_header = header || I2OSP(length(prover_nyms), 8)
-6. res = BBS.CoreVerify(PK, signature, generators, combined_header,
-                                                message_scalars, api_id)
+3. signer_scalars = Blind.messages_to_scalars(messages, api_id)
+
+4. blind_message_scalars = Blind.messages_to_scalars(blind_messages,
+                    api_id)
+
+5. proof_scalars = signer_scalars.append(secret_prover_blind)
+                                          .append(blind_message_scalars)
+
+6. nym_secrets = prover_nym.copy()
+// The following addition is in the scalar field
+7. nym_secrets[-1] = prover_nyms[-1] + signer_nym_entropy
+8. proof_scalars.append(nym_secrets)
+9. combined_header = header || I2OSP(N, 8)
+10. res = BBS.CoreVerify(PK,
+                        signature,
+                        generators.append(blind_generators),
+                        combined_header,
+                        proof_scalars, api_id)
 
 7. if res is INVALID, return INVALID
 8. return nym_secrets
