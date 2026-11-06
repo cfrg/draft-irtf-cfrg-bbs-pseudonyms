@@ -214,6 +214,7 @@ This document makes use of various operations defined by the BBS Signature Schem
 
 - `Blind.messages_to_scalars`: Refers to the `messages_to_scalars` operation defined in [@!I-D.irtf-cfrg-bbs-blind-signatures, section 5.1].
 - `Blind.CoreCommit`: Refers to the `CoreCommit` operation defined in [@!I-D.irtf-cfrg-bbs-blind-signatures, section 4.3.1].
+- `Blind.B_calculate`: Refers to the `B_calculate` operation defined in [@!I-D.irtf-cfrg-bbs-blind-signatures, section 5.2].
 
 # Key Concepts
 
@@ -322,8 +323,6 @@ the BlindSignWithNym procedure shown below. The length of the nym vector paramet
 Typically the signer_nym_entropy will be a fresh random scalar, however in the case of
 "reissue" of a signature for a prover who wants to keep their same pseudonymous identity this value can be reused for the same prover if desired.
 
-<!-- **TODO**: Update! -->
-
 ```
 BlindSignWithNym(SK, PK, commitment_with_proof, length_nym_vector,
                  signer_nym_entropy, header, messages)
@@ -347,8 +346,11 @@ Inputs:
 - header (**OPTIONAL**), an octet string containing context and application
                      specific information. If not supplied, it defaults
                      to an empty string ("").
-- messages (**OPTIONAL**), a vector of octet strings. If not supplied, it
-                       defaults to the empty array ("()").
+- messages (OPTIONAL), a vector of objects of the form
+                    {flag: string, value: octets}, with flag values in
+                    the set ["HASH", "RAW"], and value the raw
+                    individual message octets. If not supplied, it
+                    defaults to the empty array ("()").
 
 Deserialization:
 
@@ -366,27 +368,23 @@ Procedure:
 1.  generators = BBS.create_generators(L + 1, api_id)
 2.  blind_generators = BBS.create_generators(M, "BLIND_" || api_id)
 
-3.  commit = Blind.deserialize_and_validate_commit(
+3.  commitment = Blind.deserialize_and_validate_commit(
                         commitment_with_proof, blind_generators, api_id)
-4.  if commit is INVALID, return INVALID
+4.  if commitment is INVALID, return INVALID
 
-5.  message_scalars = BBS.messages_to_scalars(messages, api_id)
+5.  message_scalars = Blind.messages_to_scalars(messages, api_id)
 
-6.  B = Blind.B_calculate(generators, commit, message_scalars)
-7.  if B is INVALID, return INVALID
-8.  B = B + blind_generators[-1] * signer_nym_entropy
+6.  res = Blind.B_calculate(PK, generators, blind_generators, commitment, message_scalars, header, api_id)
+7.  if res is INVALID, return INVALID
+8.  (B) = res
+// Add in signer nym_entropy to the last prover_nym element
+9.  B = B + blind_generators[-1] * signer_nym_entropy
 
-9.  combined_header = header || I2OSP(length_nym_vector, 8)
-10. blind_sig = Blind.FinalizeBlindSign(SK,
-                                  PK,
-                                  B,
-                                  generators,
-                                  blind_generators,
-                                  combined_header,
-                                  api_id)
+10. combined_header = header || I2OSP(length_nym_vector, 8)
+11. blind_sig = Blind.FinalizeBlindSign(SK, B, api_id)
 
-11. if blind_sig is INVALID, return INVALID
-12. return blind_sig
+12. if blind_sig is INVALID, return INVALID
+13. return blind_sig
 ```
 
 ### Verification and Finalization
