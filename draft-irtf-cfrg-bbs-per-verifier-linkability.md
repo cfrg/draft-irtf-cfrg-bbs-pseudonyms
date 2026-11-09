@@ -615,46 +615,44 @@ Procedure:
 
 This operation validates a BBS proof with a pseudonym, given the Signer's public key (PK), the proof, the pseudonym, the context identifier that was used to create it, a header and presentation header, the disclosed messages and committed messages as well as the, the indexes those messages had in the original vectors of signed messages. Validating the proof also validates the correctness and ownership by the Prover of the received pseudonym.
 
-<!-- **TODO**: Update! -->
-
 ```
 result = ProofVerifyWithNym(PK,
-                                  proof,
-                                  header,
-                                  ph,
-                                  pseudonym,
-                                  context_id,
-                                  length_nym_vector,
-                                  L,
-                                  disclosed_messages,
-                                  disclosed_blind_messages,
-                                  disclosed_indexes,
-                                  disclosed_committed_indexes)
+                            proof,
+                            header,
+                            ph,
+                            pseudonym,
+                            context_id,
+                            length_nym_vector,
+                            issuer_known_messages_no,
+                            disclosed_messages,
+                            message_disclosures)
 
 Inputs:
 
-- PK (**REQUIRED**), an octet string of the form outputted by the SkToPk
+- PK (REQUIRED), an octet string of the form outputted by the SkToPk
                  operation.
-- proof (**REQUIRED**), an octet string of the form outputted by the
+- proof (REQUIRED), an octet string of the form outputted by the
                     ProofGen operation.
-- header (**OPTIONAL**), an optional octet string containing context and
+- header (OPTIONAL), an optional octet string containing context and
                      application specific information. If not supplied,
                      it defaults to the empty octet string ("").
-- ph (**OPTIONAL**), an octet string containing the presentation header. If
+- ph (OPTIONAL), an octet string containing the presentation header. If
                  not supplied, it defaults to the empty octet
                  string ("").
-- pseudonym (**REQUIRED**), the pseudonym (element of group G1).
-- context_id (**REQUIRED**), an octet string.
+- pseudonym (REQUIRED), the pseudonym (element of group G1).
+- context_id (REQUIRED), an octet string.
 - length_nym_vector (**REQUIRED**), integer.
-- L (**OPTIONAL**), an integer, representing the total number of Signer
-                known messages if not supplied it defaults to 0.
-- disclosed_messages (**OPTIONAL**), a vector of octet strings. If not
-                                 supplied, it defaults to the empty
-                                 array ("()").
-- disclosed_indexes (**OPTIONAL**), vector of unsigned integers in ascending
-                                order. Indexes of disclosed messages. If
-                                not supplied, it defaults to the empty
-                                array ("()").
+- issuer_known_messages_no (OPTIONAL), a non-negative integer. If not
+                                       supplied, it defaults to 0.
+- disclosed_messages (OPTIONAL), a vector of objects of the form
+                    {flag: string, value: octets}, with flag values in
+                    the set ["HASH", "RAW"], and value the raw
+                    individual message octets. If not
+                    supplied, it defaults to the empty array ("()").
+- message_disclosures (OPTIONAL), a map between message indexes and one
+                                   of the DISCLOSE, HIDE or COMMIT
+                                   values. If not supplied, it defaults
+                                   to the empty map "{}".
 
 Parameters:
 
@@ -669,39 +667,69 @@ Outputs:
 
 Deserialization:
 
+
+
+<!-- OLD
 1. proof_len_floor = 3 * octet_point_length + 4 * octet_scalar_length
 2. if length(proof) < proof_len_floor, return INVALID
 3. U = floor((length(proof) - proof_len_floor) / octet_scalar_length)
 4. total_no_messages = length(disclosed_indexes) +
                              length(disclosed_committed_indexes) + U - 1
 5. M = total_no_messages - L
+-->
+
+1. bbs_proof_len = OS2IP(proof[0..7])
+2. undisclosed_msgs_no = (bbs_proof_len
+                           - 3 * octet_point_length
+                           - 4 * octet_scalar_length)
+                           / octet_scalar_length
+3. proof_msgs_no = undisclosed_msgs_no + length(disclosed_messages)
+4. if proof_msgs_no == 0, return INVALID
+5. total_msgs_no = proof_msgs_no - 1
+6. if issuer_known_messages_no > total_msgs_no, return INVALID
+7. if length(message_disclosures) != total_msgs_no, return INVALID
+8. if the keys of message_disclosures are not exactly the integers
+   0..total_msgs_no - 1, return INVALID
+9. if any value in message_disclosures is not one of DISCLOSE, HIDE,
+   or COMMIT, return INVALID
+
+10. let disclosed_indexes be the integers i in 0..total_msgs_no - 1 so
+   that message_disclosures[i] = DISCLOSE, in
+   ascending order.
+11. let commitment_indexes be the integers i in 0..total_msgs_no - 1 so
+   that message_disclosures[i] = COMMIT, in
+   ascending order.
+12. if length(disclosed_indexes) != length(disclosed_messages),
+    return INVALID
+13. let proof_index(i) be i if i < issuer_known_messages_no,
+    and i + 1 otherwise.
+14. proof_disclosed_indexes = (proof_index(i) for i in disclosed_indexes)
+15. proof_commitment_indexes = (proof_index(i) for i in commitment_indexes)
+
 
 Procedure:
 
-1. (message_scalars, generators) = Blind.prepare_parameters(
-                                           disclosed_messages,
-                                           disclosed_blind_messages,
-                                           L + 1,
-                                           M + 1,
-                                           NONE,
-                                           api_id)
+1. generators = BBS.create_generators(
+                                  issuer_known_messages_no + 1, api_id)
+2. blind_generators = BBS.create_generators(
+                               total_msgs_no - issuer_known_messages_no + 1,
+                               "BLIND_" || api_id)
 
-2. indexes = ()
-3. indexes.append(disclosed_indexes)
-4. for j in disclosed_commitment_indexes: indexes.append(j + L + 1)
+3. message_scalars = messages_to_scalars(disclosed_messages, api_id)
 
-5. result = CoreProofVerifyWithNym(PK,
+4. result = CoreProofVerifyWithNym(PK,
                                     proof,
                                     pseudonym,
                                     context_id,
                                     length_nym_vector,
-                                    generators,
+                                    generators.append(blind_generators),
                                     header,
                                     ph,
                                     message_scalars,
-                                    indexes,
+                                    proof_disclosed_indexes,
+                                    proof_commitment_indexes,
                                     api_id)
-6. return result
+5. return result
 ```
 
 # Core Operations
@@ -861,11 +889,9 @@ Procedure:
 
 ## Core Proof Verification
 
-This operation validates a BBS proof that also includes a pseudonym. Validating the proof, other than the correctness and integrity of the revealed messages, the header and the presentation header values, also guarantees that the supplied pseudonym was correctly calculated, i.e., that it was produced using the Verifier's identifier and the signed (but undisclosed) Prover's identifier, following the operation defined in (#pseudonym-calculation-procedure).
+This operation validates a BBS proof that also includes a pseudonym. Validating the proof, other than the correctness and integrity of the revealed messages, the header and the presentation header values, also guarantees that the supplied pseudonym was correctly calculated, i.e., that it was produced using the context identifier and the signed (but undisclosed) Prover's identifier, following the operation defined in (#pseudonym-calculation-procedure).
 
 The operation uses the `BBS.ProofVerifyInit` operation defined [Section 3.7.3](https://www.ietf.org/archive/id/draft-irtf-cfrg-bbs-signatures-07.html#name-proof-verification-initiali) of [@!I-D.irtf-cfrg-bbs-signatures], the `PseudonymProofVerifyInit` operation defined in (#pseudonym-proof-verification-initialization) and the `ProofWithPseudonymChallengeCalculate` operation defined in (#challenge-calculation).
-
-<!-- **TODO**: Update! -->
 
 ```
 result = CoreProofVerifyWithNym(PK,
@@ -878,40 +904,48 @@ result = CoreProofVerifyWithNym(PK,
                                 ph,
                                 disclosed_messages,
                                 disclosed_indexes,
+                                proof_commitment_indexes
                                 api_id)
 
 Inputs:
 
-- PK (**REQUIRED**), an octet string of the form outputted by the SkToPk
+- PK (REQUIRED), an octet string of the form outputted by the SkToPk
                  operation.
-- proof (**REQUIRED**), an octet string of the form outputted by the
-                    ProofGen operation.
-- pseudonym (**REQUIRED**), A point of G1, different from the Identity of
+- proof (REQUIRED), an octet string of the form outputted by the
+                        ProofGen operation.
+- pseudonym (REQUIRED), A point of G1, different from the Identity of
                         G1, as outputted by the CalculatePseudonym
                         operation.
-- context_id (**REQUIRED**), an octet string, representing the unique proof
+- context_id (REQUIRED), an octet string, representing the unique proof
                          Verifier identifier.
-- length_nym_vector (**REQUIRED**), the length of the nym secrets vector
+- length_nym_vector (REQUIRED), the length of the nym secrets vector
                                 from the Prover.
-- generators (**REQUIRED**), vector of points in G1.
-- header (**OPTIONAL**), an optional octet string containing context and
+- generators (REQUIRED), vector of pseudo-random points in G1.
+- header (OPTIONAL), an optional octet string containing context and
                      application specific information. If not supplied,
-                     it defaults to an empty string.
-- ph (**OPTIONAL**), an octet string containing the presentation header. If
-                 not supplied, it defaults to an empty string.
-- disclosed_messages (**OPTIONAL**), a vector of scalars representing the
+                     it defaults to the empty octet string ("").
+- ph (OPTIONAL), an octet string containing the presentation_header. If
+                 not supplied, it defaults to the empty octet
+                 string ("").
+- disclosed_messages (OPTIONAL), a vector of scalars representing the
                                  messages. If not supplied, it defaults
-                                 to the empty array "()".
-- disclosed_indexes (**OPTIONAL**), vector of unsigned integers in ascending
-                                order. Indexes of disclosed messages. If
-                                not supplied, it defaults to the empty
-                                array "()".
-- api_id (**OPTIONAL**), an octet string. If not supplied it defaults to the
+                                 to the empty array ("()").
+- disclosed_indexes (OPTIONAL), vector of non-negative integers in
+                                ascending order. Indexes of disclosed
+                                messages. If not supplied, it defaults
+                                to the empty array ("()").
+- commitment_indexes (OPTIONAL), vector of non-negative integers in
+                                 ascending order. Indexes of committed
+                                 messages. If not supplied, it defaults
+                                 to the empty array ("()").
+- api_id (OPTIONAL), an octet string. If not supplied it defaults to the
                      empty octet string ("").
 
 Parameters:
 
 - P1, fixed point of G1, defined by the ciphersuite.
+- Y_0 and Y_1, fixed points of G1 computed as (Y_0, Y_1) = BBS.create_generators(2, "COM_DIS_" || api_id)
+- BP2, fixed point of G2, defined by the ciphersuite.
 
 Outputs:
 
@@ -919,52 +953,82 @@ Outputs:
 
 Deserialization:
 
-1. proof_result = octets_to_proof(proof)
-2. if proof_result is INVALID, return INVALID
-3. (Abar, Bbar, r2^, r3^, commitments, cp) = proof_result
-4. W = octets_to_pubkey(PK)
-5. if W is INVALID, return INVALID
-6. R = length(disclosed_indexes)
-7. (i1, ..., iR) = disclosed_indexes
+1.  W = BBS.octets_to_pubkey(PK)
+2.  if W is INVALID, return INVALID
 
-ABORT if:
+3.  proof_res = Blind.octets_to_proof(proof, length(commitment_indexes))
+4.  if proof_res is INVALID, return INVALID
+5.  (bbs_proof_res, commitments_proof_res) = proof_res
 
-1. for i in disclosed_indexes, i < 1 or i > R + length(commitments) - 1
+6.  (Abar, Bbar, D, e^, r1^, r3^, hats, cp) = bbs_proof_res
+7.  (commitments, commitments_proof) = commitments_proof_res
+
+8.  N = length(commitments)
+9.  if length(commitments_proof) != N, return INVALID
+10. if length(commitment_indexes) != N, return INVALID
+11. U = length(hats)
+12. R = length(disclosed_indexes)
+13. if length(disclosed_messages) != R, return INVALID
+14. L = R + U
+
+15. if commitment_indexes is not a strictly ascending list of integers
+    in 0..L - 1, return INVALID
+
+16. if disclosed_indexes is not a strictly ascending list of integers
+    in 0..L - 1, return INVALID
+
+17. if disclosed_indexes and commitment_indexes are not disjoint,
+    return INVALID
+
+18. undisclosed_indexes = (0, 1, ..., L - 1) \ disclosed_indexes
+19. (j1, ..., jU) = undisclosed_indexes
+20. (m^_j1, ..., m^_jU) = hats
+21. (C_1, ... C_N) = commitments
+22. (s^_1, ..., s^_N) = commitments_proof
 
 Procedure:
 
 1. combined_header = header || I2OSP(length_nym_vector, 8)
 2. init_res = BBS.ProofVerifyInit(PK,
-                                  proof_result,
-                                  combined_header,
+                                  bbs_proof_res,
                                   generators,
-                                  messages,
+                                  combined_header,
+                                  disclosed_messages
                                   disclosed_indexes,
                                   api_id)
+3.  if init_res is INVALID, return INVALID
 
-3. pseudonym_init_res = PseudonymProofVerifyInit(
+4.  for i in (1, 2, ..., N):
+5.      idx = commitment_indexes[i]
+6.      let k be the integer such that j_k == idx
+7.      C^_i = Y_0 * s^_i + Y_1 * m^_k - C_i * cp
+
+8.  commitment_init_res = {commitments: (C_1, ..., C_N),
+                           commitments_proofs: (C^_1, ...,C^_N),
+                           commitment_indexes: commitment_indexes}
+
+9. pseudonym_init_res = PseudonymProofVerifyInit(
                                         pseudonym,
                                         context_id,
-                                        commitments[-length_nym_vector],
+                                        hats[-length_nym_vector],
                                         cp)
-4. if pseudonym_init_res is INVALID, return INVALID
+10. if pseudonym_init_res is INVALID, return INVALID
 
-5. challenge = ProofWithPseudonymChallengeCalculate(init_res,
-                                                    pseudonym_init_res,
-                                                    disclosed_indexes,
-                                                    messages,
-                                                    ph,
-                                                    api_id)
-6. if cp != challenge, return INVALID
-7. if e(Abar, W) * e(Bbar, -BP2) != Identity_GT, return INVALID
-8. return VALID
+11. challenge = ProofWithPseudonymChallengeCalculate(init_res,
+                                          commitment_init_res
+                                          pseudonym_init_res,
+                                          disclosed_messages,
+                                          disclosed_indexes,
+                                          ph,
+                                          api_id)
+12. if cp != challenge, return INVALID
+13. if e(Abar, W) * e(Bbar, -BP2) != Identity_GT, return INVALID
+14. return VALID
 ```
 
 ## Pseudonym Proof Generation Utilities
 
 ### Pseudonym Proof Generation Initialization
-
-<!-- **TODO**: Update! -->
 
 ```
 pseudonym_init_res = PseudonymProofInit(context_id,
@@ -972,9 +1036,9 @@ pseudonym_init_res = PseudonymProofInit(context_id,
 
 Inputs:
 
-- context_id (**REQUIRED**), an octet string
-- nym_secrets (**REQUIRED**), a scalar value
-- random_scalars (**REQUIRED**), a scalar value
+- context_id (REQUIRED), an octet string
+- nym_secrets (REQUIRED), a scalar value
+- random_scalars (REQUIRED), a scalar value
 
 Outputs:
 
@@ -1003,8 +1067,6 @@ Procedure:
 
 ### Pseudonym Proof Verification Initialization
 
-<!-- **TODO**: Update! -->
-
 ```
 pseudonym_init_res = PseudonymProofVerifyInit(pseudonym,
                                               context_id,
@@ -1013,10 +1075,10 @@ pseudonym_init_res = PseudonymProofVerifyInit(pseudonym,
 
 Inputs:
 
-- pseudonym (**REQUIRED**), an element of the G1 group.
-- context_id (**REQUIRED**), an octet string.
-- nym_secret_commitments (**REQUIRED**), a vector of scalar values.
-- proof_challenge (**REQUIRED**), a scalar value.
+- pseudonym (REQUIRED), an element of the G1 group.
+- context_id (REQUIRED), an octet string.
+- nym_secret_commitments (REQUIRED), a vector of scalar values.
+- proof_challenge (REQUIRED), a scalar value.
 
 Outputs:
 
