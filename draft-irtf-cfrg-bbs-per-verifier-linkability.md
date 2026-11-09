@@ -217,6 +217,7 @@ This document makes use of various operations defined by the BBS Signature Schem
 - `Blind.B_calculate`: Refers to the `B_calculate` operation defined in [@!I-D.irtf-cfrg-bbs-blind-signatures, section 5.2].
 - `BBS.create_generators`:
 - `BBS.CoreVerify`:
+- `Blind.proof_to_octets`:
 
 # Key Concepts
 
@@ -850,7 +851,7 @@ Procedure:
 21. for i in (1, 2, ..., N): s^_i =  s~_i + challenge * s_i
 22. commitments_proof = ((C_1, ..., C_N), (s^_1, ..., s^_N))
 
-23. proof = proof_to_octets(bbs_proof, commitments_proof)
+23. proof = Blind.proof_to_octets(bbs_proof, commitments_proof)
 24. add_zkp_info = {committed_message_scalars:
                        (messages[commitment_indexes[1]], ...,
                         messages[commitment_indexes[N]]),
