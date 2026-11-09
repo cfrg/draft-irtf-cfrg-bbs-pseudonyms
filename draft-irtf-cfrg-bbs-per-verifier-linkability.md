@@ -709,8 +709,6 @@ Procedure:
 
 This operations computes a BBS proof and a zero-knowledge proof of correctness of the pseudonym in "parallel" (meaning using common randomness), as to both create a proof that the pseudonym was correctly calculated using an undisclosed value that the Prover knows (i.e., the `nym_secrets` value), but also that this value is "signed" by the BBS signature. As a result, validating the proof guarantees that the pseudonym is correctly computed and that it was computed using the Prover identifier that was included in the BBS signature.
 
-<!-- **TODO**: Update! -->
-
 ```
 (proof, pseudonym) = CoreProofGenWithNym(PK,
                                   signature,
@@ -719,12 +717,10 @@ This operations computes a BBS proof and a zero-knowledge proof of correctness o
                                   ph,
                                   context_id,
                                   proof_scalars,
-                                  proof_disclosed_indexes,
-                                  proof_commitment_indexes
+                                  disclosed_indexes,
+                                  commitment_indexes
                                   length_nym_secrets
                                   api_id)
-
-<!-- STOPPED HERE -->
 
 Inputs:
 
@@ -732,25 +728,27 @@ Inputs:
                  operation.
 - signature (**REQUIRED**), an octet string of the form outputted by the
                         Sign operation.
-- pseudonym (**REQUIRED**), A point of G1, different from the Identity of
-                        G1, as outputted by the CalculatePseudonym
-                        operation.
 - context_id (**REQUIRED**), an octet string, representing the unique proof
                           Verifier identifier.
 - generators (**REQUIRED**), vector of points in G1.
-- header (**OPTIONAL**), an octet string containing context and application
+- header (OPTIONAL), an octet string containing context and application
                      specific information. If not supplied, it defaults
-                     to an empty string.
-- ph (**OPTIONAL**), an octet string containing the presentation header. If
-                 not supplied, it defaults to an empty string.
-- message_scalars (**OPTIONAL**), a vector of scalars representing the
+                     to the empty octet string ("").
+- ph (OPTIONAL), an octet string containing the presentation_header. If
+                 not supplied, it defaults to the empty octet
+                 string ("").
+- proof_scalars (**OPTIONAL**), a vector of scalars representing the
                               messages. If not supplied, it defaults to
                               the empty array "()" **MUST** include the
-                              nym_secret scalar as last element.
-- disclosed_indexes (**OPTIONAL**), vector of unsigned integers in ascending
-                                order. Indexes of disclosed messages. If
-                                not supplied, it defaults to the empty
-                                array "()".
+                              nym_secret scalars as the ending elements.
+- disclosed_indexes (OPTIONAL), vector of non-negative integers in
+                                ascending order. Indexes of disclosed
+                                messages. If not supplied, it defaults
+                                to the empty array ("()").
+- commitment_indexes (OPTIONAL), vector of non-negative integers in
+                                 ascending order. Indexes of committed
+                                 messages. If not supplied, it defaults
+                                 to the empty array ("()").
 - length_nym_secrets (**REQUIRED**), the length of the nym_secrets vector.
 - api_id (**OPTIONAL**), an octet string. If not supplied it defaults to the
                      empty octet string ("").
@@ -758,67 +756,106 @@ Inputs:
 Parameters:
 
 - P1, fixed point of G1, defined by the ciphersuite.
+- Y_0 and Y_1, fixed points of G1 computed as
+  (Y_0, Y_1) = BBS.create_generators(2, "COM_DIS_" || api_id)
 
 Outputs:
 
 - proof, an octet string; or INVALID.
+- add_zkp_info, a structure containing an array of committed message scalars
+                used in committed disclosure, and the array of random scalars
+                used to create the respective commitments.
 
 Deserialization:
 
 1.  signature_result = octets_to_signature(signature)
 2.  if signature_result is INVALID, return INVALID
 3.  (A, e) = signature_result
-4.  L = length(message_scalars)
-5.  R = length(disclosed_indexes)
-6.  (i1, ..., iR) = disclosed_indexes
-7.  if R > L - 1, return INVALID, Note: we never reveal the nym_secret.
-8.  U = L - R
 
-// Note: nym_secret is last message and is not revealed.
-9.  undisclosed_indexes = (0, 1, ..., L - 1) \ disclosed_indexes
-10. (i1, ..., iR) = disclosed_indexes
-11. (j1, ..., jU) = undisclosed_indexes
-12. disclosed_messages = (message_scalars[i1], ..., message_scalars[iR])
-13. undisclosed_messages = (message_scalars[j1], ...,
-                                                    message_scalars[jU])
+4.  L = length(proof_scalars) // nym_secrets at the end
+5. if commitment_indexes is not a strictly ascending list of integers
+    in 0..L - 1, return INVALID
+6. if disclosed_indexes is not a strictly ascending list of integers
+    in 0..L - 1, return INVALID
+7. if disclosed_indexes and commitment_indexes are not disjoint,
+    return INVALID
+8.  N = length(commitment_indexes)
+9.  R = length(disclosed_indexes)
+10. U = L - R
+11. (i1, ..., iR) = disclosed_indexes
+12. disclosed_messages = (messages[i1], ..., messages[iR])
+13. undisclosed_indexes = (0, 1, ..., L - 1) \ disclosed_indexes
+14. (j1, ..., jU) = undisclosed_indexes
+15. undisclosed_messages = (messages[j1], ..., messages[jU])
 
-ABORT if:
-
-1. for i in disclosed_indexes, i < 0 or i > L - 1, // Note: nym_secret
-                                                   // is the Lth message
-                                                   // and not revealed.
 
 Procedure:
 
-1.  random_scalars = calculate_random_scalars(5+U)
-2.  combined_header = header || I2OSP(length_nym_vector, 8)
-3.  init_res = BBS.ProofInit(PK,
-                             signature_res,
-                             combined_header,
-                             random_scalars,
+//  Get all needed random scalars at once
+1.  all_random_scalars = BBS.calculate_random_scalars(5 + U + 2*N)
+2.  (r1, r2, e~, r1~, r3~, m~_j1, ..., m~_jU, s_1, ..., s_N,
+                            s~_1, ..., s~_N) = all_random_scalars
+3.  init_random_scalars = (r1, r2, e~, r1~, r3~, m~_j1, ..., m~_jU)
+4.  combined_header = header || I2OSP(length_nym_vector, 8)
+
+5.  init_res = BBS.ProofInit(PK,
+                             signature_result,
                              generators,
-                             message_scalars,
+                             init_random_scalars,
+                             combined_header,
+                             proof_scalars,
                              undisclosed_indexes,
                              api_id)
-4.  if init_res is INVALID, return INVALID
+6.  if init_res is INVALID, return INVALID
 
-5.  pseudonym_init_res = PseudonymProofInit(
+//  Nym scalars are at the end of the proof scalars
+7.  nym_scalars  = proof_scalars[L-length_nym_secrets, L]
+//  Corresponding nym random scalars end of the 5 + U block
+8.  nym_rands = random_scalars[5 + U - length_nym_secrets,  5 + U]
+9.  pseudonym_init_res = PseudonymProofInit(
                                    context_id,
-                                   message_scalars[-length_nym_secrets],
-                                   random_scalars[-length_nym_secrets])
+                                   nym_scalars,
+                                   nym_rands)
 
-6.  if pseudonym_init_res is INVALID, return INVALID
-7.  pseudonym = pseudonym_init_res[0]
+10.  if pseudonym_init_res is INVALID, return INVALID
+11.  pseudonym = pseudonym_init_res[0]
 
-8.  challenge = ProofWithPseudonymChallengeCalculate(init_res,
+// Calculate the commitments and initiate the correctness proof
+
+12.  for i in (1, 2, ..., N):
+13.      idx = commitment_indexes[i]
+14.      C_i = Y_0 * s_i + Y_1 * messages[idx]
+15.      let k be the integer such that j_k == idx
+16.     C~_i = Y_0 * s~_i + Y_1 * m~_k
+
+17. commitment_init_res = {commitments: (C_1, ..., C_N),
+                           commitments_proofs: (C~_1, ...,C~_N),
+                           commitment_indexes: commitment_indexes}
+
+18.  challenge = ProofWithPseudonymChallengeCalculate(init_res,
+                                                     commitment_init_res,
                                                      pseudonym_init_res,
-                                                     disclosed_indexes,
                                                      disclosed_messages,
-                                                     ph,
-                                                     api_id)
-9.  proof = BBS.ProofFinalize(init_res, challenge, e_value,
-                                   random_scalars, undisclosed_messages)
-10. return (proof, pseudonym)
+                                                     disclosed_indexes,
+                                                     ph, api_id)
+19. if challenge is INVALID, return INVALID
+
+20. bbs_proof = BBS.ProofFinalize(init_res,
+                                  challenge,
+                                  e,
+                                  init_random_scalars,
+                                  undisclosed_messages)
+
+// Finalize the commitment correctness proof
+21. for i in (1, 2, ..., N): s^_i =  s~_i + challenge * s_i
+22. commitments_proof = ((C_1, ..., C_N), (s^_1, ..., s^_N))
+
+23. proof = proof_to_octets(bbs_proof, commitments_proof)
+24. add_zkp_info = {committed_message_scalars:
+                       (messages[commitment_indexes[1]], ...,
+                        messages[commitment_indexes[N]]),
+                    commitment_rands: (s_1, ..., s_N)}
+25. return [proof, pseudonym, add_zkp_info]
 ```
 
 ## Core Proof Verification
