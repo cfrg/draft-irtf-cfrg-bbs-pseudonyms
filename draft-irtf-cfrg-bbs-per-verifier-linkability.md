@@ -1044,31 +1044,36 @@ Procedure:
 
 ## Challenge Calculation
 
-<!-- **TODO**: Update! -->
-
 ```
 challenge = ProofWithPseudonymChallengeCalculate(init_res,
+                                                 commitment_init_res,
                                                  pseudonym_init_res,
-                                                 i_array,
-                                                 msg_array,
+                                                 disclosed_messages,
+                                                 disclosed_indexes,
                                                  ph, api_id)
 
 Inputs:
-- init_res (**REQUIRED**), vector representing the value returned after
-                       initializing the proof generation or verification
-                       operations, consisting of 5 points of G1 and a
-                       scalar value, in that order.
-- pseudonym_init_res (**REQUIRED**), vector representing the value returned
+- init_res (REQUIRED), a ProofInitRes object representing the value
+                       returned after initializing the proof generation
+                       or verification operations.
+- commitment_init_res (REQUIRED), a CommitmentInitRes representing the value
+                                 returned after initializing the commitments
+                                 proof of correctness generation or
+                                 verification.
+- pseudonym_init_res (REQUIRED), vector representing the value returned
                                  after initializing the pseudonym proof,
                                  consisting of
                                  (pseudonym, context_id, Ut).
-- i_array (**REQUIRED**), array of non-negative integers (the indexes of
-                      the disclosed messages).
-- msg_array (**REQUIRED**), array of scalars (the disclosed messages after
-                        mapped to scalars).
-- ph (**OPTIONAL**), an octet string. If not supplied, it **MUST** default to
+- disclosed_messages (OPTIONAL), a vector of scalars representing the
+                                 messages. If not supplied, it defaults
+                                 to the empty array ("()").
+- disclosed_indexes (OPTIONAL), vector of non-negative integers in
+                                ascending order. Indexes of disclosed
+                                messages. If not supplied, it defaults
+                                to the empty array ("()").
+- ph (OPTIONAL), an octet string. If not supplied, it must default to
                  the empty octet string ("").
-- api_id (**OPTIONAL**), an octet string. If not supplied it defaults to the
+- api_id (OPTIONAL), an octet string. If not supplied it defaults to the
                      empty octet string ("").
 
 Outputs:
@@ -1077,29 +1082,46 @@ Outputs:
 
 Definitions:
 
-1. challenge_dst, an octet string representing the domain separation
-                  tag: api_id || "H2S_" where "H2S_" is an ASCII string
-                  comprised of 4 bytes.
+1. hash_to_scalar_dst, an octet string representing the domain
+                       separation tag: api_id || "H2S_" where "H2S_" is
+                       an ASCII string comprised of 4 bytes.
 
 Deserialization:
 
-1. R = length(i_array)
-2. (i1, ..., iR) = i_array
-3. (msg_i1, ..., msg_iR) = msg_array
-4. (Abar, Bbar, D, T1, T2, domain) = init_res
-5. (pseudonym, context_id, Ut) = pseudonym_init_res
+1.  (Abar, Bbar, D, T1, T2, domain) = (init_res.Abar,
+                                       init_res.Bbar,
+                                       init_res.D,
+                                       init_res.T1,
+                                       init_res.T2,
+                                       init_res.domain)
+
+2.  R = length(disclosed_indexes)
+3.  (i1, ..., iR) = disclosed_indexes
+4. if length(disclosed_messages) != R, return INVALID
+5.  (msg_i1, ..., msg_iR) = disclosed_messages
+
+6.  N = length(commitment_init_res.commitments)
+7.  if length(commitment_init_res.commitments_proofs) != N, return INVALID
+8.  if length(commitment_init_res.commitment_indexes) != N, return INVALID
+9.  (C_1, ..., C_N) = commitment_init_res.commitments
+10. (C~_1, ...,C~_N) = commitment_init_res.commitments_proofs
+11. (ci_1, ..., ci_N) = commitment_init_res.commitment_indexes
+12. (pseudonym, context_id, Ut) = pseudonym_init_res
 
 ABORT if:
 
-1. R > 2^64 - 1 or R != length(msg_array)
+1. R > 2^64 - 1
 2. length(ph) > 2^64 - 1
 
 Procedure:
 1. c_arr = (R, i1, msg_i1, i2, msg_i2, ..., iR, msg_iR, Abar, Bbar,
                                    D, T1, T2, pseudonym, Ut, domain)
-2. c_octs = serialize(c_arr) || I2OSP(length(ph), 8) || ph ||
-                              I2OSP(length(context_id), 8) || context_id
-3. return hash_to_scalar(c_octs, challenge_dst)
+2. c_octs = serialize(c_arr)
+3. commitment_arr = (N, ci_1, C_1, C~_1, ..., ci_N, C_N, C~_N)
+4. c_octs = c_octs || BBS.serialize(commitment_arr)
+
+5. c_octs = c_octs || I2OSP(length(ph), 8) || ph
+6. return BBS.hash_to_scalar(c_octs, hash_to_scalar_dst)
 ```
 
 # Privacy Considerations
