@@ -542,6 +542,7 @@ Parameters:
 Outputs:
 
 - proof, an octet string; or INVALID.
+- pseudonym, the cryptographic pseudonym, an element from the G1 group.
 - add_zkp_info, a structure containing an array of committed message scalars
                 used in committed disclosure, and the array of random scalars
                 used to create the respective commitments.
@@ -597,7 +598,7 @@ Procedure:
       proof_commitment_indexes.append(blind_commitment_indexes[i] + L + 1)
 // Note that in the above no nym_secrets are disclosed or committed
 
-13. (proof_with_add_zkp_info, pseudonym) = CoreProofGenWithNym(PK,
+13. [proof, pseudonym, add_zkp_info] = CoreProofGenWithNym(PK,
                       signature,
                       generators.append(blind_generators),
                       header,
@@ -608,7 +609,7 @@ Procedure:
                       proof_commitment_indexes
                       length(nym_secrets),
                       api_id)
-14. return (proof_with_add_zkp_info, pseudonym)
+14. return [proof, pseudonym, add_zkp_info]
 ```
 
 ## Proof Verification with Pseudonym
@@ -779,6 +780,7 @@ Parameters:
 Outputs:
 
 - proof, an octet string; or INVALID.
+- pseudonym, the cryptographic pseudonym, an element from the G1 group.
 - add_zkp_info, a structure containing an array of committed message scalars
                 used in committed disclosure, and the array of random scalars
                 used to create the respective commitments.
