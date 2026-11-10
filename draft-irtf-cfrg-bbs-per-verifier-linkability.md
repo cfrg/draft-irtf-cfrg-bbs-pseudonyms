@@ -668,17 +668,6 @@ Outputs:
 
 Deserialization:
 
-
-
-<!-- OLD
-1. proof_len_floor = 3 * octet_point_length + 4 * octet_scalar_length
-2. if length(proof) < proof_len_floor, return INVALID
-3. U = floor((length(proof) - proof_len_floor) / octet_scalar_length)
-4. total_no_messages = length(disclosed_indexes) +
-                             length(disclosed_committed_indexes) + U - 1
-5. M = total_no_messages - L
--->
-
 1. bbs_proof_len = OS2IP(proof[0..7])
 2. undisclosed_msgs_no = (bbs_proof_len
                            - 3 * octet_point_length
@@ -686,7 +675,7 @@ Deserialization:
                            / octet_scalar_length
 3. proof_msgs_no = undisclosed_msgs_no + length(disclosed_messages)
 4. if proof_msgs_no == 0, return INVALID
-5. total_msgs_no = proof_msgs_no - 1
+5. total_msgs_no = proof_msgs_no - 1 - length_nym_vector
 6. if issuer_known_messages_no > total_msgs_no, return INVALID
 7. if length(message_disclosures) != total_msgs_no, return INVALID
 8. if the keys of message_disclosures are not exactly the integers
@@ -713,8 +702,8 @@ Procedure:
 1. generators = BBS.create_generators(
                                   issuer_known_messages_no + 1, api_id)
 2. blind_generators = BBS.create_generators(
-                               total_msgs_no - issuer_known_messages_no + 1,
-                               "BLIND_" || api_id)
+      total_msgs_no - issuer_known_messages_no + length_nym_vector + 1,
+      "BLIND_" || api_id)
 
 3. message_scalars = messages_to_scalars(disclosed_messages, api_id)
 
