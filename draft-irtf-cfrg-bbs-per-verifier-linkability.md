@@ -535,9 +535,8 @@ Inputs:
 
 Parameters:
 
-- api_id, the octet string ciphersuite_id || "BLIND_H2G_HM2S_", where
-          ciphersuite_id is defined by the ciphersuite and
-          "BLIND_H2G_HM2S_"is an ASCII string composed of 15 bytes.
+- api_id (**OPTIONAL**), octet string. If not supplied it defaults to the
+                     empty octet string ("").
 
 
 Outputs:
@@ -657,9 +656,8 @@ Inputs:
 
 Parameters:
 
-- api_id, the octet string ciphersuite_id || "H2G_HM2S_", where
-          ciphersuite_id is defined by the ciphersuite and "H2G_HM2S_"is
-          an ASCII string comprised of 9 bytes.
+- api_id (**OPTIONAL**), octet string. If not supplied it defaults to the
+                     empty octet string ("").
 - (octet_point_length, octet_scalar_length), defined by the ciphersuite.
 
 Outputs:
