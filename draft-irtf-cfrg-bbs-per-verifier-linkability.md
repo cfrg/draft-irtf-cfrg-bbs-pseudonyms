@@ -798,14 +798,17 @@ Deserialization:
     in 0..L - 1, return INVALID
 7. if disclosed_indexes and commitment_indexes are not disjoint,
     return INVALID
-8.  N = length(commitment_indexes)
-9.  R = length(disclosed_indexes)
-10. U = L - R
-11. (i1, ..., iR) = disclosed_indexes
-12. disclosed_messages = (messages[i1], ..., messages[iR])
-13. undisclosed_indexes = (0, 1, ..., L - 1) \ disclosed_indexes
-14. (j1, ..., jU) = undisclosed_indexes
-15. undisclosed_messages = (messages[j1], ..., messages[jU])
+// The following checks that no nym_secrets are revealed or committed
+8. if any i in disclosed_indexes or in commitment_indexes has
+   i >= L - length_nym_secrets, return INVALID
+9.  N = length(commitment_indexes)
+10.  R = length(disclosed_indexes)
+11. U = L - R
+12. (i1, ..., iR) = disclosed_indexes
+13. disclosed_messages = (messages[i1], ..., messages[iR])
+14. undisclosed_indexes = (0, 1, ..., L - 1) \ disclosed_indexes
+15. (j1, ..., jU) = undisclosed_indexes
+16. undisclosed_messages = (messages[j1], ..., messages[jU])
 
 
 Procedure:
@@ -970,11 +973,19 @@ Deserialization:
 17. if disclosed_indexes and commitment_indexes are not disjoint,
     return INVALID
 
-18. undisclosed_indexes = (0, 1, ..., L - 1) \ disclosed_indexes
-19. (j1, ..., jU) = undisclosed_indexes
-20. (m^_j1, ..., m^_jU) = hats
-21. (C_1, ... C_N) = commitments
-22. (s^_1, ..., s^_N) = commitments_proof
+18. if length_nym_vector < 1 or length_nym_vector > U, return INVALID
+
+// The nym_secrets occupy the last length_nym_vector positions and
+// must be neither disclosed nor committed.
+19. if any i in disclosed_indexes or in commitment_indexes has
+    i >= L - length_nym_vector, return INVALID
+
+
+20. undisclosed_indexes = (0, 1, ..., L - 1) \ disclosed_indexes
+21. (j1, ..., jU) = undisclosed_indexes
+22. (m^_j1, ..., m^_jU) = hats
+23. (C_1, ... C_N) = commitments
+24. (s^_1, ..., s^_N) = commitments_proof
 
 Procedure:
 
