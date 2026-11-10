@@ -377,13 +377,14 @@ Procedure:
 
 5.  message_scalars = Blind.messages_to_scalars(messages, api_id)
 
-6.  res = Blind.B_calculate(PK, generators, blind_generators, commitment, message_scalars, header, api_id)
-7.  if res is INVALID, return INVALID
-8.  (B) = res
+6. combined_header = header || I2OSP(length_nym_vector, 8)
+7.  res = Blind.B_calculate(PK, generators, blind_generators, commitment,
+                                message_scalars, combined_header, api_id)
+8.  if res is INVALID, return INVALID
+9.  (B) = res
 // Add in signer nym_entropy to the last prover_nym element
-9.  B = B + blind_generators[-1] * signer_nym_entropy
+10.  B = B + blind_generators[-1] * signer_nym_entropy
 
-10. combined_header = header || I2OSP(length_nym_vector, 8)
 11. blind_sig = Blind.FinalizeBlindSign(SK, B, api_id)
 
 12. if blind_sig is INVALID, return INVALID
