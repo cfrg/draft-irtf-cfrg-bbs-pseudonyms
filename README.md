@@ -2,7 +2,6 @@
 
 This is the working area for the CFRG Internet-Draft, "BBS per Verifier Linkability".
 
-* [Editor's Copy](https://basileioskal.github.io/bbs-per-verifier-id/draft-vasilis-bbs-per-verifier-linkability.html)
 * [Editor's Copy](https://cfrg.github.io/draft-irtf-cfrg-bbs-pseudonyms/draft-irtf-cfrg-bbs-per-verifier-linkability)
 * [Datatracker Page](https://datatracker.ietf.org/doc/draft-irtf-cfrg-bbs-per-verifier-linkability)
 * [CFRG Draft](https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-bbs-per-verifier-linkability)
