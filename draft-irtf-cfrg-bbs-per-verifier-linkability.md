@@ -606,7 +606,7 @@ Procedure:
                       context_id,
                       proof_scalars,
                       proof_disclosed_indexes,
-                      proof_commitment_indexes
+                      proof_commitment_indexes,
                       length(nym_secrets),
                       api_id)
 13. return [proof, pseudonym, add_zkp_info]
@@ -1041,9 +1041,14 @@ Inputs:
 - nym_secrets (REQUIRED), a vector of scalars
 - random_scalars (REQUIRED), a vector of scalars
 
+Parameters:
+
+- api_id (**OPTIONAL**), octet string. If not supplied it defaults to the
+                     empty octet string ("").
+
 Outputs:
 
-- a tuple consisting of trip of items (element from the G1 group, scalar, element from the G1  group), or INVALID.
+- a tuple consisting of trip of items (element from the G1 group, octet string, element from the G1  group), or INVALID.
 
 Procedure:
 
@@ -1071,7 +1076,7 @@ Procedure:
 ```
 pseudonym_init_res = PseudonymProofVerifyInit(pseudonym,
                                               context_id,
-                                              nym_secret_commitments
+                                              nym_secret_commitments,
                                               proof_challenge)
 
 Inputs:
@@ -1080,6 +1085,11 @@ Inputs:
 - context_id (REQUIRED), an octet string.
 - nym_secret_commitments (REQUIRED), a vector of scalar values.
 - proof_challenge (REQUIRED), a scalar value.
+
+Parameters:
+
+- api_id (**OPTIONAL**), octet string. If not supplied it defaults to the
+                     empty octet string ("").
 
 Outputs:
 
