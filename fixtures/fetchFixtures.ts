@@ -29,18 +29,34 @@ interface mockRngInputs {
 interface mockRngParameters {
     readonly SEED: string;
     readonly commit?: mockRngInputs;
-    readonly signature?: mockRngInputs;
     readonly proof?: mockRngInputs;
 }
 
+// A message is a [flag, value] pair. The flag is "HASH" or "RAW" and the
+// value is hex encoded.
+type FlaggedMessage = [string, string];
+
+// Each disclosure is "DISCLOSE", "HIDE" or "COMMIT".
+type Disclosure = string;
+
+type Result = { valid: false; reason: string } | { valid: true };
+
+interface commitmentTrace {
+  readonly random_scalars: {
+    readonly s_tilde: string;
+    readonly m_tildes: string[];
+  };
+}
 
 export interface CommitmentFixture {
-    readonly caseName: string;
-    readonly mockRngParameters: mockRngParameters;
-    readonly committedMessages: string[];
-    readonly proverBlind: string;
-    readonly commitmentWithProof: string;
-    readonly result: { valid: false; reason: string } | { valid: true };
+  readonly caseName: string;
+  readonly mockRngParameters: mockRngParameters;
+  readonly blindMessages: FlaggedMessage[];
+  readonly proverNyms: string[];
+  readonly proverBlind: string;
+  readonly commitmentWithProof: string;
+  readonly result: Result;
+  readonly trace: commitmentTrace;
 }
 
 interface signatureTrace {
@@ -50,81 +66,85 @@ interface signatureTrace {
 
 export interface SignatureFixtureData {
   readonly caseName: string;
-  readonly signature: string;
-  readonly header: string;
-  readonly messages: string[];
-  readonly committedMessages?: string[];
-  result: { valid: false; reason: string } | { valid: true };
+  readonly mockRngParameters: mockRngParameters;
   readonly signerKeyPair: {
     readonly publicKey: string;
     readonly secretKey: string;
   };
-  trace: signatureTrace;
+  readonly header: string;
+  readonly messages: FlaggedMessage[];
+  readonly blindMessages: FlaggedMessage[];
+  readonly proverNyms: string[];
+  readonly signer_nym_entropy: string;
+  readonly commitmentWithProof: string;
+  readonly proverBlind: string;
+  readonly nym_secrets: string[];
+  readonly signature: string;
+  readonly result: Result;
+  readonly trace: signatureTrace;
 }
 
 interface proofTrace {
-  readonly A_bar: string;
-  readonly B_bar: string;
-  readonly T: string;
+  readonly randomScalars: {
+    readonly r1: string;
+    readonly r2: string;
+    readonly e_Tilde: string;
+    readonly r1_Tilde: string;
+    readonly r3_Tilde: string;
+    readonly m_tilde_scalars: string[];
+    readonly s_i: string[];
+    readonly s_tilde_i: string[];
+  };
+  readonly A: string;
+  readonly Abar: string;
+  readonly Bbar: string;
+  readonly D: string;
+  readonly T1: string;
+  readonly T2: string;
+  readonly C_i: string[];
+  readonly C_tilde_i: string[];
+  readonly pseudonym: string;
+  readonly Ut: string;
   readonly domain: string;
   readonly challenge: string;
 }
 
 export interface ProofFixtureData {
   readonly caseName: string;
+  readonly mockRngParameters: mockRngParameters;
   readonly signerPublicKey: string;
+  readonly signatureFile: string;
   readonly header: string;
-  readonly signature: string;
   readonly presentationHeader: string;
-  readonly revealedMessages: { [index: string]: string };
-  readonly totalMessageCount: number;
+  readonly context_id: string;
+  readonly messageDisclosures: Disclosure[];
+  readonly blindMessageDisclosures: Disclosure[];
+  readonly L: number;
   readonly proof: string;
+  readonly pseudonym: string;
+  readonly result: Result;
+  readonly add_zkp_info: {
+    readonly committed_message_scalars: string[];
+    readonly commitment_rands: string[];
+  };
   readonly trace: proofTrace;
-  result: { valid: false; reason: string } | { valid: true };
 }
 
-export interface GeneratorFixtureData {
+interface MsgGeneratorFixtureData {
+  readonly api_id: string;
   readonly P1: string;
   readonly Q1: string;
-  readonly Q2: string;
   readonly MsgGenerators: string[];
 }
 
-export interface H2sFixtureData {
-  readonly caseName: string;
-  readonly message: string;
-  readonly dst: string;
-  readonly count: number;
-  readonly scalars: string[];
-}
-
-export interface MapMessageToScalarCase {
-  message: string;
-  scalar: string;
-}
-
-export interface MapMessageToScalarFixtureData {
-  readonly caseName: string;
-  readonly dst: string;
-  readonly cases: ReadonlyArray<MapMessageToScalarCase>
-}
-
-export interface MockRngFixtureData {
-  readonly caseName: string,
-  readonly seed: string,
-  readonly dst: string,
-  readonly count: number,
-  readonly mockedScalars: string[];
-}
-
-export interface KeyPairFixtureData {
-  readonly caseName: string,
-  readonly keyMaterial: string,
-  readonly keyInfo: string,
-  readonly keyPair: {
-    readonly secretKey: string,
-    readonly publicKey: string
-  }
+export interface GeneratorFixtureData {
+  readonly generators: MsgGeneratorFixtureData;
+  readonly blindGenerators: MsgGeneratorFixtureData;
+  readonly commitmentGenerators: {
+    readonly api_id: string;
+    readonly Y_0: string;
+    readonly Y_1: string;
+  };
 }
 
 export interface Fixture<T> {
@@ -132,8 +152,10 @@ export interface Fixture<T> {
   readonly value: T
 }
 
+// A fixture is a test case (has a caseName) or a set of generators (has
+// MsgGenerators, or Y_0 for the committed disclosure generators).
 const fetchNestedFixtures = <T>(name: string, input: any): ReadonlyArray<Fixture<T>> => {
-  if (input.caseName || input.MsgGenerators || input.mockedScalars) {
+  if (input.caseName || input.MsgGenerators || input.Y_0) {
     return [
       {
         name: path.basename(name).split(".")[0] as string,
@@ -171,15 +193,11 @@ const fetchPerSuiteFixtures = <T>(dir:string, filter = /.json$/) => {
       [suite]: suiteFixturesData
     }
   }
-  
+
   return fixtureMap
 }
 
-export const generatorFixtures = fetchPerSuiteFixtures<CommitmentFixture>("", /generators.json/);
+export const generatorFixtures = fetchPerSuiteFixtures<GeneratorFixtureData>("", /generators.json/);
 export const commitmentFixtures = fetchPerSuiteFixtures<CommitmentFixture>("/nymCommit");
 export const signatureFixtures = fetchPerSuiteFixtures<SignatureFixtureData>("/nymSignature");
 export const proofFixtures = fetchPerSuiteFixtures<ProofFixtureData>("/nymProof");
-
-console.log(proofFixtures)
-
-
