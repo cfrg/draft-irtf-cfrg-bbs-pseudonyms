@@ -578,27 +578,27 @@ Procedure:
 2. blind_generators = BBS.create_generators(M + N + 1, "BLIND_" || api_id)
 3. issuer_scalars = messages_to_scalars(issuer_messages, api_id)
 4. blind_scalars = messages_to_scalars(blind_messages, api_id)
-6. proof_scalars = issuer_scalars.append(secret_prover_blind)
+5. proof_scalars = issuer_scalars.append(secret_prover_blind)
                                           .append(blind_scalars)
                                           .append(nym_secrets)
 
-7. proof_disclosed_indexes = [] // empty array
-8. proof_commitment_indexes = [] // empty array
+6. proof_disclosed_indexes = [] // empty array
+7. proof_commitment_indexes = [] // empty array
 
-9.  for (i = 0, i < length(issuer_disclosed_indexes), i++)
+8.  for (i = 0, i < length(issuer_disclosed_indexes), i++)
       proof_disclosed_indexes.append(issuer_disclosed_indexes[i])
 
-10. for (i = 0, i < length(blind_disclosed_indexes), i++)
+9. for (i = 0, i < length(blind_disclosed_indexes), i++)
       proof_disclosed_indexes.append(blind_disclosed_indexes[i] + L + 1)
 
-11.  for (i = 0, i < length(issuer_commitment_indexes), i++)
+10.  for (i = 0, i < length(issuer_commitment_indexes), i++)
       proof_commitment_indexes.append(issuer_commitment_indexes[i])
 
-12. for (i = 0, i < length(blind_commitment_indexes), i++)
+11. for (i = 0, i < length(blind_commitment_indexes), i++)
       proof_commitment_indexes.append(blind_commitment_indexes[i] + L + 1)
 // Note that in the above no nym_secrets are disclosed or committed
 
-13. [proof, pseudonym, add_zkp_info] = CoreProofGenWithNym(PK,
+12. [proof, pseudonym, add_zkp_info] = CoreProofGenWithNym(PK,
                       signature,
                       generators.append(blind_generators),
                       header,
@@ -609,7 +609,7 @@ Procedure:
                       proof_commitment_indexes
                       length(nym_secrets),
                       api_id)
-14. return [proof, pseudonym, add_zkp_info]
+13. return [proof, pseudonym, add_zkp_info]
 ```
 
 ## Proof Verification with Pseudonym
@@ -728,7 +728,7 @@ Procedure:
 This operations computes a BBS proof and a zero-knowledge proof of correctness of the pseudonym in "parallel" (meaning using common randomness), as to both create a proof that the pseudonym was correctly calculated using an undisclosed value that the Prover knows (i.e., the `nym_secrets` value), but also that this value is "signed" by the BBS signature. As a result, validating the proof guarantees that the pseudonym is correctly computed and that it was computed using the Prover identifier that was included in the BBS signature.
 
 ```
-(proof, pseudonym) = CoreProofGenWithNym(PK,
+(proof, pseudonym, add_zkp_info) = CoreProofGenWithNym(PK,
                                   signature,
                                   generators,
                                   header,
@@ -736,8 +736,8 @@ This operations computes a BBS proof and a zero-knowledge proof of correctness o
                                   context_id,
                                   proof_scalars,
                                   disclosed_indexes,
-                                  commitment_indexes
-                                  length_nym_secrets
+                                  commitment_indexes,
+                                  length_nym_secrets,
                                   api_id)
 
 Inputs:
@@ -805,10 +805,10 @@ Deserialization:
 10.  R = length(disclosed_indexes)
 11. U = L - R
 12. (i1, ..., iR) = disclosed_indexes
-13. disclosed_messages = (messages[i1], ..., messages[iR])
+13. disclosed_messages = (proof_scalars[i1], ..., proof_scalars[iR])
 14. undisclosed_indexes = (0, 1, ..., L - 1) \ disclosed_indexes
 15. (j1, ..., jU) = undisclosed_indexes
-16. undisclosed_messages = (messages[j1], ..., messages[jU])
+16. undisclosed_messages = (proof_scalars[j1], ..., proof_scalars[jU])
 
 
 Procedure:
@@ -818,7 +818,7 @@ Procedure:
 2.  (r1, r2, e~, r1~, r3~, m~_j1, ..., m~_jU, s_1, ..., s_N,
                             s~_1, ..., s~_N) = all_random_scalars
 3.  init_random_scalars = (r1, r2, e~, r1~, r3~, m~_j1, ..., m~_jU)
-4.  combined_header = header || I2OSP(length_nym_vector, 8)
+4.  combined_header = header || I2OSP(length_nym_secrets, 8)
 
 5.  init_res = BBS.ProofInit(PK,
                              signature_result,
@@ -833,7 +833,7 @@ Procedure:
 //  Nym scalars are at the end of the proof scalars
 7.  nym_scalars  = proof_scalars[L-length_nym_secrets, L]
 //  Corresponding nym random scalars end of the 5 + U block
-8.  nym_rands = random_scalars[5 + U - length_nym_secrets,  5 + U]
+8.  nym_rands = init_random_scalars[5 + U - length_nym_secrets,  5 + U]
 9.  pseudonym_init_res = PseudonymProofInit(
                                    context_id,
                                    nym_scalars,
@@ -846,7 +846,7 @@ Procedure:
 
 12.  for i in (1, 2, ..., N):
 13.      idx = commitment_indexes[i]
-14.      C_i = Y_0 * s_i + Y_1 * messages[idx]
+14.      C_i = Y_0 * s_i + Y_1 * proof_scalars[idx]
 15.      let k be the integer such that j_k == idx
 16.     C~_i = Y_0 * s~_i + Y_1 * m~_k
 
@@ -874,8 +874,8 @@ Procedure:
 
 23. proof = Blind.proof_to_octets(bbs_proof, commitments_proof)
 24. add_zkp_info = {committed_message_scalars:
-                       (messages[commitment_indexes[1]], ...,
-                        messages[commitment_indexes[N]]),
+                       (proof_scalars[commitment_indexes[1]], ...,
+                        proof_scalars[commitment_indexes[N]]),
                     commitment_rands: (s_1, ..., s_N)}
 25. return [proof, pseudonym, add_zkp_info]
 ```
@@ -1038,12 +1038,12 @@ pseudonym_init_res = PseudonymProofInit(context_id,
 Inputs:
 
 - context_id (REQUIRED), an octet string
-- nym_secrets (REQUIRED), a scalar value
-- random_scalars (REQUIRED), a scalar value
+- nym_secrets (REQUIRED), a vector of scalars
+- random_scalars (REQUIRED), a vector of scalars
 
 Outputs:
 
-- a tuple consisting of three elements from the G1 group, or INVALID.
+- a tuple consisting of trip of items (element from the G1 group, scalar, element from the G1  group), or INVALID.
 
 Procedure:
 
