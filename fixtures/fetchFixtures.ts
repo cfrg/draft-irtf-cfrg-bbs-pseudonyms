@@ -1,4 +1,3 @@
-import * as messages from "./fixture_data/messages.json";
 import * as path from "path";
 import { readdirSync  } from 'fs';
 
@@ -183,4 +182,4 @@ export const proofFixtures = fetchPerSuiteFixtures<ProofFixtureData>("/nymProof"
 
 console.log(proofFixtures)
 
-export { messages };
+
