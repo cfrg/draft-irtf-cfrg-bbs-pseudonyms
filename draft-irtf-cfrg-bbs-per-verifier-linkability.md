@@ -1226,7 +1226,11 @@ This document does not define new BBS ciphersuites. Its ciphersuite defined in [
 
 # Test Vectors
 
-<!-- **TODO**: Update! -->
+Messages are given as `[flag, value]` pairs, where the flag is
+"HASH" or "RAW" and the value is hex encoded. Message disclosures
+are "DISCLOSE", "HIDE" or "COMMIT". All random scalars are
+produced by the mocked random scalar function of
+[@!I-D.irtf-cfrg-bbs-signatures] with the given seed and dst.
 
 ## BLS12-381-SHA-256
 
@@ -1274,7 +1278,16 @@ J_5 = {{ $generatorFixtures.bls12-381-sha-256.blindGenerators.MsgGenerators[5] }
 }
 ```
 
-### Commit
+### Committed Disclosure Generators
+
+```
+api_id = {{ $generatorFixtures.bls12-381-sha-256.commitmentGenerators.api_id }}
+
+Y_0 = {{ $generatorFixtures.bls12-381-sha-256.commitmentGenerators.Y_0 }}
+Y_1 = {{ $generatorFixtures.bls12-381-sha-256.commitmentGenerators.Y_1 }}
+```
+
+### Commitment with Nym
 
 Mocked random scalar parameters
 
@@ -1283,11 +1296,11 @@ seed = {{ $commitmentFixtures.bls12-381-sha-256.nymCommit001.mockRngParameters.S
 dst = {{ $commitmentFixtures.bls12-381-sha-256.nymCommit001.mockRngParameters.commit.DST }}
 ```
 
-#### valid no committed messages commitment with proof
+#### {{ # $commitmentFixtures.bls12-381-sha-256.nymCommit001.caseName }}
 
 ```
-committedMessages = {{ $commitmentFixtures.bls12-381-sha-256.nymCommit001.committedMessages }}
-proverNym = {{ $commitmentFixtures.bls12-381-sha-256.nymCommit001.proverNym }}
+blindMessages = {{ $commitmentFixtures.bls12-381-sha-256.nymCommit001.blindMessages }}
+proverNyms = {{ $commitmentFixtures.bls12-381-sha-256.nymCommit001.proverNyms }}
 proverBlind = {{ $commitmentFixtures.bls12-381-sha-256.nymCommit001.proverBlind }}
 
 Trace:
@@ -1298,14 +1311,12 @@ m_tildes = {{ $commitmentFixtures.bls12-381-sha-256.nymCommit001.trace.random_sc
 commitmentWithProof = {{ $commitmentFixtures.bls12-381-sha-256.nymCommit001.commitmentWithProof }}
 ```
 
-#### valid multiple committed messages commitment with proof
-
+#### {{ # $commitmentFixtures.bls12-381-sha-256.nymCommit002.caseName }}
 
 ```
-committedMessages = {{ $commitmentFixtures.bls12-381-sha-256.nymCommit002.committedMessages }}
-proverNym = {{ $commitmentFixtures.bls12-381-sha-256.nymCommit002.proverNym }}
+blindMessages = {{ $commitmentFixtures.bls12-381-sha-256.nymCommit002.blindMessages }}
+proverNyms = {{ $commitmentFixtures.bls12-381-sha-256.nymCommit002.proverNyms }}
 proverBlind = {{ $commitmentFixtures.bls12-381-sha-256.nymCommit002.proverBlind }}
-
 
 Trace:
 
@@ -1315,27 +1326,58 @@ m_tildes = {{ $commitmentFixtures.bls12-381-sha-256.nymCommit002.trace.random_sc
 commitmentWithProof = {{ $commitmentFixtures.bls12-381-sha-256.nymCommit002.commitmentWithProof }}
 ```
 
-### Signature
-
-#### valid no prover committed messages, no signer messages signature
+#### {{ # $commitmentFixtures.bls12-381-sha-256.nymCommit003.caseName }}
 
 ```
+blindMessages = {{ $commitmentFixtures.bls12-381-sha-256.nymCommit003.blindMessages }}
+proverNyms = {{ $commitmentFixtures.bls12-381-sha-256.nymCommit003.proverNyms }}
+proverBlind = {{ $commitmentFixtures.bls12-381-sha-256.nymCommit003.proverBlind }}
+
+Trace:
+
+s_tilde = {{ $commitmentFixtures.bls12-381-sha-256.nymCommit003.trace.random_scalars.s_tilde }}
+m_tildes = {{ $commitmentFixtures.bls12-381-sha-256.nymCommit003.trace.random_scalars.m_tildes }}
+
+commitmentWithProof = {{ $commitmentFixtures.bls12-381-sha-256.nymCommit003.commitmentWithProof }}
+```
+
+#### {{ # $commitmentFixtures.bls12-381-sha-256.nymCommit004.caseName }}
+
+```
+blindMessages = {{ $commitmentFixtures.bls12-381-sha-256.nymCommit004.blindMessages }}
+proverNyms = {{ $commitmentFixtures.bls12-381-sha-256.nymCommit004.proverNyms }}
+proverBlind = {{ $commitmentFixtures.bls12-381-sha-256.nymCommit004.proverBlind }}
+
+Trace:
+
+s_tilde = {{ $commitmentFixtures.bls12-381-sha-256.nymCommit004.trace.random_scalars.s_tilde }}
+m_tildes = {{ $commitmentFixtures.bls12-381-sha-256.nymCommit004.trace.random_scalars.m_tildes }}
+
+commitmentWithProof = {{ $commitmentFixtures.bls12-381-sha-256.nymCommit004.commitmentWithProof }}
+```
+
+### Signature with Nym
+
+The commitments are computed with the mocked random scalar
+parameters of the Commitment with Nym test vectors.
+
+#### {{ # $signatureFixtures.bls12-381-sha-256.nymSignature001.caseName }}
+
+```
+Signature Label: nymSignature001
+
 secretKey = {{ $signatureFixtures.bls12-381-sha-256.nymSignature001.signerKeyPair.secretKey }}
 publicKey = {{ $signatureFixtures.bls12-381-sha-256.nymSignature001.signerKeyPair.publicKey }}
 
 header = {{ $signatureFixtures.bls12-381-sha-256.nymSignature001.header }}
-
 messages = {{ $signatureFixtures.bls12-381-sha-256.nymSignature001.messages }}
+blindMessages = {{ $signatureFixtures.bls12-381-sha-256.nymSignature001.blindMessages }}
 
-committedMessages = {{ $signatureFixtures.bls12-381-sha-256.nymSignature001.committedMessages }}
-
+proverNyms = {{ $signatureFixtures.bls12-381-sha-256.nymSignature001.proverNyms }}
+proverBlind = {{ $signatureFixtures.bls12-381-sha-256.nymSignature001.proverBlind }}
 commitmentWithProof = {{ $signatureFixtures.bls12-381-sha-256.nymSignature001.commitmentWithProof }}
 
 signer_nym_entropy = {{ $signatureFixtures.bls12-381-sha-256.nymSignature001.signer_nym_entropy }}
-
-proverBlind = {{ $signatureFixtures.bls12-381-sha-256.nymSignature001.proverBlind }}
-proverNym = {{ $signatureFixtures.bls12-381-sha-256.nymSignature001.proverNym }}
-nym_secret = {{ $signatureFixtures.bls12-381-sha-256.nymSignature001.nym_secret }}
 
 Trace:
 
@@ -1343,27 +1385,26 @@ B = {{ $signatureFixtures.bls12-381-sha-256.nymSignature001.trace.B }}
 domain = {{ $signatureFixtures.bls12-381-sha-256.nymSignature001.trace.domain }}
 
 signature = {{ $signatureFixtures.bls12-381-sha-256.nymSignature001.signature }}
+nym_secrets = {{ $signatureFixtures.bls12-381-sha-256.nymSignature001.nym_secrets }}
 ```
 
-#### valid multi prover committed messages, no signer messages signature
+#### {{ # $signatureFixtures.bls12-381-sha-256.nymSignature002.caseName }}
 
 ```
+Signature Label: nymSignature002
+
 secretKey = {{ $signatureFixtures.bls12-381-sha-256.nymSignature002.signerKeyPair.secretKey }}
 publicKey = {{ $signatureFixtures.bls12-381-sha-256.nymSignature002.signerKeyPair.publicKey }}
 
 header = {{ $signatureFixtures.bls12-381-sha-256.nymSignature002.header }}
-
 messages = {{ $signatureFixtures.bls12-381-sha-256.nymSignature002.messages }}
+blindMessages = {{ $signatureFixtures.bls12-381-sha-256.nymSignature002.blindMessages }}
 
-committedMessages = {{ $signatureFixtures.bls12-381-sha-256.nymSignature002.committedMessages }}
-
+proverNyms = {{ $signatureFixtures.bls12-381-sha-256.nymSignature002.proverNyms }}
+proverBlind = {{ $signatureFixtures.bls12-381-sha-256.nymSignature002.proverBlind }}
 commitmentWithProof = {{ $signatureFixtures.bls12-381-sha-256.nymSignature002.commitmentWithProof }}
 
 signer_nym_entropy = {{ $signatureFixtures.bls12-381-sha-256.nymSignature002.signer_nym_entropy }}
-
-proverBlind = {{ $signatureFixtures.bls12-381-sha-256.nymSignature002.proverBlind }}
-proverNym = {{ $signatureFixtures.bls12-381-sha-256.nymSignature002.proverNym }}
-nym_secret = {{ $signatureFixtures.bls12-381-sha-256.nymSignature002.nym_secret }}
 
 Trace:
 
@@ -1371,27 +1412,26 @@ B = {{ $signatureFixtures.bls12-381-sha-256.nymSignature002.trace.B }}
 domain = {{ $signatureFixtures.bls12-381-sha-256.nymSignature002.trace.domain }}
 
 signature = {{ $signatureFixtures.bls12-381-sha-256.nymSignature002.signature }}
+nym_secrets = {{ $signatureFixtures.bls12-381-sha-256.nymSignature002.nym_secrets }}
 ```
 
-#### valid no prover committed messages, multiple signer messages signature
+#### {{ # $signatureFixtures.bls12-381-sha-256.nymSignature003.caseName }}
 
 ```
+Signature Label: nymSignature003
+
 secretKey = {{ $signatureFixtures.bls12-381-sha-256.nymSignature003.signerKeyPair.secretKey }}
 publicKey = {{ $signatureFixtures.bls12-381-sha-256.nymSignature003.signerKeyPair.publicKey }}
 
 header = {{ $signatureFixtures.bls12-381-sha-256.nymSignature003.header }}
-
 messages = {{ $signatureFixtures.bls12-381-sha-256.nymSignature003.messages }}
+blindMessages = {{ $signatureFixtures.bls12-381-sha-256.nymSignature003.blindMessages }}
 
-committedMessages = {{ $signatureFixtures.bls12-381-sha-256.nymSignature003.committedMessages }}
-
+proverNyms = {{ $signatureFixtures.bls12-381-sha-256.nymSignature003.proverNyms }}
+proverBlind = {{ $signatureFixtures.bls12-381-sha-256.nymSignature003.proverBlind }}
 commitmentWithProof = {{ $signatureFixtures.bls12-381-sha-256.nymSignature003.commitmentWithProof }}
 
 signer_nym_entropy = {{ $signatureFixtures.bls12-381-sha-256.nymSignature003.signer_nym_entropy }}
-
-proverBlind = {{ $signatureFixtures.bls12-381-sha-256.nymSignature003.proverBlind }}
-proverNym = {{ $signatureFixtures.bls12-381-sha-256.nymSignature003.proverNym }}
-nym_secret = {{ $signatureFixtures.bls12-381-sha-256.nymSignature003.nym_secret }}
 
 Trace:
 
@@ -1399,27 +1439,26 @@ B = {{ $signatureFixtures.bls12-381-sha-256.nymSignature003.trace.B }}
 domain = {{ $signatureFixtures.bls12-381-sha-256.nymSignature003.trace.domain }}
 
 signature = {{ $signatureFixtures.bls12-381-sha-256.nymSignature003.signature }}
+nym_secrets = {{ $signatureFixtures.bls12-381-sha-256.nymSignature003.nym_secrets }}
 ```
 
-#### valid multiple signer and prover committed messages signature
+#### {{ # $signatureFixtures.bls12-381-sha-256.nymSignature004.caseName }}
 
 ```
+Signature Label: nymSignature004
+
 secretKey = {{ $signatureFixtures.bls12-381-sha-256.nymSignature004.signerKeyPair.secretKey }}
 publicKey = {{ $signatureFixtures.bls12-381-sha-256.nymSignature004.signerKeyPair.publicKey }}
 
 header = {{ $signatureFixtures.bls12-381-sha-256.nymSignature004.header }}
-
 messages = {{ $signatureFixtures.bls12-381-sha-256.nymSignature004.messages }}
+blindMessages = {{ $signatureFixtures.bls12-381-sha-256.nymSignature004.blindMessages }}
 
-committedMessages = {{ $signatureFixtures.bls12-381-sha-256.nymSignature004.committedMessages }}
-
+proverNyms = {{ $signatureFixtures.bls12-381-sha-256.nymSignature004.proverNyms }}
+proverBlind = {{ $signatureFixtures.bls12-381-sha-256.nymSignature004.proverBlind }}
 commitmentWithProof = {{ $signatureFixtures.bls12-381-sha-256.nymSignature004.commitmentWithProof }}
 
 signer_nym_entropy = {{ $signatureFixtures.bls12-381-sha-256.nymSignature004.signer_nym_entropy }}
-
-proverBlind = {{ $signatureFixtures.bls12-381-sha-256.nymSignature004.proverBlind }}
-proverNym = {{ $signatureFixtures.bls12-381-sha-256.nymSignature004.proverNym }}
-nym_secret = {{ $signatureFixtures.bls12-381-sha-256.nymSignature004.nym_secret }}
 
 Trace:
 
@@ -1427,9 +1466,91 @@ B = {{ $signatureFixtures.bls12-381-sha-256.nymSignature004.trace.B }}
 domain = {{ $signatureFixtures.bls12-381-sha-256.nymSignature004.trace.domain }}
 
 signature = {{ $signatureFixtures.bls12-381-sha-256.nymSignature004.signature }}
+nym_secrets = {{ $signatureFixtures.bls12-381-sha-256.nymSignature004.nym_secrets }}
 ```
 
-### Proof
+#### {{ # $signatureFixtures.bls12-381-sha-256.nymSignature005.caseName }}
+
+```
+Signature Label: nymSignature005
+
+secretKey = {{ $signatureFixtures.bls12-381-sha-256.nymSignature005.signerKeyPair.secretKey }}
+publicKey = {{ $signatureFixtures.bls12-381-sha-256.nymSignature005.signerKeyPair.publicKey }}
+
+header = {{ $signatureFixtures.bls12-381-sha-256.nymSignature005.header }}
+messages = {{ $signatureFixtures.bls12-381-sha-256.nymSignature005.messages }}
+blindMessages = {{ $signatureFixtures.bls12-381-sha-256.nymSignature005.blindMessages }}
+
+proverNyms = {{ $signatureFixtures.bls12-381-sha-256.nymSignature005.proverNyms }}
+proverBlind = {{ $signatureFixtures.bls12-381-sha-256.nymSignature005.proverBlind }}
+commitmentWithProof = {{ $signatureFixtures.bls12-381-sha-256.nymSignature005.commitmentWithProof }}
+
+signer_nym_entropy = {{ $signatureFixtures.bls12-381-sha-256.nymSignature005.signer_nym_entropy }}
+
+Trace:
+
+B = {{ $signatureFixtures.bls12-381-sha-256.nymSignature005.trace.B }}
+domain = {{ $signatureFixtures.bls12-381-sha-256.nymSignature005.trace.domain }}
+
+signature = {{ $signatureFixtures.bls12-381-sha-256.nymSignature005.signature }}
+nym_secrets = {{ $signatureFixtures.bls12-381-sha-256.nymSignature005.nym_secrets }}
+```
+
+#### {{ # $signatureFixtures.bls12-381-sha-256.nymSignature006.caseName }}
+
+```
+Signature Label: nymSignature006
+
+secretKey = {{ $signatureFixtures.bls12-381-sha-256.nymSignature006.signerKeyPair.secretKey }}
+publicKey = {{ $signatureFixtures.bls12-381-sha-256.nymSignature006.signerKeyPair.publicKey }}
+
+header = {{ $signatureFixtures.bls12-381-sha-256.nymSignature006.header }}
+messages = {{ $signatureFixtures.bls12-381-sha-256.nymSignature006.messages }}
+blindMessages = {{ $signatureFixtures.bls12-381-sha-256.nymSignature006.blindMessages }}
+
+proverNyms = {{ $signatureFixtures.bls12-381-sha-256.nymSignature006.proverNyms }}
+proverBlind = {{ $signatureFixtures.bls12-381-sha-256.nymSignature006.proverBlind }}
+commitmentWithProof = {{ $signatureFixtures.bls12-381-sha-256.nymSignature006.commitmentWithProof }}
+
+signer_nym_entropy = {{ $signatureFixtures.bls12-381-sha-256.nymSignature006.signer_nym_entropy }}
+
+Trace:
+
+B = {{ $signatureFixtures.bls12-381-sha-256.nymSignature006.trace.B }}
+domain = {{ $signatureFixtures.bls12-381-sha-256.nymSignature006.trace.domain }}
+
+signature = {{ $signatureFixtures.bls12-381-sha-256.nymSignature006.signature }}
+nym_secrets = {{ $signatureFixtures.bls12-381-sha-256.nymSignature006.nym_secrets }}
+```
+
+#### {{ # $signatureFixtures.bls12-381-sha-256.nymSignature007.caseName }}
+
+```
+Signature Label: nymSignature007
+
+secretKey = {{ $signatureFixtures.bls12-381-sha-256.nymSignature007.signerKeyPair.secretKey }}
+publicKey = {{ $signatureFixtures.bls12-381-sha-256.nymSignature007.signerKeyPair.publicKey }}
+
+header = {{ $signatureFixtures.bls12-381-sha-256.nymSignature007.header }}
+messages = {{ $signatureFixtures.bls12-381-sha-256.nymSignature007.messages }}
+blindMessages = {{ $signatureFixtures.bls12-381-sha-256.nymSignature007.blindMessages }}
+
+proverNyms = {{ $signatureFixtures.bls12-381-sha-256.nymSignature007.proverNyms }}
+proverBlind = {{ $signatureFixtures.bls12-381-sha-256.nymSignature007.proverBlind }}
+commitmentWithProof = {{ $signatureFixtures.bls12-381-sha-256.nymSignature007.commitmentWithProof }}
+
+signer_nym_entropy = {{ $signatureFixtures.bls12-381-sha-256.nymSignature007.signer_nym_entropy }}
+
+Trace:
+
+B = {{ $signatureFixtures.bls12-381-sha-256.nymSignature007.trace.B }}
+domain = {{ $signatureFixtures.bls12-381-sha-256.nymSignature007.trace.domain }}
+
+signature = {{ $signatureFixtures.bls12-381-sha-256.nymSignature007.signature }}
+nym_secrets = {{ $signatureFixtures.bls12-381-sha-256.nymSignature007.nym_secrets }}
+```
+
+### Proof with Pseudonym
 
 Mocked random scalar parameters
 
@@ -1438,382 +1559,690 @@ seed = {{ $proofFixtures.bls12-381-sha-256.nymProof001.mockRngParameters.SEED }}
 dst = {{ $proofFixtures.bls12-381-sha-256.nymProof001.mockRngParameters.proof.DST }}
 ```
 
-#### valid all prover committed messages and signer messages revealed proof
+#### {{ # $proofFixtures.bls12-381-sha-256.nymProof001.caseName }}
 
 ```
+Based on signature: {{ $proofFixtures.bls12-381-sha-256.nymProof001.signatureFile }}
 signerPublicKey = {{ $proofFixtures.bls12-381-sha-256.nymProof001.signerPublicKey }}
-signature = {{ $proofFixtures.bls12-381-sha-256.nymProof001.signature }}
-
-commitmentWithProof = {{ $proofFixtures.bls12-381-sha-256.nymProof001.commitmentWithProof }}
-proverBlind = {{ $proofFixtures.bls12-381-sha-256.nymProof001.proverBlind }}
 
 header = {{ $proofFixtures.bls12-381-sha-256.nymProof001.header }}
-presentationHeader =  {{ $proofFixtures.bls12-381-sha-256.nymProof001.presentationHeader }}
+presentationHeader = {{ $proofFixtures.bls12-381-sha-256.nymProof001.presentationHeader }}
+context_id = {{ $proofFixtures.bls12-381-sha-256.nymProof001.context_id }}
 
-signer_nym_entropy =  {{ $proofFixtures.bls12-381-sha-256.nymProof001.signer_nym_entropy }}
-proverNym =  {{ $proofFixtures.bls12-381-sha-256.nymProof001.proverNym }}
-nym_secret =  {{ $proofFixtures.bls12-381-sha-256.nymProof001.nym_secret }}
-proverBlind =  {{ $proofFixtures.bls12-381-sha-256.nymProof001.proverBlind }}
-
-context_id =  {{ $proofFixtures.bls12-381-sha-256.nymProof001.context_id }}
-pseudonym =  {{ $proofFixtures.bls12-381-sha-256.nymProof001.pseudonym }}
-
-revealedMessages =
-
-0: {{ $proofFixtures.bls12-381-sha-256.nymProof001.revealedMessages[0] }}
-1: {{ $proofFixtures.bls12-381-sha-256.nymProof001.revealedMessages[1] }}
-2: {{ $proofFixtures.bls12-381-sha-256.nymProof001.revealedMessages[2] }}
-3: {{ $proofFixtures.bls12-381-sha-256.nymProof001.revealedMessages[3] }}
-4: {{ $proofFixtures.bls12-381-sha-256.nymProof001.revealedMessages[4] }}
-5: {{ $proofFixtures.bls12-381-sha-256.nymProof001.revealedMessages[5] }}
-6: {{ $proofFixtures.bls12-381-sha-256.nymProof001.revealedMessages[6] }}
-7: {{ $proofFixtures.bls12-381-sha-256.nymProof001.revealedMessages[7] }}
-8: {{ $proofFixtures.bls12-381-sha-256.nymProof001.revealedMessages[8] }}
-9: {{ $proofFixtures.bls12-381-sha-256.nymProof001.revealedMessages[9] }}
-
-
-revealedCommittedMessages  =
-
-0: {{ $proofFixtures.bls12-381-sha-256.nymProof001.revealedCommittedMessages[0] }}
-1: {{ $proofFixtures.bls12-381-sha-256.nymProof001.revealedCommittedMessages[1] }}
-2: {{ $proofFixtures.bls12-381-sha-256.nymProof001.revealedCommittedMessages[2] }}
-3: {{ $proofFixtures.bls12-381-sha-256.nymProof001.revealedCommittedMessages[3] }}
-4: {{ $proofFixtures.bls12-381-sha-256.nymProof001.revealedCommittedMessages[4] }}
+messageDisclosures = {{ $proofFixtures.bls12-381-sha-256.nymProof001.messageDisclosures }}
+blindMessageDisclosures = {{ $proofFixtures.bls12-381-sha-256.nymProof001.blindMessageDisclosures }}
 
 Trace:
 
 random_scalars:
 
-r_1 = {{ $proofFixtures.bls12-381-sha-256.nymProof001.trace.random_scalars.r1 }}
-r_2 = {{ $proofFixtures.bls12-381-sha-256.nymProof001.trace.random_scalars.r2 }}
-e_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof001.trace.random_scalars.e_tilde }}
-r1_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof001.trace.random_scalars.r1_tilde }}
-r3_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof001.trace.random_scalars.r3_tilde }}
-m_tilde_scalars = {{ $proofFixtures.bls12-381-sha-256.nymProof001.trace.random_scalars.m_tilde_scalars }}
+r1 = {{ $proofFixtures.bls12-381-sha-256.nymProof001.trace.randomScalars.r1 }}
+r2 = {{ $proofFixtures.bls12-381-sha-256.nymProof001.trace.randomScalars.r2 }}
+e_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof001.trace.randomScalars.e_Tilde }}
+r1_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof001.trace.randomScalars.r1_Tilde }}
+r3_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof001.trace.randomScalars.r3_Tilde }}
+m_tilde_scalars = {{ $proofFixtures.bls12-381-sha-256.nymProof001.trace.randomScalars.m_tilde_scalars }}
+
+Abar = {{ $proofFixtures.bls12-381-sha-256.nymProof001.trace.Abar }}
+Bbar = {{ $proofFixtures.bls12-381-sha-256.nymProof001.trace.Bbar }}
+D = {{ $proofFixtures.bls12-381-sha-256.nymProof001.trace.D }}
+T1 = {{ $proofFixtures.bls12-381-sha-256.nymProof001.trace.T1 }}
+T2 = {{ $proofFixtures.bls12-381-sha-256.nymProof001.trace.T2 }}
+Ut = {{ $proofFixtures.bls12-381-sha-256.nymProof001.trace.Ut }}
 
 domain = {{ $proofFixtures.bls12-381-sha-256.nymProof001.trace.domain }}
 challenge = {{ $proofFixtures.bls12-381-sha-256.nymProof001.trace.challenge }}
 
-
 L = {{ $proofFixtures.bls12-381-sha-256.nymProof001.L }}
 
+pseudonym = {{ $proofFixtures.bls12-381-sha-256.nymProof001.pseudonym }}
 proof = {{ $proofFixtures.bls12-381-sha-256.nymProof001.proof }}
 ```
 
-#### valid half prover committed messages and all signer messages revealed proof
+#### {{ # $proofFixtures.bls12-381-sha-256.nymProof002.caseName }}
 
 ```
+Based on signature: {{ $proofFixtures.bls12-381-sha-256.nymProof002.signatureFile }}
 signerPublicKey = {{ $proofFixtures.bls12-381-sha-256.nymProof002.signerPublicKey }}
-signature = {{ $proofFixtures.bls12-381-sha-256.nymProof002.signature }}
-
-commitmentWithProof = {{ $proofFixtures.bls12-381-sha-256.nymProof002.commitmentWithProof }}
-proverBlind = {{ $proofFixtures.bls12-381-sha-256.nymProof002.proverBlind }}
 
 header = {{ $proofFixtures.bls12-381-sha-256.nymProof002.header }}
-presentationHeader =  {{ $proofFixtures.bls12-381-sha-256.nymProof002.presentationHeader }}
+presentationHeader = {{ $proofFixtures.bls12-381-sha-256.nymProof002.presentationHeader }}
+context_id = {{ $proofFixtures.bls12-381-sha-256.nymProof002.context_id }}
 
-signer_nym_entropy =  {{ $proofFixtures.bls12-381-sha-256.nymProof002.signer_nym_entropy }}
-proverNym =  {{ $proofFixtures.bls12-381-sha-256.nymProof002.proverNym }}
-nym_secret =  {{ $proofFixtures.bls12-381-sha-256.nymProof002.nym_secret }}
-proverBlind =  {{ $proofFixtures.bls12-381-sha-256.nymProof002.proverBlind }}
-
-context_id =  {{ $proofFixtures.bls12-381-sha-256.nymProof002.context_id }}
-pseudonym =  {{ $proofFixtures.bls12-381-sha-256.nymProof002.pseudonym }}
-
-revealedMessages =
-
-0: {{ $proofFixtures.bls12-381-sha-256.nymProof002.revealedMessages[0] }}
-1: {{ $proofFixtures.bls12-381-sha-256.nymProof002.revealedMessages[1] }}
-2: {{ $proofFixtures.bls12-381-sha-256.nymProof002.revealedMessages[2] }}
-3: {{ $proofFixtures.bls12-381-sha-256.nymProof002.revealedMessages[3] }}
-4: {{ $proofFixtures.bls12-381-sha-256.nymProof002.revealedMessages[4] }}
-5: {{ $proofFixtures.bls12-381-sha-256.nymProof002.revealedMessages[5] }}
-6: {{ $proofFixtures.bls12-381-sha-256.nymProof002.revealedMessages[6] }}
-7: {{ $proofFixtures.bls12-381-sha-256.nymProof002.revealedMessages[7] }}
-8: {{ $proofFixtures.bls12-381-sha-256.nymProof002.revealedMessages[8] }}
-9: {{ $proofFixtures.bls12-381-sha-256.nymProof002.revealedMessages[9] }}
-
-
-revealedCommittedMessages  =
-
-0: {{ $proofFixtures.bls12-381-sha-256.nymProof002.revealedCommittedMessages[0] }}
-2: {{ $proofFixtures.bls12-381-sha-256.nymProof002.revealedCommittedMessages[2] }}
-4: {{ $proofFixtures.bls12-381-sha-256.nymProof002.revealedCommittedMessages[4] }}
+messageDisclosures = {{ $proofFixtures.bls12-381-sha-256.nymProof002.messageDisclosures }}
+blindMessageDisclosures = {{ $proofFixtures.bls12-381-sha-256.nymProof002.blindMessageDisclosures }}
 
 Trace:
 
 random_scalars:
 
-r_1 = {{ $proofFixtures.bls12-381-sha-256.nymProof002.trace.random_scalars.r1 }}
-r_2 = {{ $proofFixtures.bls12-381-sha-256.nymProof002.trace.random_scalars.r2 }}
-e_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof002.trace.random_scalars.e_tilde }}
-r1_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof002.trace.random_scalars.r1_tilde }}
-r3_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof002.trace.random_scalars.r3_tilde }}
-m_tilde_scalars = {{ $proofFixtures.bls12-381-sha-256.nymProof002.trace.random_scalars.m_tilde_scalars }}
+r1 = {{ $proofFixtures.bls12-381-sha-256.nymProof002.trace.randomScalars.r1 }}
+r2 = {{ $proofFixtures.bls12-381-sha-256.nymProof002.trace.randomScalars.r2 }}
+e_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof002.trace.randomScalars.e_Tilde }}
+r1_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof002.trace.randomScalars.r1_Tilde }}
+r3_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof002.trace.randomScalars.r3_Tilde }}
+m_tilde_scalars = {{ $proofFixtures.bls12-381-sha-256.nymProof002.trace.randomScalars.m_tilde_scalars }}
+
+Abar = {{ $proofFixtures.bls12-381-sha-256.nymProof002.trace.Abar }}
+Bbar = {{ $proofFixtures.bls12-381-sha-256.nymProof002.trace.Bbar }}
+D = {{ $proofFixtures.bls12-381-sha-256.nymProof002.trace.D }}
+T1 = {{ $proofFixtures.bls12-381-sha-256.nymProof002.trace.T1 }}
+T2 = {{ $proofFixtures.bls12-381-sha-256.nymProof002.trace.T2 }}
+Ut = {{ $proofFixtures.bls12-381-sha-256.nymProof002.trace.Ut }}
 
 domain = {{ $proofFixtures.bls12-381-sha-256.nymProof002.trace.domain }}
 challenge = {{ $proofFixtures.bls12-381-sha-256.nymProof002.trace.challenge }}
 
-
 L = {{ $proofFixtures.bls12-381-sha-256.nymProof002.L }}
 
+pseudonym = {{ $proofFixtures.bls12-381-sha-256.nymProof002.pseudonym }}
 proof = {{ $proofFixtures.bls12-381-sha-256.nymProof002.proof }}
 ```
 
-#### valid all prover committed messages and half signer messages revealed proof
+#### {{ # $proofFixtures.bls12-381-sha-256.nymProof003.caseName }}
 
 ```
+Based on signature: {{ $proofFixtures.bls12-381-sha-256.nymProof003.signatureFile }}
 signerPublicKey = {{ $proofFixtures.bls12-381-sha-256.nymProof003.signerPublicKey }}
-signature = {{ $proofFixtures.bls12-381-sha-256.nymProof003.signature }}
-
-commitmentWithProof = {{ $proofFixtures.bls12-381-sha-256.nymProof003.commitmentWithProof }}
-proverBlind = {{ $proofFixtures.bls12-381-sha-256.nymProof003.proverBlind }}
 
 header = {{ $proofFixtures.bls12-381-sha-256.nymProof003.header }}
-presentationHeader =  {{ $proofFixtures.bls12-381-sha-256.nymProof003.presentationHeader }}
+presentationHeader = {{ $proofFixtures.bls12-381-sha-256.nymProof003.presentationHeader }}
+context_id = {{ $proofFixtures.bls12-381-sha-256.nymProof003.context_id }}
 
-signer_nym_entropy =  {{ $proofFixtures.bls12-381-sha-256.nymProof003.signer_nym_entropy }}
-proverNym =  {{ $proofFixtures.bls12-381-sha-256.nymProof003.proverNym }}
-nym_secret =  {{ $proofFixtures.bls12-381-sha-256.nymProof003.nym_secret }}
-proverBlind =  {{ $proofFixtures.bls12-381-sha-256.nymProof003.proverBlind }}
-
-context_id =  {{ $proofFixtures.bls12-381-sha-256.nymProof003.context_id }}
-pseudonym =  {{ $proofFixtures.bls12-381-sha-256.nymProof003.pseudonym }}
-
-revealedMessages =
-
-0: {{ $proofFixtures.bls12-381-sha-256.nymProof003.revealedMessages[0] }}
-2: {{ $proofFixtures.bls12-381-sha-256.nymProof003.revealedMessages[2] }}
-4: {{ $proofFixtures.bls12-381-sha-256.nymProof003.revealedMessages[4] }}
-6: {{ $proofFixtures.bls12-381-sha-256.nymProof003.revealedMessages[6] }}
-8: {{ $proofFixtures.bls12-381-sha-256.nymProof003.revealedMessages[8] }}
-
-revealedCommittedMessages  =
-
-0: {{ $proofFixtures.bls12-381-sha-256.nymProof003.revealedCommittedMessages[0] }}
-1: {{ $proofFixtures.bls12-381-sha-256.nymProof003.revealedCommittedMessages[1] }}
-2: {{ $proofFixtures.bls12-381-sha-256.nymProof003.revealedCommittedMessages[2] }}
-3: {{ $proofFixtures.bls12-381-sha-256.nymProof003.revealedCommittedMessages[3] }}
-4: {{ $proofFixtures.bls12-381-sha-256.nymProof003.revealedCommittedMessages[4] }}
+messageDisclosures = {{ $proofFixtures.bls12-381-sha-256.nymProof003.messageDisclosures }}
+blindMessageDisclosures = {{ $proofFixtures.bls12-381-sha-256.nymProof003.blindMessageDisclosures }}
 
 Trace:
 
 random_scalars:
 
-r_1 = {{ $proofFixtures.bls12-381-sha-256.nymProof003.trace.random_scalars.r1 }}
-r_2 = {{ $proofFixtures.bls12-381-sha-256.nymProof003.trace.random_scalars.r2 }}
-e_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof003.trace.random_scalars.e_tilde }}
-r1_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof003.trace.random_scalars.r1_tilde }}
-r3_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof003.trace.random_scalars.r3_tilde }}
-m_tilde_scalars = {{ $proofFixtures.bls12-381-sha-256.nymProof003.trace.random_scalars.m_tilde_scalars }}
+r1 = {{ $proofFixtures.bls12-381-sha-256.nymProof003.trace.randomScalars.r1 }}
+r2 = {{ $proofFixtures.bls12-381-sha-256.nymProof003.trace.randomScalars.r2 }}
+e_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof003.trace.randomScalars.e_Tilde }}
+r1_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof003.trace.randomScalars.r1_Tilde }}
+r3_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof003.trace.randomScalars.r3_Tilde }}
+m_tilde_scalars = {{ $proofFixtures.bls12-381-sha-256.nymProof003.trace.randomScalars.m_tilde_scalars }}
+
+Abar = {{ $proofFixtures.bls12-381-sha-256.nymProof003.trace.Abar }}
+Bbar = {{ $proofFixtures.bls12-381-sha-256.nymProof003.trace.Bbar }}
+D = {{ $proofFixtures.bls12-381-sha-256.nymProof003.trace.D }}
+T1 = {{ $proofFixtures.bls12-381-sha-256.nymProof003.trace.T1 }}
+T2 = {{ $proofFixtures.bls12-381-sha-256.nymProof003.trace.T2 }}
+Ut = {{ $proofFixtures.bls12-381-sha-256.nymProof003.trace.Ut }}
 
 domain = {{ $proofFixtures.bls12-381-sha-256.nymProof003.trace.domain }}
 challenge = {{ $proofFixtures.bls12-381-sha-256.nymProof003.trace.challenge }}
 
-
 L = {{ $proofFixtures.bls12-381-sha-256.nymProof003.L }}
 
+pseudonym = {{ $proofFixtures.bls12-381-sha-256.nymProof003.pseudonym }}
 proof = {{ $proofFixtures.bls12-381-sha-256.nymProof003.proof }}
 ```
 
-#### valid all prover committed messages and signer messages revealed proof
+#### {{ # $proofFixtures.bls12-381-sha-256.nymProof004.caseName }}
 
 ```
+Based on signature: {{ $proofFixtures.bls12-381-sha-256.nymProof004.signatureFile }}
 signerPublicKey = {{ $proofFixtures.bls12-381-sha-256.nymProof004.signerPublicKey }}
-signature = {{ $proofFixtures.bls12-381-sha-256.nymProof004.signature }}
-
-commitmentWithProof = {{ $proofFixtures.bls12-381-sha-256.nymProof004.commitmentWithProof }}
-proverBlind = {{ $proofFixtures.bls12-381-sha-256.nymProof004.proverBlind }}
 
 header = {{ $proofFixtures.bls12-381-sha-256.nymProof004.header }}
-presentationHeader =  {{ $proofFixtures.bls12-381-sha-256.nymProof004.presentationHeader }}
+presentationHeader = {{ $proofFixtures.bls12-381-sha-256.nymProof004.presentationHeader }}
+context_id = {{ $proofFixtures.bls12-381-sha-256.nymProof004.context_id }}
 
-signer_nym_entropy =  {{ $proofFixtures.bls12-381-sha-256.nymProof004.signer_nym_entropy }}
-proverNym =  {{ $proofFixtures.bls12-381-sha-256.nymProof004.proverNym }}
-nym_secret =  {{ $proofFixtures.bls12-381-sha-256.nymProof004.nym_secret }}
-proverBlind =  {{ $proofFixtures.bls12-381-sha-256.nymProof004.proverBlind }}
-
-context_id =  {{ $proofFixtures.bls12-381-sha-256.nymProof004.context_id }}
-pseudonym =  {{ $proofFixtures.bls12-381-sha-256.nymProof004.pseudonym }}
-
-revealedMessages =
-
-0: {{ $proofFixtures.bls12-381-sha-256.nymProof004.revealedMessages[0] }}
-2: {{ $proofFixtures.bls12-381-sha-256.nymProof004.revealedMessages[2] }}
-4: {{ $proofFixtures.bls12-381-sha-256.nymProof004.revealedMessages[4] }}
-6: {{ $proofFixtures.bls12-381-sha-256.nymProof004.revealedMessages[6] }}
-8: {{ $proofFixtures.bls12-381-sha-256.nymProof004.revealedMessages[8] }}
-
-
-revealedCommittedMessages  =
-
-0: {{ $proofFixtures.bls12-381-sha-256.nymProof004.revealedCommittedMessages[0] }}
-2: {{ $proofFixtures.bls12-381-sha-256.nymProof004.revealedCommittedMessages[2] }}
-4: {{ $proofFixtures.bls12-381-sha-256.nymProof004.revealedCommittedMessages[4] }}
+messageDisclosures = {{ $proofFixtures.bls12-381-sha-256.nymProof004.messageDisclosures }}
+blindMessageDisclosures = {{ $proofFixtures.bls12-381-sha-256.nymProof004.blindMessageDisclosures }}
 
 Trace:
 
 random_scalars:
 
-r_1 = {{ $proofFixtures.bls12-381-sha-256.nymProof004.trace.random_scalars.r1 }}
-r_2 = {{ $proofFixtures.bls12-381-sha-256.nymProof004.trace.random_scalars.r2 }}
-e_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof004.trace.random_scalars.e_tilde }}
-r1_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof004.trace.random_scalars.r1_tilde }}
-r3_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof004.trace.random_scalars.r3_tilde }}
-m_tilde_scalars = {{ $proofFixtures.bls12-381-sha-256.nymProof004.trace.random_scalars.m_tilde_scalars }}
+r1 = {{ $proofFixtures.bls12-381-sha-256.nymProof004.trace.randomScalars.r1 }}
+r2 = {{ $proofFixtures.bls12-381-sha-256.nymProof004.trace.randomScalars.r2 }}
+e_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof004.trace.randomScalars.e_Tilde }}
+r1_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof004.trace.randomScalars.r1_Tilde }}
+r3_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof004.trace.randomScalars.r3_Tilde }}
+m_tilde_scalars = {{ $proofFixtures.bls12-381-sha-256.nymProof004.trace.randomScalars.m_tilde_scalars }}
+
+Abar = {{ $proofFixtures.bls12-381-sha-256.nymProof004.trace.Abar }}
+Bbar = {{ $proofFixtures.bls12-381-sha-256.nymProof004.trace.Bbar }}
+D = {{ $proofFixtures.bls12-381-sha-256.nymProof004.trace.D }}
+T1 = {{ $proofFixtures.bls12-381-sha-256.nymProof004.trace.T1 }}
+T2 = {{ $proofFixtures.bls12-381-sha-256.nymProof004.trace.T2 }}
+Ut = {{ $proofFixtures.bls12-381-sha-256.nymProof004.trace.Ut }}
 
 domain = {{ $proofFixtures.bls12-381-sha-256.nymProof004.trace.domain }}
 challenge = {{ $proofFixtures.bls12-381-sha-256.nymProof004.trace.challenge }}
 
-
 L = {{ $proofFixtures.bls12-381-sha-256.nymProof004.L }}
 
+pseudonym = {{ $proofFixtures.bls12-381-sha-256.nymProof004.pseudonym }}
 proof = {{ $proofFixtures.bls12-381-sha-256.nymProof004.proof }}
 ```
 
-#### valid all prover committed messages and signer messages revealed proof
+#### {{ # $proofFixtures.bls12-381-sha-256.nymProof005.caseName }}
 
 ```
+Based on signature: {{ $proofFixtures.bls12-381-sha-256.nymProof005.signatureFile }}
 signerPublicKey = {{ $proofFixtures.bls12-381-sha-256.nymProof005.signerPublicKey }}
-signature = {{ $proofFixtures.bls12-381-sha-256.nymProof005.signature }}
-
-commitmentWithProof = {{ $proofFixtures.bls12-381-sha-256.nymProof005.commitmentWithProof }}
-proverBlind = {{ $proofFixtures.bls12-381-sha-256.nymProof005.proverBlind }}
 
 header = {{ $proofFixtures.bls12-381-sha-256.nymProof005.header }}
-presentationHeader =  {{ $proofFixtures.bls12-381-sha-256.nymProof005.presentationHeader }}
+presentationHeader = {{ $proofFixtures.bls12-381-sha-256.nymProof005.presentationHeader }}
+context_id = {{ $proofFixtures.bls12-381-sha-256.nymProof005.context_id }}
 
-signer_nym_entropy =  {{ $proofFixtures.bls12-381-sha-256.nymProof005.signer_nym_entropy }}
-proverNym =  {{ $proofFixtures.bls12-381-sha-256.nymProof005.proverNym }}
-nym_secret =  {{ $proofFixtures.bls12-381-sha-256.nymProof005.nym_secret }}
-proverBlind =  {{ $proofFixtures.bls12-381-sha-256.nymProof005.proverBlind }}
-
-context_id =  {{ $proofFixtures.bls12-381-sha-256.nymProof005.context_id }}
-pseudonym =  {{ $proofFixtures.bls12-381-sha-256.nymProof005.pseudonym }}
-
-revealedMessages =
-
-0: {{ $proofFixtures.bls12-381-sha-256.nymProof005.revealedMessages[0] }}
-2: {{ $proofFixtures.bls12-381-sha-256.nymProof005.revealedMessages[2] }}
-4: {{ $proofFixtures.bls12-381-sha-256.nymProof005.revealedMessages[4] }}
-6: {{ $proofFixtures.bls12-381-sha-256.nymProof005.revealedMessages[6] }}
-8: {{ $proofFixtures.bls12-381-sha-256.nymProof005.revealedMessages[8] }}
-
-revealedCommittedMessages  = {}
-
+messageDisclosures = {{ $proofFixtures.bls12-381-sha-256.nymProof005.messageDisclosures }}
+blindMessageDisclosures = {{ $proofFixtures.bls12-381-sha-256.nymProof005.blindMessageDisclosures }}
 
 Trace:
 
 random_scalars:
 
-r_1 = {{ $proofFixtures.bls12-381-sha-256.nymProof005.trace.random_scalars.r1 }}
-r_2 = {{ $proofFixtures.bls12-381-sha-256.nymProof005.trace.random_scalars.r2 }}
-e_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof005.trace.random_scalars.e_tilde }}
-r1_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof005.trace.random_scalars.r1_tilde }}
-r3_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof005.trace.random_scalars.r3_tilde }}
-m_tilde_scalars = {{ $proofFixtures.bls12-381-sha-256.nymProof005.trace.random_scalars.m_tilde_scalars }}
+r1 = {{ $proofFixtures.bls12-381-sha-256.nymProof005.trace.randomScalars.r1 }}
+r2 = {{ $proofFixtures.bls12-381-sha-256.nymProof005.trace.randomScalars.r2 }}
+e_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof005.trace.randomScalars.e_Tilde }}
+r1_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof005.trace.randomScalars.r1_Tilde }}
+r3_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof005.trace.randomScalars.r3_Tilde }}
+m_tilde_scalars = {{ $proofFixtures.bls12-381-sha-256.nymProof005.trace.randomScalars.m_tilde_scalars }}
+
+Abar = {{ $proofFixtures.bls12-381-sha-256.nymProof005.trace.Abar }}
+Bbar = {{ $proofFixtures.bls12-381-sha-256.nymProof005.trace.Bbar }}
+D = {{ $proofFixtures.bls12-381-sha-256.nymProof005.trace.D }}
+T1 = {{ $proofFixtures.bls12-381-sha-256.nymProof005.trace.T1 }}
+T2 = {{ $proofFixtures.bls12-381-sha-256.nymProof005.trace.T2 }}
+Ut = {{ $proofFixtures.bls12-381-sha-256.nymProof005.trace.Ut }}
 
 domain = {{ $proofFixtures.bls12-381-sha-256.nymProof005.trace.domain }}
 challenge = {{ $proofFixtures.bls12-381-sha-256.nymProof005.trace.challenge }}
 
-
 L = {{ $proofFixtures.bls12-381-sha-256.nymProof005.L }}
 
+pseudonym = {{ $proofFixtures.bls12-381-sha-256.nymProof005.pseudonym }}
 proof = {{ $proofFixtures.bls12-381-sha-256.nymProof005.proof }}
 ```
 
-#### valid half prover committed messages and no signer messages revealed proof
+#### {{ # $proofFixtures.bls12-381-sha-256.nymProof006.caseName }}
 
 ```
+Based on signature: {{ $proofFixtures.bls12-381-sha-256.nymProof006.signatureFile }}
 signerPublicKey = {{ $proofFixtures.bls12-381-sha-256.nymProof006.signerPublicKey }}
-signature = {{ $proofFixtures.bls12-381-sha-256.nymProof006.signature }}
-
-commitmentWithProof = {{ $proofFixtures.bls12-381-sha-256.nymProof006.commitmentWithProof }}
-proverBlind = {{ $proofFixtures.bls12-381-sha-256.nymProof006.proverBlind }}
 
 header = {{ $proofFixtures.bls12-381-sha-256.nymProof006.header }}
-presentationHeader =  {{ $proofFixtures.bls12-381-sha-256.nymProof006.presentationHeader }}
+presentationHeader = {{ $proofFixtures.bls12-381-sha-256.nymProof006.presentationHeader }}
+context_id = {{ $proofFixtures.bls12-381-sha-256.nymProof006.context_id }}
 
-signer_nym_entropy =  {{ $proofFixtures.bls12-381-sha-256.nymProof006.signer_nym_entropy }}
-proverNym =  {{ $proofFixtures.bls12-381-sha-256.nymProof006.proverNym }}
-nym_secret =  {{ $proofFixtures.bls12-381-sha-256.nymProof006.nym_secret }}
-proverBlind =  {{ $proofFixtures.bls12-381-sha-256.nymProof006.proverBlind }}
-
-context_id =  {{ $proofFixtures.bls12-381-sha-256.nymProof006.context_id }}
-pseudonym =  {{ $proofFixtures.bls12-381-sha-256.nymProof006.pseudonym }}
-
-revealedMessages = {}
-
-revealedCommittedMessages  =
-
-0: {{ $proofFixtures.bls12-381-sha-256.nymProof006.revealedCommittedMessages[0] }}
-2: {{ $proofFixtures.bls12-381-sha-256.nymProof006.revealedCommittedMessages[2] }}
-4: {{ $proofFixtures.bls12-381-sha-256.nymProof006.revealedCommittedMessages[4] }}
+messageDisclosures = {{ $proofFixtures.bls12-381-sha-256.nymProof006.messageDisclosures }}
+blindMessageDisclosures = {{ $proofFixtures.bls12-381-sha-256.nymProof006.blindMessageDisclosures }}
 
 Trace:
 
 random_scalars:
 
-r_1 = {{ $proofFixtures.bls12-381-sha-256.nymProof006.trace.random_scalars.r1 }}
-r_2 = {{ $proofFixtures.bls12-381-sha-256.nymProof006.trace.random_scalars.r2 }}
-e_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof006.trace.random_scalars.e_tilde }}
-r1_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof006.trace.random_scalars.r1_tilde }}
-r3_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof006.trace.random_scalars.r3_tilde }}
-m_tilde_scalars = {{ $proofFixtures.bls12-381-sha-256.nymProof006.trace.random_scalars.m_tilde_scalars }}
+r1 = {{ $proofFixtures.bls12-381-sha-256.nymProof006.trace.randomScalars.r1 }}
+r2 = {{ $proofFixtures.bls12-381-sha-256.nymProof006.trace.randomScalars.r2 }}
+e_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof006.trace.randomScalars.e_Tilde }}
+r1_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof006.trace.randomScalars.r1_Tilde }}
+r3_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof006.trace.randomScalars.r3_Tilde }}
+m_tilde_scalars = {{ $proofFixtures.bls12-381-sha-256.nymProof006.trace.randomScalars.m_tilde_scalars }}
+
+Abar = {{ $proofFixtures.bls12-381-sha-256.nymProof006.trace.Abar }}
+Bbar = {{ $proofFixtures.bls12-381-sha-256.nymProof006.trace.Bbar }}
+D = {{ $proofFixtures.bls12-381-sha-256.nymProof006.trace.D }}
+T1 = {{ $proofFixtures.bls12-381-sha-256.nymProof006.trace.T1 }}
+T2 = {{ $proofFixtures.bls12-381-sha-256.nymProof006.trace.T2 }}
+Ut = {{ $proofFixtures.bls12-381-sha-256.nymProof006.trace.Ut }}
 
 domain = {{ $proofFixtures.bls12-381-sha-256.nymProof006.trace.domain }}
 challenge = {{ $proofFixtures.bls12-381-sha-256.nymProof006.trace.challenge }}
 
-
 L = {{ $proofFixtures.bls12-381-sha-256.nymProof006.L }}
 
+pseudonym = {{ $proofFixtures.bls12-381-sha-256.nymProof006.pseudonym }}
 proof = {{ $proofFixtures.bls12-381-sha-256.nymProof006.proof }}
 ```
 
-#### valid all prover committed messages and signer messages revealed proof
+#### {{ # $proofFixtures.bls12-381-sha-256.nymProof007.caseName }}
 
 ```
+Based on signature: {{ $proofFixtures.bls12-381-sha-256.nymProof007.signatureFile }}
 signerPublicKey = {{ $proofFixtures.bls12-381-sha-256.nymProof007.signerPublicKey }}
-signature = {{ $proofFixtures.bls12-381-sha-256.nymProof007.signature }}
-
-commitmentWithProof = {{ $proofFixtures.bls12-381-sha-256.nymProof007.commitmentWithProof }}
-proverBlind = {{ $proofFixtures.bls12-381-sha-256.nymProof007.proverBlind }}
 
 header = {{ $proofFixtures.bls12-381-sha-256.nymProof007.header }}
-presentationHeader =  {{ $proofFixtures.bls12-381-sha-256.nymProof007.presentationHeader }}
+presentationHeader = {{ $proofFixtures.bls12-381-sha-256.nymProof007.presentationHeader }}
+context_id = {{ $proofFixtures.bls12-381-sha-256.nymProof007.context_id }}
 
-signer_nym_entropy =  {{ $proofFixtures.bls12-381-sha-256.nymProof007.signer_nym_entropy }}
-proverNym =  {{ $proofFixtures.bls12-381-sha-256.nymProof007.proverNym }}
-nym_secret =  {{ $proofFixtures.bls12-381-sha-256.nymProof007.nym_secret }}
-proverBlind =  {{ $proofFixtures.bls12-381-sha-256.nymProof007.proverBlind }}
-
-context_id =  {{ $proofFixtures.bls12-381-sha-256.nymProof007.context_id }}
-pseudonym =  {{ $proofFixtures.bls12-381-sha-256.nymProof007.pseudonym }}
-
-revealedMessages = {}
-
-revealedCommittedMessages  = {}
+messageDisclosures = {{ $proofFixtures.bls12-381-sha-256.nymProof007.messageDisclosures }}
+blindMessageDisclosures = {{ $proofFixtures.bls12-381-sha-256.nymProof007.blindMessageDisclosures }}
 
 Trace:
 
 random_scalars:
 
-r_1 = {{ $proofFixtures.bls12-381-sha-256.nymProof007.trace.random_scalars.r1 }}
-r_2 = {{ $proofFixtures.bls12-381-sha-256.nymProof007.trace.random_scalars.r2 }}
-e_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof007.trace.random_scalars.e_tilde }}
-r1_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof007.trace.random_scalars.r1_tilde }}
-r3_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof007.trace.random_scalars.r3_tilde }}
-m_tilde_scalars = {{ $proofFixtures.bls12-381-sha-256.nymProof007.trace.random_scalars.m_tilde_scalars }}
+r1 = {{ $proofFixtures.bls12-381-sha-256.nymProof007.trace.randomScalars.r1 }}
+r2 = {{ $proofFixtures.bls12-381-sha-256.nymProof007.trace.randomScalars.r2 }}
+e_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof007.trace.randomScalars.e_Tilde }}
+r1_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof007.trace.randomScalars.r1_Tilde }}
+r3_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof007.trace.randomScalars.r3_Tilde }}
+m_tilde_scalars = {{ $proofFixtures.bls12-381-sha-256.nymProof007.trace.randomScalars.m_tilde_scalars }}
+
+Abar = {{ $proofFixtures.bls12-381-sha-256.nymProof007.trace.Abar }}
+Bbar = {{ $proofFixtures.bls12-381-sha-256.nymProof007.trace.Bbar }}
+D = {{ $proofFixtures.bls12-381-sha-256.nymProof007.trace.D }}
+T1 = {{ $proofFixtures.bls12-381-sha-256.nymProof007.trace.T1 }}
+T2 = {{ $proofFixtures.bls12-381-sha-256.nymProof007.trace.T2 }}
+Ut = {{ $proofFixtures.bls12-381-sha-256.nymProof007.trace.Ut }}
 
 domain = {{ $proofFixtures.bls12-381-sha-256.nymProof007.trace.domain }}
 challenge = {{ $proofFixtures.bls12-381-sha-256.nymProof007.trace.challenge }}
 
-
 L = {{ $proofFixtures.bls12-381-sha-256.nymProof007.L }}
 
+pseudonym = {{ $proofFixtures.bls12-381-sha-256.nymProof007.pseudonym }}
 proof = {{ $proofFixtures.bls12-381-sha-256.nymProof007.proof }}
 ```
 
+#### {{ # $proofFixtures.bls12-381-sha-256.nymProof008.caseName }}
+
+```
+Based on signature: {{ $proofFixtures.bls12-381-sha-256.nymProof008.signatureFile }}
+signerPublicKey = {{ $proofFixtures.bls12-381-sha-256.nymProof008.signerPublicKey }}
+
+header = {{ $proofFixtures.bls12-381-sha-256.nymProof008.header }}
+presentationHeader = {{ $proofFixtures.bls12-381-sha-256.nymProof008.presentationHeader }}
+context_id = {{ $proofFixtures.bls12-381-sha-256.nymProof008.context_id }}
+
+messageDisclosures = {{ $proofFixtures.bls12-381-sha-256.nymProof008.messageDisclosures }}
+blindMessageDisclosures = {{ $proofFixtures.bls12-381-sha-256.nymProof008.blindMessageDisclosures }}
+
+Trace:
+
+random_scalars:
+
+r1 = {{ $proofFixtures.bls12-381-sha-256.nymProof008.trace.randomScalars.r1 }}
+r2 = {{ $proofFixtures.bls12-381-sha-256.nymProof008.trace.randomScalars.r2 }}
+e_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof008.trace.randomScalars.e_Tilde }}
+r1_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof008.trace.randomScalars.r1_Tilde }}
+r3_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof008.trace.randomScalars.r3_Tilde }}
+m_tilde_scalars = {{ $proofFixtures.bls12-381-sha-256.nymProof008.trace.randomScalars.m_tilde_scalars }}
+s_i = {{ $proofFixtures.bls12-381-sha-256.nymProof008.trace.randomScalars.s_i }}
+s_tilde_i = {{ $proofFixtures.bls12-381-sha-256.nymProof008.trace.randomScalars.s_tilde_i }}
+
+Abar = {{ $proofFixtures.bls12-381-sha-256.nymProof008.trace.Abar }}
+Bbar = {{ $proofFixtures.bls12-381-sha-256.nymProof008.trace.Bbar }}
+D = {{ $proofFixtures.bls12-381-sha-256.nymProof008.trace.D }}
+T1 = {{ $proofFixtures.bls12-381-sha-256.nymProof008.trace.T1 }}
+T2 = {{ $proofFixtures.bls12-381-sha-256.nymProof008.trace.T2 }}
+C_i = {{ $proofFixtures.bls12-381-sha-256.nymProof008.trace.C_i }}
+C_tilde_i = {{ $proofFixtures.bls12-381-sha-256.nymProof008.trace.C_tilde_i }}
+Ut = {{ $proofFixtures.bls12-381-sha-256.nymProof008.trace.Ut }}
+
+domain = {{ $proofFixtures.bls12-381-sha-256.nymProof008.trace.domain }}
+challenge = {{ $proofFixtures.bls12-381-sha-256.nymProof008.trace.challenge }}
+
+add_zkp_info:
+
+committed_message_scalars = {{ $proofFixtures.bls12-381-sha-256.nymProof008.add_zkp_info.committed_message_scalars }}
+commitment_rands = {{ $proofFixtures.bls12-381-sha-256.nymProof008.add_zkp_info.commitment_rands }}
+
+L = {{ $proofFixtures.bls12-381-sha-256.nymProof008.L }}
+
+pseudonym = {{ $proofFixtures.bls12-381-sha-256.nymProof008.pseudonym }}
+proof = {{ $proofFixtures.bls12-381-sha-256.nymProof008.proof }}
+```
+
+#### {{ # $proofFixtures.bls12-381-sha-256.nymProof009.caseName }}
+
+```
+Based on signature: {{ $proofFixtures.bls12-381-sha-256.nymProof009.signatureFile }}
+signerPublicKey = {{ $proofFixtures.bls12-381-sha-256.nymProof009.signerPublicKey }}
+
+header = {{ $proofFixtures.bls12-381-sha-256.nymProof009.header }}
+presentationHeader = {{ $proofFixtures.bls12-381-sha-256.nymProof009.presentationHeader }}
+context_id = {{ $proofFixtures.bls12-381-sha-256.nymProof009.context_id }}
+
+messageDisclosures = {{ $proofFixtures.bls12-381-sha-256.nymProof009.messageDisclosures }}
+blindMessageDisclosures = {{ $proofFixtures.bls12-381-sha-256.nymProof009.blindMessageDisclosures }}
+
+Trace:
+
+random_scalars:
+
+r1 = {{ $proofFixtures.bls12-381-sha-256.nymProof009.trace.randomScalars.r1 }}
+r2 = {{ $proofFixtures.bls12-381-sha-256.nymProof009.trace.randomScalars.r2 }}
+e_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof009.trace.randomScalars.e_Tilde }}
+r1_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof009.trace.randomScalars.r1_Tilde }}
+r3_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof009.trace.randomScalars.r3_Tilde }}
+m_tilde_scalars = {{ $proofFixtures.bls12-381-sha-256.nymProof009.trace.randomScalars.m_tilde_scalars }}
+s_i = {{ $proofFixtures.bls12-381-sha-256.nymProof009.trace.randomScalars.s_i }}
+s_tilde_i = {{ $proofFixtures.bls12-381-sha-256.nymProof009.trace.randomScalars.s_tilde_i }}
+
+Abar = {{ $proofFixtures.bls12-381-sha-256.nymProof009.trace.Abar }}
+Bbar = {{ $proofFixtures.bls12-381-sha-256.nymProof009.trace.Bbar }}
+D = {{ $proofFixtures.bls12-381-sha-256.nymProof009.trace.D }}
+T1 = {{ $proofFixtures.bls12-381-sha-256.nymProof009.trace.T1 }}
+T2 = {{ $proofFixtures.bls12-381-sha-256.nymProof009.trace.T2 }}
+C_i = {{ $proofFixtures.bls12-381-sha-256.nymProof009.trace.C_i }}
+C_tilde_i = {{ $proofFixtures.bls12-381-sha-256.nymProof009.trace.C_tilde_i }}
+Ut = {{ $proofFixtures.bls12-381-sha-256.nymProof009.trace.Ut }}
+
+domain = {{ $proofFixtures.bls12-381-sha-256.nymProof009.trace.domain }}
+challenge = {{ $proofFixtures.bls12-381-sha-256.nymProof009.trace.challenge }}
+
+add_zkp_info:
+
+committed_message_scalars = {{ $proofFixtures.bls12-381-sha-256.nymProof009.add_zkp_info.committed_message_scalars }}
+commitment_rands = {{ $proofFixtures.bls12-381-sha-256.nymProof009.add_zkp_info.commitment_rands }}
+
+L = {{ $proofFixtures.bls12-381-sha-256.nymProof009.L }}
+
+pseudonym = {{ $proofFixtures.bls12-381-sha-256.nymProof009.pseudonym }}
+proof = {{ $proofFixtures.bls12-381-sha-256.nymProof009.proof }}
+```
+
+#### {{ # $proofFixtures.bls12-381-sha-256.nymProof010.caseName }}
+
+```
+Based on signature: {{ $proofFixtures.bls12-381-sha-256.nymProof010.signatureFile }}
+signerPublicKey = {{ $proofFixtures.bls12-381-sha-256.nymProof010.signerPublicKey }}
+
+header = {{ $proofFixtures.bls12-381-sha-256.nymProof010.header }}
+presentationHeader = {{ $proofFixtures.bls12-381-sha-256.nymProof010.presentationHeader }}
+context_id = {{ $proofFixtures.bls12-381-sha-256.nymProof010.context_id }}
+
+messageDisclosures = {{ $proofFixtures.bls12-381-sha-256.nymProof010.messageDisclosures }}
+blindMessageDisclosures = {{ $proofFixtures.bls12-381-sha-256.nymProof010.blindMessageDisclosures }}
+
+Trace:
+
+random_scalars:
+
+r1 = {{ $proofFixtures.bls12-381-sha-256.nymProof010.trace.randomScalars.r1 }}
+r2 = {{ $proofFixtures.bls12-381-sha-256.nymProof010.trace.randomScalars.r2 }}
+e_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof010.trace.randomScalars.e_Tilde }}
+r1_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof010.trace.randomScalars.r1_Tilde }}
+r3_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof010.trace.randomScalars.r3_Tilde }}
+m_tilde_scalars = {{ $proofFixtures.bls12-381-sha-256.nymProof010.trace.randomScalars.m_tilde_scalars }}
+s_i = {{ $proofFixtures.bls12-381-sha-256.nymProof010.trace.randomScalars.s_i }}
+s_tilde_i = {{ $proofFixtures.bls12-381-sha-256.nymProof010.trace.randomScalars.s_tilde_i }}
+
+Abar = {{ $proofFixtures.bls12-381-sha-256.nymProof010.trace.Abar }}
+Bbar = {{ $proofFixtures.bls12-381-sha-256.nymProof010.trace.Bbar }}
+D = {{ $proofFixtures.bls12-381-sha-256.nymProof010.trace.D }}
+T1 = {{ $proofFixtures.bls12-381-sha-256.nymProof010.trace.T1 }}
+T2 = {{ $proofFixtures.bls12-381-sha-256.nymProof010.trace.T2 }}
+C_i = {{ $proofFixtures.bls12-381-sha-256.nymProof010.trace.C_i }}
+C_tilde_i = {{ $proofFixtures.bls12-381-sha-256.nymProof010.trace.C_tilde_i }}
+Ut = {{ $proofFixtures.bls12-381-sha-256.nymProof010.trace.Ut }}
+
+domain = {{ $proofFixtures.bls12-381-sha-256.nymProof010.trace.domain }}
+challenge = {{ $proofFixtures.bls12-381-sha-256.nymProof010.trace.challenge }}
+
+add_zkp_info:
+
+committed_message_scalars = {{ $proofFixtures.bls12-381-sha-256.nymProof010.add_zkp_info.committed_message_scalars }}
+commitment_rands = {{ $proofFixtures.bls12-381-sha-256.nymProof010.add_zkp_info.commitment_rands }}
+
+L = {{ $proofFixtures.bls12-381-sha-256.nymProof010.L }}
+
+pseudonym = {{ $proofFixtures.bls12-381-sha-256.nymProof010.pseudonym }}
+proof = {{ $proofFixtures.bls12-381-sha-256.nymProof010.proof }}
+```
+
+#### {{ # $proofFixtures.bls12-381-sha-256.nymProof011.caseName }}
+
+```
+Based on signature: {{ $proofFixtures.bls12-381-sha-256.nymProof011.signatureFile }}
+signerPublicKey = {{ $proofFixtures.bls12-381-sha-256.nymProof011.signerPublicKey }}
+
+header = {{ $proofFixtures.bls12-381-sha-256.nymProof011.header }}
+presentationHeader = {{ $proofFixtures.bls12-381-sha-256.nymProof011.presentationHeader }}
+context_id = {{ $proofFixtures.bls12-381-sha-256.nymProof011.context_id }}
+
+messageDisclosures = {{ $proofFixtures.bls12-381-sha-256.nymProof011.messageDisclosures }}
+blindMessageDisclosures = {{ $proofFixtures.bls12-381-sha-256.nymProof011.blindMessageDisclosures }}
+
+Trace:
+
+random_scalars:
+
+r1 = {{ $proofFixtures.bls12-381-sha-256.nymProof011.trace.randomScalars.r1 }}
+r2 = {{ $proofFixtures.bls12-381-sha-256.nymProof011.trace.randomScalars.r2 }}
+e_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof011.trace.randomScalars.e_Tilde }}
+r1_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof011.trace.randomScalars.r1_Tilde }}
+r3_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof011.trace.randomScalars.r3_Tilde }}
+m_tilde_scalars = {{ $proofFixtures.bls12-381-sha-256.nymProof011.trace.randomScalars.m_tilde_scalars }}
+s_i = {{ $proofFixtures.bls12-381-sha-256.nymProof011.trace.randomScalars.s_i }}
+s_tilde_i = {{ $proofFixtures.bls12-381-sha-256.nymProof011.trace.randomScalars.s_tilde_i }}
+
+Abar = {{ $proofFixtures.bls12-381-sha-256.nymProof011.trace.Abar }}
+Bbar = {{ $proofFixtures.bls12-381-sha-256.nymProof011.trace.Bbar }}
+D = {{ $proofFixtures.bls12-381-sha-256.nymProof011.trace.D }}
+T1 = {{ $proofFixtures.bls12-381-sha-256.nymProof011.trace.T1 }}
+T2 = {{ $proofFixtures.bls12-381-sha-256.nymProof011.trace.T2 }}
+C_i = {{ $proofFixtures.bls12-381-sha-256.nymProof011.trace.C_i }}
+C_tilde_i = {{ $proofFixtures.bls12-381-sha-256.nymProof011.trace.C_tilde_i }}
+Ut = {{ $proofFixtures.bls12-381-sha-256.nymProof011.trace.Ut }}
+
+domain = {{ $proofFixtures.bls12-381-sha-256.nymProof011.trace.domain }}
+challenge = {{ $proofFixtures.bls12-381-sha-256.nymProof011.trace.challenge }}
+
+add_zkp_info:
+
+committed_message_scalars = {{ $proofFixtures.bls12-381-sha-256.nymProof011.add_zkp_info.committed_message_scalars }}
+commitment_rands = {{ $proofFixtures.bls12-381-sha-256.nymProof011.add_zkp_info.commitment_rands }}
+
+L = {{ $proofFixtures.bls12-381-sha-256.nymProof011.L }}
+
+pseudonym = {{ $proofFixtures.bls12-381-sha-256.nymProof011.pseudonym }}
+proof = {{ $proofFixtures.bls12-381-sha-256.nymProof011.proof }}
+```
+
+#### {{ # $proofFixtures.bls12-381-sha-256.nymProof101.caseName }}
+
+```
+Based on signature: {{ $proofFixtures.bls12-381-sha-256.nymProof101.signatureFile }}
+signerPublicKey = {{ $proofFixtures.bls12-381-sha-256.nymProof101.signerPublicKey }}
+
+header = {{ $proofFixtures.bls12-381-sha-256.nymProof101.header }}
+presentationHeader = {{ $proofFixtures.bls12-381-sha-256.nymProof101.presentationHeader }}
+context_id = {{ $proofFixtures.bls12-381-sha-256.nymProof101.context_id }}
+
+messageDisclosures = {{ $proofFixtures.bls12-381-sha-256.nymProof101.messageDisclosures }}
+blindMessageDisclosures = {{ $proofFixtures.bls12-381-sha-256.nymProof101.blindMessageDisclosures }}
+
+Trace:
+
+random_scalars:
+
+r1 = {{ $proofFixtures.bls12-381-sha-256.nymProof101.trace.randomScalars.r1 }}
+r2 = {{ $proofFixtures.bls12-381-sha-256.nymProof101.trace.randomScalars.r2 }}
+e_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof101.trace.randomScalars.e_Tilde }}
+r1_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof101.trace.randomScalars.r1_Tilde }}
+r3_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof101.trace.randomScalars.r3_Tilde }}
+m_tilde_scalars = {{ $proofFixtures.bls12-381-sha-256.nymProof101.trace.randomScalars.m_tilde_scalars }}
+
+Abar = {{ $proofFixtures.bls12-381-sha-256.nymProof101.trace.Abar }}
+Bbar = {{ $proofFixtures.bls12-381-sha-256.nymProof101.trace.Bbar }}
+D = {{ $proofFixtures.bls12-381-sha-256.nymProof101.trace.D }}
+T1 = {{ $proofFixtures.bls12-381-sha-256.nymProof101.trace.T1 }}
+T2 = {{ $proofFixtures.bls12-381-sha-256.nymProof101.trace.T2 }}
+Ut = {{ $proofFixtures.bls12-381-sha-256.nymProof101.trace.Ut }}
+
+domain = {{ $proofFixtures.bls12-381-sha-256.nymProof101.trace.domain }}
+challenge = {{ $proofFixtures.bls12-381-sha-256.nymProof101.trace.challenge }}
+
+L = {{ $proofFixtures.bls12-381-sha-256.nymProof101.L }}
+
+pseudonym = {{ $proofFixtures.bls12-381-sha-256.nymProof101.pseudonym }}
+proof = {{ $proofFixtures.bls12-381-sha-256.nymProof101.proof }}
+```
+
+#### {{ # $proofFixtures.bls12-381-sha-256.nymProof102.caseName }}
+
+```
+Based on signature: {{ $proofFixtures.bls12-381-sha-256.nymProof102.signatureFile }}
+signerPublicKey = {{ $proofFixtures.bls12-381-sha-256.nymProof102.signerPublicKey }}
+
+header = {{ $proofFixtures.bls12-381-sha-256.nymProof102.header }}
+presentationHeader = {{ $proofFixtures.bls12-381-sha-256.nymProof102.presentationHeader }}
+context_id = {{ $proofFixtures.bls12-381-sha-256.nymProof102.context_id }}
+
+messageDisclosures = {{ $proofFixtures.bls12-381-sha-256.nymProof102.messageDisclosures }}
+blindMessageDisclosures = {{ $proofFixtures.bls12-381-sha-256.nymProof102.blindMessageDisclosures }}
+
+Trace:
+
+random_scalars:
+
+r1 = {{ $proofFixtures.bls12-381-sha-256.nymProof102.trace.randomScalars.r1 }}
+r2 = {{ $proofFixtures.bls12-381-sha-256.nymProof102.trace.randomScalars.r2 }}
+e_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof102.trace.randomScalars.e_Tilde }}
+r1_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof102.trace.randomScalars.r1_Tilde }}
+r3_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof102.trace.randomScalars.r3_Tilde }}
+m_tilde_scalars = {{ $proofFixtures.bls12-381-sha-256.nymProof102.trace.randomScalars.m_tilde_scalars }}
+
+Abar = {{ $proofFixtures.bls12-381-sha-256.nymProof102.trace.Abar }}
+Bbar = {{ $proofFixtures.bls12-381-sha-256.nymProof102.trace.Bbar }}
+D = {{ $proofFixtures.bls12-381-sha-256.nymProof102.trace.D }}
+T1 = {{ $proofFixtures.bls12-381-sha-256.nymProof102.trace.T1 }}
+T2 = {{ $proofFixtures.bls12-381-sha-256.nymProof102.trace.T2 }}
+Ut = {{ $proofFixtures.bls12-381-sha-256.nymProof102.trace.Ut }}
+
+domain = {{ $proofFixtures.bls12-381-sha-256.nymProof102.trace.domain }}
+challenge = {{ $proofFixtures.bls12-381-sha-256.nymProof102.trace.challenge }}
+
+L = {{ $proofFixtures.bls12-381-sha-256.nymProof102.L }}
+
+pseudonym = {{ $proofFixtures.bls12-381-sha-256.nymProof102.pseudonym }}
+proof = {{ $proofFixtures.bls12-381-sha-256.nymProof102.proof }}
+```
+
+#### {{ # $proofFixtures.bls12-381-sha-256.nymProof103.caseName }}
+
+```
+Based on signature: {{ $proofFixtures.bls12-381-sha-256.nymProof103.signatureFile }}
+signerPublicKey = {{ $proofFixtures.bls12-381-sha-256.nymProof103.signerPublicKey }}
+
+header = {{ $proofFixtures.bls12-381-sha-256.nymProof103.header }}
+presentationHeader = {{ $proofFixtures.bls12-381-sha-256.nymProof103.presentationHeader }}
+context_id = {{ $proofFixtures.bls12-381-sha-256.nymProof103.context_id }}
+
+messageDisclosures = {{ $proofFixtures.bls12-381-sha-256.nymProof103.messageDisclosures }}
+blindMessageDisclosures = {{ $proofFixtures.bls12-381-sha-256.nymProof103.blindMessageDisclosures }}
+
+Trace:
+
+random_scalars:
+
+r1 = {{ $proofFixtures.bls12-381-sha-256.nymProof103.trace.randomScalars.r1 }}
+r2 = {{ $proofFixtures.bls12-381-sha-256.nymProof103.trace.randomScalars.r2 }}
+e_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof103.trace.randomScalars.e_Tilde }}
+r1_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof103.trace.randomScalars.r1_Tilde }}
+r3_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof103.trace.randomScalars.r3_Tilde }}
+m_tilde_scalars = {{ $proofFixtures.bls12-381-sha-256.nymProof103.trace.randomScalars.m_tilde_scalars }}
+
+Abar = {{ $proofFixtures.bls12-381-sha-256.nymProof103.trace.Abar }}
+Bbar = {{ $proofFixtures.bls12-381-sha-256.nymProof103.trace.Bbar }}
+D = {{ $proofFixtures.bls12-381-sha-256.nymProof103.trace.D }}
+T1 = {{ $proofFixtures.bls12-381-sha-256.nymProof103.trace.T1 }}
+T2 = {{ $proofFixtures.bls12-381-sha-256.nymProof103.trace.T2 }}
+Ut = {{ $proofFixtures.bls12-381-sha-256.nymProof103.trace.Ut }}
+
+domain = {{ $proofFixtures.bls12-381-sha-256.nymProof103.trace.domain }}
+challenge = {{ $proofFixtures.bls12-381-sha-256.nymProof103.trace.challenge }}
+
+L = {{ $proofFixtures.bls12-381-sha-256.nymProof103.L }}
+
+pseudonym = {{ $proofFixtures.bls12-381-sha-256.nymProof103.pseudonym }}
+proof = {{ $proofFixtures.bls12-381-sha-256.nymProof103.proof }}
+```
+
+#### {{ # $proofFixtures.bls12-381-sha-256.nymProof104.caseName }}
+
+```
+Based on signature: {{ $proofFixtures.bls12-381-sha-256.nymProof104.signatureFile }}
+signerPublicKey = {{ $proofFixtures.bls12-381-sha-256.nymProof104.signerPublicKey }}
+
+header = {{ $proofFixtures.bls12-381-sha-256.nymProof104.header }}
+presentationHeader = {{ $proofFixtures.bls12-381-sha-256.nymProof104.presentationHeader }}
+context_id = {{ $proofFixtures.bls12-381-sha-256.nymProof104.context_id }}
+
+messageDisclosures = {{ $proofFixtures.bls12-381-sha-256.nymProof104.messageDisclosures }}
+blindMessageDisclosures = {{ $proofFixtures.bls12-381-sha-256.nymProof104.blindMessageDisclosures }}
+
+Trace:
+
+random_scalars:
+
+r1 = {{ $proofFixtures.bls12-381-sha-256.nymProof104.trace.randomScalars.r1 }}
+r2 = {{ $proofFixtures.bls12-381-sha-256.nymProof104.trace.randomScalars.r2 }}
+e_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof104.trace.randomScalars.e_Tilde }}
+r1_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof104.trace.randomScalars.r1_Tilde }}
+r3_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof104.trace.randomScalars.r3_Tilde }}
+m_tilde_scalars = {{ $proofFixtures.bls12-381-sha-256.nymProof104.trace.randomScalars.m_tilde_scalars }}
+
+Abar = {{ $proofFixtures.bls12-381-sha-256.nymProof104.trace.Abar }}
+Bbar = {{ $proofFixtures.bls12-381-sha-256.nymProof104.trace.Bbar }}
+D = {{ $proofFixtures.bls12-381-sha-256.nymProof104.trace.D }}
+T1 = {{ $proofFixtures.bls12-381-sha-256.nymProof104.trace.T1 }}
+T2 = {{ $proofFixtures.bls12-381-sha-256.nymProof104.trace.T2 }}
+Ut = {{ $proofFixtures.bls12-381-sha-256.nymProof104.trace.Ut }}
+
+domain = {{ $proofFixtures.bls12-381-sha-256.nymProof104.trace.domain }}
+challenge = {{ $proofFixtures.bls12-381-sha-256.nymProof104.trace.challenge }}
+
+L = {{ $proofFixtures.bls12-381-sha-256.nymProof104.L }}
+
+pseudonym = {{ $proofFixtures.bls12-381-sha-256.nymProof104.pseudonym }}
+proof = {{ $proofFixtures.bls12-381-sha-256.nymProof104.proof }}
+```
+
+#### {{ # $proofFixtures.bls12-381-sha-256.nymProof105.caseName }}
+
+```
+Based on signature: {{ $proofFixtures.bls12-381-sha-256.nymProof105.signatureFile }}
+signerPublicKey = {{ $proofFixtures.bls12-381-sha-256.nymProof105.signerPublicKey }}
+
+header = {{ $proofFixtures.bls12-381-sha-256.nymProof105.header }}
+presentationHeader = {{ $proofFixtures.bls12-381-sha-256.nymProof105.presentationHeader }}
+context_id = {{ $proofFixtures.bls12-381-sha-256.nymProof105.context_id }}
+
+messageDisclosures = {{ $proofFixtures.bls12-381-sha-256.nymProof105.messageDisclosures }}
+blindMessageDisclosures = {{ $proofFixtures.bls12-381-sha-256.nymProof105.blindMessageDisclosures }}
+
+Trace:
+
+random_scalars:
+
+r1 = {{ $proofFixtures.bls12-381-sha-256.nymProof105.trace.randomScalars.r1 }}
+r2 = {{ $proofFixtures.bls12-381-sha-256.nymProof105.trace.randomScalars.r2 }}
+e_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof105.trace.randomScalars.e_Tilde }}
+r1_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof105.trace.randomScalars.r1_Tilde }}
+r3_tilde = {{ $proofFixtures.bls12-381-sha-256.nymProof105.trace.randomScalars.r3_Tilde }}
+m_tilde_scalars = {{ $proofFixtures.bls12-381-sha-256.nymProof105.trace.randomScalars.m_tilde_scalars }}
+s_i = {{ $proofFixtures.bls12-381-sha-256.nymProof105.trace.randomScalars.s_i }}
+s_tilde_i = {{ $proofFixtures.bls12-381-sha-256.nymProof105.trace.randomScalars.s_tilde_i }}
+
+Abar = {{ $proofFixtures.bls12-381-sha-256.nymProof105.trace.Abar }}
+Bbar = {{ $proofFixtures.bls12-381-sha-256.nymProof105.trace.Bbar }}
+D = {{ $proofFixtures.bls12-381-sha-256.nymProof105.trace.D }}
+T1 = {{ $proofFixtures.bls12-381-sha-256.nymProof105.trace.T1 }}
+T2 = {{ $proofFixtures.bls12-381-sha-256.nymProof105.trace.T2 }}
+C_i = {{ $proofFixtures.bls12-381-sha-256.nymProof105.trace.C_i }}
+C_tilde_i = {{ $proofFixtures.bls12-381-sha-256.nymProof105.trace.C_tilde_i }}
+Ut = {{ $proofFixtures.bls12-381-sha-256.nymProof105.trace.Ut }}
+
+domain = {{ $proofFixtures.bls12-381-sha-256.nymProof105.trace.domain }}
+challenge = {{ $proofFixtures.bls12-381-sha-256.nymProof105.trace.challenge }}
+
+add_zkp_info:
+
+committed_message_scalars = {{ $proofFixtures.bls12-381-sha-256.nymProof105.add_zkp_info.committed_message_scalars }}
+commitment_rands = {{ $proofFixtures.bls12-381-sha-256.nymProof105.add_zkp_info.commitment_rands }}
+
+L = {{ $proofFixtures.bls12-381-sha-256.nymProof105.L }}
+
+pseudonym = {{ $proofFixtures.bls12-381-sha-256.nymProof105.pseudonym }}
+proof = {{ $proofFixtures.bls12-381-sha-256.nymProof105.proof }}
+```
 
 ## BLS12-381-SHAKE-256
 
@@ -1861,7 +2290,16 @@ J_5 = {{ $generatorFixtures.bls12-381-shake-256.blindGenerators.MsgGenerators[5]
 }
 ```
 
-### Commit
+### Committed Disclosure Generators
+
+```
+api_id = {{ $generatorFixtures.bls12-381-shake-256.commitmentGenerators.api_id }}
+
+Y_0 = {{ $generatorFixtures.bls12-381-shake-256.commitmentGenerators.Y_0 }}
+Y_1 = {{ $generatorFixtures.bls12-381-shake-256.commitmentGenerators.Y_1 }}
+```
+
+### Commitment with Nym
 
 Mocked random scalar parameters
 
@@ -1870,11 +2308,11 @@ seed = {{ $commitmentFixtures.bls12-381-shake-256.nymCommit001.mockRngParameters
 dst = {{ $commitmentFixtures.bls12-381-shake-256.nymCommit001.mockRngParameters.commit.DST }}
 ```
 
-#### valid no committed messages commitment with proof
+#### {{ # $commitmentFixtures.bls12-381-shake-256.nymCommit001.caseName }}
 
 ```
-committedMessages = {{ $commitmentFixtures.bls12-381-shake-256.nymCommit001.committedMessages }}
-proverNym = {{ $commitmentFixtures.bls12-381-shake-256.nymCommit001.proverNym }}
+blindMessages = {{ $commitmentFixtures.bls12-381-shake-256.nymCommit001.blindMessages }}
+proverNyms = {{ $commitmentFixtures.bls12-381-shake-256.nymCommit001.proverNyms }}
 proverBlind = {{ $commitmentFixtures.bls12-381-shake-256.nymCommit001.proverBlind }}
 
 Trace:
@@ -1885,14 +2323,12 @@ m_tildes = {{ $commitmentFixtures.bls12-381-shake-256.nymCommit001.trace.random_
 commitmentWithProof = {{ $commitmentFixtures.bls12-381-shake-256.nymCommit001.commitmentWithProof }}
 ```
 
-#### valid multiple committed messages commitment with proof
-
+#### {{ # $commitmentFixtures.bls12-381-shake-256.nymCommit002.caseName }}
 
 ```
-committedMessages = {{ $commitmentFixtures.bls12-381-shake-256.nymCommit002.committedMessages }}
-proverNym = {{ $commitmentFixtures.bls12-381-shake-256.nymCommit002.proverNym }}
+blindMessages = {{ $commitmentFixtures.bls12-381-shake-256.nymCommit002.blindMessages }}
+proverNyms = {{ $commitmentFixtures.bls12-381-shake-256.nymCommit002.proverNyms }}
 proverBlind = {{ $commitmentFixtures.bls12-381-shake-256.nymCommit002.proverBlind }}
-
 
 Trace:
 
@@ -1902,27 +2338,58 @@ m_tildes = {{ $commitmentFixtures.bls12-381-shake-256.nymCommit002.trace.random_
 commitmentWithProof = {{ $commitmentFixtures.bls12-381-shake-256.nymCommit002.commitmentWithProof }}
 ```
 
-### Signature
-
-#### valid no prover committed messages, no signer messages signature
+#### {{ # $commitmentFixtures.bls12-381-shake-256.nymCommit003.caseName }}
 
 ```
+blindMessages = {{ $commitmentFixtures.bls12-381-shake-256.nymCommit003.blindMessages }}
+proverNyms = {{ $commitmentFixtures.bls12-381-shake-256.nymCommit003.proverNyms }}
+proverBlind = {{ $commitmentFixtures.bls12-381-shake-256.nymCommit003.proverBlind }}
+
+Trace:
+
+s_tilde = {{ $commitmentFixtures.bls12-381-shake-256.nymCommit003.trace.random_scalars.s_tilde }}
+m_tildes = {{ $commitmentFixtures.bls12-381-shake-256.nymCommit003.trace.random_scalars.m_tildes }}
+
+commitmentWithProof = {{ $commitmentFixtures.bls12-381-shake-256.nymCommit003.commitmentWithProof }}
+```
+
+#### {{ # $commitmentFixtures.bls12-381-shake-256.nymCommit004.caseName }}
+
+```
+blindMessages = {{ $commitmentFixtures.bls12-381-shake-256.nymCommit004.blindMessages }}
+proverNyms = {{ $commitmentFixtures.bls12-381-shake-256.nymCommit004.proverNyms }}
+proverBlind = {{ $commitmentFixtures.bls12-381-shake-256.nymCommit004.proverBlind }}
+
+Trace:
+
+s_tilde = {{ $commitmentFixtures.bls12-381-shake-256.nymCommit004.trace.random_scalars.s_tilde }}
+m_tildes = {{ $commitmentFixtures.bls12-381-shake-256.nymCommit004.trace.random_scalars.m_tildes }}
+
+commitmentWithProof = {{ $commitmentFixtures.bls12-381-shake-256.nymCommit004.commitmentWithProof }}
+```
+
+### Signature with Nym
+
+The commitments are computed with the mocked random scalar
+parameters of the Commitment with Nym test vectors.
+
+#### {{ # $signatureFixtures.bls12-381-shake-256.nymSignature001.caseName }}
+
+```
+Signature Label: nymSignature001
+
 secretKey = {{ $signatureFixtures.bls12-381-shake-256.nymSignature001.signerKeyPair.secretKey }}
 publicKey = {{ $signatureFixtures.bls12-381-shake-256.nymSignature001.signerKeyPair.publicKey }}
 
 header = {{ $signatureFixtures.bls12-381-shake-256.nymSignature001.header }}
-
 messages = {{ $signatureFixtures.bls12-381-shake-256.nymSignature001.messages }}
+blindMessages = {{ $signatureFixtures.bls12-381-shake-256.nymSignature001.blindMessages }}
 
-committedMessages = {{ $signatureFixtures.bls12-381-shake-256.nymSignature001.committedMessages }}
-
+proverNyms = {{ $signatureFixtures.bls12-381-shake-256.nymSignature001.proverNyms }}
+proverBlind = {{ $signatureFixtures.bls12-381-shake-256.nymSignature001.proverBlind }}
 commitmentWithProof = {{ $signatureFixtures.bls12-381-shake-256.nymSignature001.commitmentWithProof }}
 
 signer_nym_entropy = {{ $signatureFixtures.bls12-381-shake-256.nymSignature001.signer_nym_entropy }}
-
-proverBlind = {{ $signatureFixtures.bls12-381-shake-256.nymSignature001.proverBlind }}
-proverNym = {{ $signatureFixtures.bls12-381-shake-256.nymSignature001.proverNym }}
-nym_secret = {{ $signatureFixtures.bls12-381-shake-256.nymSignature001.nym_secret }}
 
 Trace:
 
@@ -1930,27 +2397,26 @@ B = {{ $signatureFixtures.bls12-381-shake-256.nymSignature001.trace.B }}
 domain = {{ $signatureFixtures.bls12-381-shake-256.nymSignature001.trace.domain }}
 
 signature = {{ $signatureFixtures.bls12-381-shake-256.nymSignature001.signature }}
+nym_secrets = {{ $signatureFixtures.bls12-381-shake-256.nymSignature001.nym_secrets }}
 ```
 
-#### valid multi prover committed messages, no signer messages signature
+#### {{ # $signatureFixtures.bls12-381-shake-256.nymSignature002.caseName }}
 
 ```
+Signature Label: nymSignature002
+
 secretKey = {{ $signatureFixtures.bls12-381-shake-256.nymSignature002.signerKeyPair.secretKey }}
 publicKey = {{ $signatureFixtures.bls12-381-shake-256.nymSignature002.signerKeyPair.publicKey }}
 
 header = {{ $signatureFixtures.bls12-381-shake-256.nymSignature002.header }}
-
 messages = {{ $signatureFixtures.bls12-381-shake-256.nymSignature002.messages }}
+blindMessages = {{ $signatureFixtures.bls12-381-shake-256.nymSignature002.blindMessages }}
 
-committedMessages = {{ $signatureFixtures.bls12-381-shake-256.nymSignature002.committedMessages }}
-
+proverNyms = {{ $signatureFixtures.bls12-381-shake-256.nymSignature002.proverNyms }}
+proverBlind = {{ $signatureFixtures.bls12-381-shake-256.nymSignature002.proverBlind }}
 commitmentWithProof = {{ $signatureFixtures.bls12-381-shake-256.nymSignature002.commitmentWithProof }}
 
 signer_nym_entropy = {{ $signatureFixtures.bls12-381-shake-256.nymSignature002.signer_nym_entropy }}
-
-proverBlind = {{ $signatureFixtures.bls12-381-shake-256.nymSignature002.proverBlind }}
-proverNym = {{ $signatureFixtures.bls12-381-shake-256.nymSignature002.proverNym }}
-nym_secret = {{ $signatureFixtures.bls12-381-shake-256.nymSignature002.nym_secret }}
 
 Trace:
 
@@ -1958,27 +2424,26 @@ B = {{ $signatureFixtures.bls12-381-shake-256.nymSignature002.trace.B }}
 domain = {{ $signatureFixtures.bls12-381-shake-256.nymSignature002.trace.domain }}
 
 signature = {{ $signatureFixtures.bls12-381-shake-256.nymSignature002.signature }}
+nym_secrets = {{ $signatureFixtures.bls12-381-shake-256.nymSignature002.nym_secrets }}
 ```
 
-#### valid no prover committed messages, multiple signer messages signature
+#### {{ # $signatureFixtures.bls12-381-shake-256.nymSignature003.caseName }}
 
 ```
+Signature Label: nymSignature003
+
 secretKey = {{ $signatureFixtures.bls12-381-shake-256.nymSignature003.signerKeyPair.secretKey }}
 publicKey = {{ $signatureFixtures.bls12-381-shake-256.nymSignature003.signerKeyPair.publicKey }}
 
 header = {{ $signatureFixtures.bls12-381-shake-256.nymSignature003.header }}
-
 messages = {{ $signatureFixtures.bls12-381-shake-256.nymSignature003.messages }}
+blindMessages = {{ $signatureFixtures.bls12-381-shake-256.nymSignature003.blindMessages }}
 
-committedMessages = {{ $signatureFixtures.bls12-381-shake-256.nymSignature003.committedMessages }}
-
+proverNyms = {{ $signatureFixtures.bls12-381-shake-256.nymSignature003.proverNyms }}
+proverBlind = {{ $signatureFixtures.bls12-381-shake-256.nymSignature003.proverBlind }}
 commitmentWithProof = {{ $signatureFixtures.bls12-381-shake-256.nymSignature003.commitmentWithProof }}
 
 signer_nym_entropy = {{ $signatureFixtures.bls12-381-shake-256.nymSignature003.signer_nym_entropy }}
-
-proverBlind = {{ $signatureFixtures.bls12-381-shake-256.nymSignature003.proverBlind }}
-proverNym = {{ $signatureFixtures.bls12-381-shake-256.nymSignature003.proverNym }}
-nym_secret = {{ $signatureFixtures.bls12-381-shake-256.nymSignature003.nym_secret }}
 
 Trace:
 
@@ -1986,27 +2451,26 @@ B = {{ $signatureFixtures.bls12-381-shake-256.nymSignature003.trace.B }}
 domain = {{ $signatureFixtures.bls12-381-shake-256.nymSignature003.trace.domain }}
 
 signature = {{ $signatureFixtures.bls12-381-shake-256.nymSignature003.signature }}
+nym_secrets = {{ $signatureFixtures.bls12-381-shake-256.nymSignature003.nym_secrets }}
 ```
 
-#### valid multiple signer and prover committed messages signature
+#### {{ # $signatureFixtures.bls12-381-shake-256.nymSignature004.caseName }}
 
 ```
+Signature Label: nymSignature004
+
 secretKey = {{ $signatureFixtures.bls12-381-shake-256.nymSignature004.signerKeyPair.secretKey }}
 publicKey = {{ $signatureFixtures.bls12-381-shake-256.nymSignature004.signerKeyPair.publicKey }}
 
 header = {{ $signatureFixtures.bls12-381-shake-256.nymSignature004.header }}
-
 messages = {{ $signatureFixtures.bls12-381-shake-256.nymSignature004.messages }}
+blindMessages = {{ $signatureFixtures.bls12-381-shake-256.nymSignature004.blindMessages }}
 
-committedMessages = {{ $signatureFixtures.bls12-381-shake-256.nymSignature004.committedMessages }}
-
+proverNyms = {{ $signatureFixtures.bls12-381-shake-256.nymSignature004.proverNyms }}
+proverBlind = {{ $signatureFixtures.bls12-381-shake-256.nymSignature004.proverBlind }}
 commitmentWithProof = {{ $signatureFixtures.bls12-381-shake-256.nymSignature004.commitmentWithProof }}
 
 signer_nym_entropy = {{ $signatureFixtures.bls12-381-shake-256.nymSignature004.signer_nym_entropy }}
-
-proverBlind = {{ $signatureFixtures.bls12-381-shake-256.nymSignature004.proverBlind }}
-proverNym = {{ $signatureFixtures.bls12-381-shake-256.nymSignature004.proverNym }}
-nym_secret = {{ $signatureFixtures.bls12-381-shake-256.nymSignature004.nym_secret }}
 
 Trace:
 
@@ -2014,9 +2478,91 @@ B = {{ $signatureFixtures.bls12-381-shake-256.nymSignature004.trace.B }}
 domain = {{ $signatureFixtures.bls12-381-shake-256.nymSignature004.trace.domain }}
 
 signature = {{ $signatureFixtures.bls12-381-shake-256.nymSignature004.signature }}
+nym_secrets = {{ $signatureFixtures.bls12-381-shake-256.nymSignature004.nym_secrets }}
 ```
 
-### Proof
+#### {{ # $signatureFixtures.bls12-381-shake-256.nymSignature005.caseName }}
+
+```
+Signature Label: nymSignature005
+
+secretKey = {{ $signatureFixtures.bls12-381-shake-256.nymSignature005.signerKeyPair.secretKey }}
+publicKey = {{ $signatureFixtures.bls12-381-shake-256.nymSignature005.signerKeyPair.publicKey }}
+
+header = {{ $signatureFixtures.bls12-381-shake-256.nymSignature005.header }}
+messages = {{ $signatureFixtures.bls12-381-shake-256.nymSignature005.messages }}
+blindMessages = {{ $signatureFixtures.bls12-381-shake-256.nymSignature005.blindMessages }}
+
+proverNyms = {{ $signatureFixtures.bls12-381-shake-256.nymSignature005.proverNyms }}
+proverBlind = {{ $signatureFixtures.bls12-381-shake-256.nymSignature005.proverBlind }}
+commitmentWithProof = {{ $signatureFixtures.bls12-381-shake-256.nymSignature005.commitmentWithProof }}
+
+signer_nym_entropy = {{ $signatureFixtures.bls12-381-shake-256.nymSignature005.signer_nym_entropy }}
+
+Trace:
+
+B = {{ $signatureFixtures.bls12-381-shake-256.nymSignature005.trace.B }}
+domain = {{ $signatureFixtures.bls12-381-shake-256.nymSignature005.trace.domain }}
+
+signature = {{ $signatureFixtures.bls12-381-shake-256.nymSignature005.signature }}
+nym_secrets = {{ $signatureFixtures.bls12-381-shake-256.nymSignature005.nym_secrets }}
+```
+
+#### {{ # $signatureFixtures.bls12-381-shake-256.nymSignature006.caseName }}
+
+```
+Signature Label: nymSignature006
+
+secretKey = {{ $signatureFixtures.bls12-381-shake-256.nymSignature006.signerKeyPair.secretKey }}
+publicKey = {{ $signatureFixtures.bls12-381-shake-256.nymSignature006.signerKeyPair.publicKey }}
+
+header = {{ $signatureFixtures.bls12-381-shake-256.nymSignature006.header }}
+messages = {{ $signatureFixtures.bls12-381-shake-256.nymSignature006.messages }}
+blindMessages = {{ $signatureFixtures.bls12-381-shake-256.nymSignature006.blindMessages }}
+
+proverNyms = {{ $signatureFixtures.bls12-381-shake-256.nymSignature006.proverNyms }}
+proverBlind = {{ $signatureFixtures.bls12-381-shake-256.nymSignature006.proverBlind }}
+commitmentWithProof = {{ $signatureFixtures.bls12-381-shake-256.nymSignature006.commitmentWithProof }}
+
+signer_nym_entropy = {{ $signatureFixtures.bls12-381-shake-256.nymSignature006.signer_nym_entropy }}
+
+Trace:
+
+B = {{ $signatureFixtures.bls12-381-shake-256.nymSignature006.trace.B }}
+domain = {{ $signatureFixtures.bls12-381-shake-256.nymSignature006.trace.domain }}
+
+signature = {{ $signatureFixtures.bls12-381-shake-256.nymSignature006.signature }}
+nym_secrets = {{ $signatureFixtures.bls12-381-shake-256.nymSignature006.nym_secrets }}
+```
+
+#### {{ # $signatureFixtures.bls12-381-shake-256.nymSignature007.caseName }}
+
+```
+Signature Label: nymSignature007
+
+secretKey = {{ $signatureFixtures.bls12-381-shake-256.nymSignature007.signerKeyPair.secretKey }}
+publicKey = {{ $signatureFixtures.bls12-381-shake-256.nymSignature007.signerKeyPair.publicKey }}
+
+header = {{ $signatureFixtures.bls12-381-shake-256.nymSignature007.header }}
+messages = {{ $signatureFixtures.bls12-381-shake-256.nymSignature007.messages }}
+blindMessages = {{ $signatureFixtures.bls12-381-shake-256.nymSignature007.blindMessages }}
+
+proverNyms = {{ $signatureFixtures.bls12-381-shake-256.nymSignature007.proverNyms }}
+proverBlind = {{ $signatureFixtures.bls12-381-shake-256.nymSignature007.proverBlind }}
+commitmentWithProof = {{ $signatureFixtures.bls12-381-shake-256.nymSignature007.commitmentWithProof }}
+
+signer_nym_entropy = {{ $signatureFixtures.bls12-381-shake-256.nymSignature007.signer_nym_entropy }}
+
+Trace:
+
+B = {{ $signatureFixtures.bls12-381-shake-256.nymSignature007.trace.B }}
+domain = {{ $signatureFixtures.bls12-381-shake-256.nymSignature007.trace.domain }}
+
+signature = {{ $signatureFixtures.bls12-381-shake-256.nymSignature007.signature }}
+nym_secrets = {{ $signatureFixtures.bls12-381-shake-256.nymSignature007.nym_secrets }}
+```
+
+### Proof with Pseudonym
 
 Mocked random scalar parameters
 
@@ -2025,380 +2571,689 @@ seed = {{ $proofFixtures.bls12-381-shake-256.nymProof001.mockRngParameters.SEED 
 dst = {{ $proofFixtures.bls12-381-shake-256.nymProof001.mockRngParameters.proof.DST }}
 ```
 
-#### valid all prover committed messages and signer messages revealed proof
+#### {{ # $proofFixtures.bls12-381-shake-256.nymProof001.caseName }}
 
 ```
+Based on signature: {{ $proofFixtures.bls12-381-shake-256.nymProof001.signatureFile }}
 signerPublicKey = {{ $proofFixtures.bls12-381-shake-256.nymProof001.signerPublicKey }}
-signature = {{ $proofFixtures.bls12-381-shake-256.nymProof001.signature }}
-
-commitmentWithProof = {{ $proofFixtures.bls12-381-shake-256.nymProof001.commitmentWithProof }}
-proverBlind = {{ $proofFixtures.bls12-381-shake-256.nymProof001.proverBlind }}
 
 header = {{ $proofFixtures.bls12-381-shake-256.nymProof001.header }}
-presentationHeader =  {{ $proofFixtures.bls12-381-shake-256.nymProof001.presentationHeader }}
+presentationHeader = {{ $proofFixtures.bls12-381-shake-256.nymProof001.presentationHeader }}
+context_id = {{ $proofFixtures.bls12-381-shake-256.nymProof001.context_id }}
 
-signer_nym_entropy =  {{ $proofFixtures.bls12-381-shake-256.nymProof001.signer_nym_entropy }}
-proverNym =  {{ $proofFixtures.bls12-381-shake-256.nymProof001.proverNym }}
-nym_secret =  {{ $proofFixtures.bls12-381-shake-256.nymProof001.nym_secret }}
-proverBlind =  {{ $proofFixtures.bls12-381-shake-256.nymProof001.proverBlind }}
-
-context_id =  {{ $proofFixtures.bls12-381-shake-256.nymProof001.context_id }}
-pseudonym =  {{ $proofFixtures.bls12-381-shake-256.nymProof001.pseudonym }}
-
-revealedMessages =
-
-0: {{ $proofFixtures.bls12-381-shake-256.nymProof001.revealedMessages[0] }}
-1: {{ $proofFixtures.bls12-381-shake-256.nymProof001.revealedMessages[1] }}
-2: {{ $proofFixtures.bls12-381-shake-256.nymProof001.revealedMessages[2] }}
-3: {{ $proofFixtures.bls12-381-shake-256.nymProof001.revealedMessages[3] }}
-4: {{ $proofFixtures.bls12-381-shake-256.nymProof001.revealedMessages[4] }}
-5: {{ $proofFixtures.bls12-381-shake-256.nymProof001.revealedMessages[5] }}
-6: {{ $proofFixtures.bls12-381-shake-256.nymProof001.revealedMessages[6] }}
-7: {{ $proofFixtures.bls12-381-shake-256.nymProof001.revealedMessages[7] }}
-8: {{ $proofFixtures.bls12-381-shake-256.nymProof001.revealedMessages[8] }}
-9: {{ $proofFixtures.bls12-381-shake-256.nymProof001.revealedMessages[9] }}
-
-
-revealedCommittedMessages  =
-
-0: {{ $proofFixtures.bls12-381-shake-256.nymProof001.revealedCommittedMessages[0] }}
-1: {{ $proofFixtures.bls12-381-shake-256.nymProof001.revealedCommittedMessages[1] }}
-2: {{ $proofFixtures.bls12-381-shake-256.nymProof001.revealedCommittedMessages[2] }}
-3: {{ $proofFixtures.bls12-381-shake-256.nymProof001.revealedCommittedMessages[3] }}
-4: {{ $proofFixtures.bls12-381-shake-256.nymProof001.revealedCommittedMessages[4] }}
+messageDisclosures = {{ $proofFixtures.bls12-381-shake-256.nymProof001.messageDisclosures }}
+blindMessageDisclosures = {{ $proofFixtures.bls12-381-shake-256.nymProof001.blindMessageDisclosures }}
 
 Trace:
 
 random_scalars:
 
-r_1 = {{ $proofFixtures.bls12-381-shake-256.nymProof001.trace.random_scalars.r1 }}
-r_2 = {{ $proofFixtures.bls12-381-shake-256.nymProof001.trace.random_scalars.r2 }}
-e_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof001.trace.random_scalars.e_tilde }}
-r1_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof001.trace.random_scalars.r1_tilde }}
-r3_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof001.trace.random_scalars.r3_tilde }}
-m_tilde_scalars = {{ $proofFixtures.bls12-381-shake-256.nymProof001.trace.random_scalars.m_tilde_scalars }}
+r1 = {{ $proofFixtures.bls12-381-shake-256.nymProof001.trace.randomScalars.r1 }}
+r2 = {{ $proofFixtures.bls12-381-shake-256.nymProof001.trace.randomScalars.r2 }}
+e_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof001.trace.randomScalars.e_Tilde }}
+r1_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof001.trace.randomScalars.r1_Tilde }}
+r3_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof001.trace.randomScalars.r3_Tilde }}
+m_tilde_scalars = {{ $proofFixtures.bls12-381-shake-256.nymProof001.trace.randomScalars.m_tilde_scalars }}
+
+Abar = {{ $proofFixtures.bls12-381-shake-256.nymProof001.trace.Abar }}
+Bbar = {{ $proofFixtures.bls12-381-shake-256.nymProof001.trace.Bbar }}
+D = {{ $proofFixtures.bls12-381-shake-256.nymProof001.trace.D }}
+T1 = {{ $proofFixtures.bls12-381-shake-256.nymProof001.trace.T1 }}
+T2 = {{ $proofFixtures.bls12-381-shake-256.nymProof001.trace.T2 }}
+Ut = {{ $proofFixtures.bls12-381-shake-256.nymProof001.trace.Ut }}
 
 domain = {{ $proofFixtures.bls12-381-shake-256.nymProof001.trace.domain }}
 challenge = {{ $proofFixtures.bls12-381-shake-256.nymProof001.trace.challenge }}
 
-
 L = {{ $proofFixtures.bls12-381-shake-256.nymProof001.L }}
 
+pseudonym = {{ $proofFixtures.bls12-381-shake-256.nymProof001.pseudonym }}
 proof = {{ $proofFixtures.bls12-381-shake-256.nymProof001.proof }}
 ```
 
-#### valid half prover committed messages and all signer messages revealed proof
+#### {{ # $proofFixtures.bls12-381-shake-256.nymProof002.caseName }}
 
 ```
+Based on signature: {{ $proofFixtures.bls12-381-shake-256.nymProof002.signatureFile }}
 signerPublicKey = {{ $proofFixtures.bls12-381-shake-256.nymProof002.signerPublicKey }}
-signature = {{ $proofFixtures.bls12-381-shake-256.nymProof002.signature }}
-
-commitmentWithProof = {{ $proofFixtures.bls12-381-shake-256.nymProof002.commitmentWithProof }}
-proverBlind = {{ $proofFixtures.bls12-381-shake-256.nymProof002.proverBlind }}
 
 header = {{ $proofFixtures.bls12-381-shake-256.nymProof002.header }}
-presentationHeader =  {{ $proofFixtures.bls12-381-shake-256.nymProof002.presentationHeader }}
+presentationHeader = {{ $proofFixtures.bls12-381-shake-256.nymProof002.presentationHeader }}
+context_id = {{ $proofFixtures.bls12-381-shake-256.nymProof002.context_id }}
 
-signer_nym_entropy =  {{ $proofFixtures.bls12-381-shake-256.nymProof002.signer_nym_entropy }}
-proverNym =  {{ $proofFixtures.bls12-381-shake-256.nymProof002.proverNym }}
-nym_secret =  {{ $proofFixtures.bls12-381-shake-256.nymProof002.nym_secret }}
-proverBlind =  {{ $proofFixtures.bls12-381-shake-256.nymProof002.proverBlind }}
-
-context_id =  {{ $proofFixtures.bls12-381-shake-256.nymProof002.context_id }}
-pseudonym =  {{ $proofFixtures.bls12-381-shake-256.nymProof002.pseudonym }}
-
-revealedMessages =
-
-0: {{ $proofFixtures.bls12-381-shake-256.nymProof002.revealedMessages[0] }}
-1: {{ $proofFixtures.bls12-381-shake-256.nymProof002.revealedMessages[1] }}
-2: {{ $proofFixtures.bls12-381-shake-256.nymProof002.revealedMessages[2] }}
-3: {{ $proofFixtures.bls12-381-shake-256.nymProof002.revealedMessages[3] }}
-4: {{ $proofFixtures.bls12-381-shake-256.nymProof002.revealedMessages[4] }}
-5: {{ $proofFixtures.bls12-381-shake-256.nymProof002.revealedMessages[5] }}
-6: {{ $proofFixtures.bls12-381-shake-256.nymProof002.revealedMessages[6] }}
-7: {{ $proofFixtures.bls12-381-shake-256.nymProof002.revealedMessages[7] }}
-8: {{ $proofFixtures.bls12-381-shake-256.nymProof002.revealedMessages[8] }}
-9: {{ $proofFixtures.bls12-381-shake-256.nymProof002.revealedMessages[9] }}
-
-
-revealedCommittedMessages  =
-
-0: {{ $proofFixtures.bls12-381-shake-256.nymProof002.revealedCommittedMessages[0] }}
-2: {{ $proofFixtures.bls12-381-shake-256.nymProof002.revealedCommittedMessages[2] }}
-4: {{ $proofFixtures.bls12-381-shake-256.nymProof002.revealedCommittedMessages[4] }}
+messageDisclosures = {{ $proofFixtures.bls12-381-shake-256.nymProof002.messageDisclosures }}
+blindMessageDisclosures = {{ $proofFixtures.bls12-381-shake-256.nymProof002.blindMessageDisclosures }}
 
 Trace:
 
 random_scalars:
 
-r_1 = {{ $proofFixtures.bls12-381-shake-256.nymProof002.trace.random_scalars.r1 }}
-r_2 = {{ $proofFixtures.bls12-381-shake-256.nymProof002.trace.random_scalars.r2 }}
-e_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof002.trace.random_scalars.e_tilde }}
-r1_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof002.trace.random_scalars.r1_tilde }}
-r3_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof002.trace.random_scalars.r3_tilde }}
-m_tilde_scalars = {{ $proofFixtures.bls12-381-shake-256.nymProof002.trace.random_scalars.m_tilde_scalars }}
+r1 = {{ $proofFixtures.bls12-381-shake-256.nymProof002.trace.randomScalars.r1 }}
+r2 = {{ $proofFixtures.bls12-381-shake-256.nymProof002.trace.randomScalars.r2 }}
+e_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof002.trace.randomScalars.e_Tilde }}
+r1_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof002.trace.randomScalars.r1_Tilde }}
+r3_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof002.trace.randomScalars.r3_Tilde }}
+m_tilde_scalars = {{ $proofFixtures.bls12-381-shake-256.nymProof002.trace.randomScalars.m_tilde_scalars }}
+
+Abar = {{ $proofFixtures.bls12-381-shake-256.nymProof002.trace.Abar }}
+Bbar = {{ $proofFixtures.bls12-381-shake-256.nymProof002.trace.Bbar }}
+D = {{ $proofFixtures.bls12-381-shake-256.nymProof002.trace.D }}
+T1 = {{ $proofFixtures.bls12-381-shake-256.nymProof002.trace.T1 }}
+T2 = {{ $proofFixtures.bls12-381-shake-256.nymProof002.trace.T2 }}
+Ut = {{ $proofFixtures.bls12-381-shake-256.nymProof002.trace.Ut }}
 
 domain = {{ $proofFixtures.bls12-381-shake-256.nymProof002.trace.domain }}
 challenge = {{ $proofFixtures.bls12-381-shake-256.nymProof002.trace.challenge }}
 
-
 L = {{ $proofFixtures.bls12-381-shake-256.nymProof002.L }}
 
+pseudonym = {{ $proofFixtures.bls12-381-shake-256.nymProof002.pseudonym }}
 proof = {{ $proofFixtures.bls12-381-shake-256.nymProof002.proof }}
 ```
 
-#### valid all prover committed messages and half signer messages revealed proof
+#### {{ # $proofFixtures.bls12-381-shake-256.nymProof003.caseName }}
 
 ```
+Based on signature: {{ $proofFixtures.bls12-381-shake-256.nymProof003.signatureFile }}
 signerPublicKey = {{ $proofFixtures.bls12-381-shake-256.nymProof003.signerPublicKey }}
-signature = {{ $proofFixtures.bls12-381-shake-256.nymProof003.signature }}
-
-commitmentWithProof = {{ $proofFixtures.bls12-381-shake-256.nymProof003.commitmentWithProof }}
-proverBlind = {{ $proofFixtures.bls12-381-shake-256.nymProof003.proverBlind }}
 
 header = {{ $proofFixtures.bls12-381-shake-256.nymProof003.header }}
-presentationHeader =  {{ $proofFixtures.bls12-381-shake-256.nymProof003.presentationHeader }}
+presentationHeader = {{ $proofFixtures.bls12-381-shake-256.nymProof003.presentationHeader }}
+context_id = {{ $proofFixtures.bls12-381-shake-256.nymProof003.context_id }}
 
-signer_nym_entropy =  {{ $proofFixtures.bls12-381-shake-256.nymProof003.signer_nym_entropy }}
-proverNym =  {{ $proofFixtures.bls12-381-shake-256.nymProof003.proverNym }}
-nym_secret =  {{ $proofFixtures.bls12-381-shake-256.nymProof003.nym_secret }}
-proverBlind =  {{ $proofFixtures.bls12-381-shake-256.nymProof003.proverBlind }}
-
-context_id =  {{ $proofFixtures.bls12-381-shake-256.nymProof003.context_id }}
-pseudonym =  {{ $proofFixtures.bls12-381-shake-256.nymProof003.pseudonym }}
-
-revealedMessages =
-
-0: {{ $proofFixtures.bls12-381-shake-256.nymProof003.revealedMessages[0] }}
-2: {{ $proofFixtures.bls12-381-shake-256.nymProof003.revealedMessages[2] }}
-4: {{ $proofFixtures.bls12-381-shake-256.nymProof003.revealedMessages[4] }}
-6: {{ $proofFixtures.bls12-381-shake-256.nymProof003.revealedMessages[6] }}
-8: {{ $proofFixtures.bls12-381-shake-256.nymProof003.revealedMessages[8] }}
-
-revealedCommittedMessages  =
-
-0: {{ $proofFixtures.bls12-381-shake-256.nymProof003.revealedCommittedMessages[0] }}
-1: {{ $proofFixtures.bls12-381-shake-256.nymProof003.revealedCommittedMessages[1] }}
-2: {{ $proofFixtures.bls12-381-shake-256.nymProof003.revealedCommittedMessages[2] }}
-3: {{ $proofFixtures.bls12-381-shake-256.nymProof003.revealedCommittedMessages[3] }}
-4: {{ $proofFixtures.bls12-381-shake-256.nymProof003.revealedCommittedMessages[4] }}
+messageDisclosures = {{ $proofFixtures.bls12-381-shake-256.nymProof003.messageDisclosures }}
+blindMessageDisclosures = {{ $proofFixtures.bls12-381-shake-256.nymProof003.blindMessageDisclosures }}
 
 Trace:
 
 random_scalars:
 
-r_1 = {{ $proofFixtures.bls12-381-shake-256.nymProof003.trace.random_scalars.r1 }}
-r_2 = {{ $proofFixtures.bls12-381-shake-256.nymProof003.trace.random_scalars.r2 }}
-e_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof003.trace.random_scalars.e_tilde }}
-r1_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof003.trace.random_scalars.r1_tilde }}
-r3_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof003.trace.random_scalars.r3_tilde }}
-m_tilde_scalars = {{ $proofFixtures.bls12-381-shake-256.nymProof003.trace.random_scalars.m_tilde_scalars }}
+r1 = {{ $proofFixtures.bls12-381-shake-256.nymProof003.trace.randomScalars.r1 }}
+r2 = {{ $proofFixtures.bls12-381-shake-256.nymProof003.trace.randomScalars.r2 }}
+e_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof003.trace.randomScalars.e_Tilde }}
+r1_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof003.trace.randomScalars.r1_Tilde }}
+r3_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof003.trace.randomScalars.r3_Tilde }}
+m_tilde_scalars = {{ $proofFixtures.bls12-381-shake-256.nymProof003.trace.randomScalars.m_tilde_scalars }}
+
+Abar = {{ $proofFixtures.bls12-381-shake-256.nymProof003.trace.Abar }}
+Bbar = {{ $proofFixtures.bls12-381-shake-256.nymProof003.trace.Bbar }}
+D = {{ $proofFixtures.bls12-381-shake-256.nymProof003.trace.D }}
+T1 = {{ $proofFixtures.bls12-381-shake-256.nymProof003.trace.T1 }}
+T2 = {{ $proofFixtures.bls12-381-shake-256.nymProof003.trace.T2 }}
+Ut = {{ $proofFixtures.bls12-381-shake-256.nymProof003.trace.Ut }}
 
 domain = {{ $proofFixtures.bls12-381-shake-256.nymProof003.trace.domain }}
 challenge = {{ $proofFixtures.bls12-381-shake-256.nymProof003.trace.challenge }}
 
-
 L = {{ $proofFixtures.bls12-381-shake-256.nymProof003.L }}
 
+pseudonym = {{ $proofFixtures.bls12-381-shake-256.nymProof003.pseudonym }}
 proof = {{ $proofFixtures.bls12-381-shake-256.nymProof003.proof }}
 ```
 
-#### valid all prover committed messages and signer messages revealed proof
+#### {{ # $proofFixtures.bls12-381-shake-256.nymProof004.caseName }}
 
 ```
+Based on signature: {{ $proofFixtures.bls12-381-shake-256.nymProof004.signatureFile }}
 signerPublicKey = {{ $proofFixtures.bls12-381-shake-256.nymProof004.signerPublicKey }}
-signature = {{ $proofFixtures.bls12-381-shake-256.nymProof004.signature }}
-
-commitmentWithProof = {{ $proofFixtures.bls12-381-shake-256.nymProof004.commitmentWithProof }}
-proverBlind = {{ $proofFixtures.bls12-381-shake-256.nymProof004.proverBlind }}
 
 header = {{ $proofFixtures.bls12-381-shake-256.nymProof004.header }}
-presentationHeader =  {{ $proofFixtures.bls12-381-shake-256.nymProof004.presentationHeader }}
+presentationHeader = {{ $proofFixtures.bls12-381-shake-256.nymProof004.presentationHeader }}
+context_id = {{ $proofFixtures.bls12-381-shake-256.nymProof004.context_id }}
 
-signer_nym_entropy =  {{ $proofFixtures.bls12-381-shake-256.nymProof004.signer_nym_entropy }}
-proverNym =  {{ $proofFixtures.bls12-381-shake-256.nymProof004.proverNym }}
-nym_secret =  {{ $proofFixtures.bls12-381-shake-256.nymProof004.nym_secret }}
-proverBlind =  {{ $proofFixtures.bls12-381-shake-256.nymProof004.proverBlind }}
-
-context_id =  {{ $proofFixtures.bls12-381-shake-256.nymProof004.context_id }}
-pseudonym =  {{ $proofFixtures.bls12-381-shake-256.nymProof004.pseudonym }}
-
-revealedMessages =
-
-0: {{ $proofFixtures.bls12-381-shake-256.nymProof004.revealedMessages[0] }}
-2: {{ $proofFixtures.bls12-381-shake-256.nymProof004.revealedMessages[2] }}
-4: {{ $proofFixtures.bls12-381-shake-256.nymProof004.revealedMessages[4] }}
-6: {{ $proofFixtures.bls12-381-shake-256.nymProof004.revealedMessages[6] }}
-8: {{ $proofFixtures.bls12-381-shake-256.nymProof004.revealedMessages[8] }}
-
-
-revealedCommittedMessages  =
-
-0: {{ $proofFixtures.bls12-381-shake-256.nymProof004.revealedCommittedMessages[0] }}
-2: {{ $proofFixtures.bls12-381-shake-256.nymProof004.revealedCommittedMessages[2] }}
-4: {{ $proofFixtures.bls12-381-shake-256.nymProof004.revealedCommittedMessages[4] }}
+messageDisclosures = {{ $proofFixtures.bls12-381-shake-256.nymProof004.messageDisclosures }}
+blindMessageDisclosures = {{ $proofFixtures.bls12-381-shake-256.nymProof004.blindMessageDisclosures }}
 
 Trace:
 
 random_scalars:
 
-r_1 = {{ $proofFixtures.bls12-381-shake-256.nymProof004.trace.random_scalars.r1 }}
-r_2 = {{ $proofFixtures.bls12-381-shake-256.nymProof004.trace.random_scalars.r2 }}
-e_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof004.trace.random_scalars.e_tilde }}
-r1_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof004.trace.random_scalars.r1_tilde }}
-r3_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof004.trace.random_scalars.r3_tilde }}
-m_tilde_scalars = {{ $proofFixtures.bls12-381-shake-256.nymProof004.trace.random_scalars.m_tilde_scalars }}
+r1 = {{ $proofFixtures.bls12-381-shake-256.nymProof004.trace.randomScalars.r1 }}
+r2 = {{ $proofFixtures.bls12-381-shake-256.nymProof004.trace.randomScalars.r2 }}
+e_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof004.trace.randomScalars.e_Tilde }}
+r1_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof004.trace.randomScalars.r1_Tilde }}
+r3_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof004.trace.randomScalars.r3_Tilde }}
+m_tilde_scalars = {{ $proofFixtures.bls12-381-shake-256.nymProof004.trace.randomScalars.m_tilde_scalars }}
+
+Abar = {{ $proofFixtures.bls12-381-shake-256.nymProof004.trace.Abar }}
+Bbar = {{ $proofFixtures.bls12-381-shake-256.nymProof004.trace.Bbar }}
+D = {{ $proofFixtures.bls12-381-shake-256.nymProof004.trace.D }}
+T1 = {{ $proofFixtures.bls12-381-shake-256.nymProof004.trace.T1 }}
+T2 = {{ $proofFixtures.bls12-381-shake-256.nymProof004.trace.T2 }}
+Ut = {{ $proofFixtures.bls12-381-shake-256.nymProof004.trace.Ut }}
 
 domain = {{ $proofFixtures.bls12-381-shake-256.nymProof004.trace.domain }}
 challenge = {{ $proofFixtures.bls12-381-shake-256.nymProof004.trace.challenge }}
 
-
 L = {{ $proofFixtures.bls12-381-shake-256.nymProof004.L }}
 
+pseudonym = {{ $proofFixtures.bls12-381-shake-256.nymProof004.pseudonym }}
 proof = {{ $proofFixtures.bls12-381-shake-256.nymProof004.proof }}
 ```
 
-#### valid all prover committed messages and signer messages revealed proof
+#### {{ # $proofFixtures.bls12-381-shake-256.nymProof005.caseName }}
 
 ```
+Based on signature: {{ $proofFixtures.bls12-381-shake-256.nymProof005.signatureFile }}
 signerPublicKey = {{ $proofFixtures.bls12-381-shake-256.nymProof005.signerPublicKey }}
-signature = {{ $proofFixtures.bls12-381-shake-256.nymProof005.signature }}
-
-commitmentWithProof = {{ $proofFixtures.bls12-381-shake-256.nymProof005.commitmentWithProof }}
-proverBlind = {{ $proofFixtures.bls12-381-shake-256.nymProof005.proverBlind }}
 
 header = {{ $proofFixtures.bls12-381-shake-256.nymProof005.header }}
-presentationHeader =  {{ $proofFixtures.bls12-381-shake-256.nymProof005.presentationHeader }}
+presentationHeader = {{ $proofFixtures.bls12-381-shake-256.nymProof005.presentationHeader }}
+context_id = {{ $proofFixtures.bls12-381-shake-256.nymProof005.context_id }}
 
-signer_nym_entropy =  {{ $proofFixtures.bls12-381-shake-256.nymProof005.signer_nym_entropy }}
-proverNym =  {{ $proofFixtures.bls12-381-shake-256.nymProof005.proverNym }}
-nym_secret =  {{ $proofFixtures.bls12-381-shake-256.nymProof005.nym_secret }}
-proverBlind =  {{ $proofFixtures.bls12-381-shake-256.nymProof005.proverBlind }}
-
-context_id =  {{ $proofFixtures.bls12-381-shake-256.nymProof005.context_id }}
-pseudonym =  {{ $proofFixtures.bls12-381-shake-256.nymProof005.pseudonym }}
-
-revealedMessages =
-
-0: {{ $proofFixtures.bls12-381-shake-256.nymProof005.revealedMessages[0] }}
-2: {{ $proofFixtures.bls12-381-shake-256.nymProof005.revealedMessages[2] }}
-4: {{ $proofFixtures.bls12-381-shake-256.nymProof005.revealedMessages[4] }}
-6: {{ $proofFixtures.bls12-381-shake-256.nymProof005.revealedMessages[6] }}
-8: {{ $proofFixtures.bls12-381-shake-256.nymProof005.revealedMessages[8] }}
-
-revealedCommittedMessages  = {}
-
+messageDisclosures = {{ $proofFixtures.bls12-381-shake-256.nymProof005.messageDisclosures }}
+blindMessageDisclosures = {{ $proofFixtures.bls12-381-shake-256.nymProof005.blindMessageDisclosures }}
 
 Trace:
 
 random_scalars:
 
-r_1 = {{ $proofFixtures.bls12-381-shake-256.nymProof005.trace.random_scalars.r1 }}
-r_2 = {{ $proofFixtures.bls12-381-shake-256.nymProof005.trace.random_scalars.r2 }}
-e_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof005.trace.random_scalars.e_tilde }}
-r1_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof005.trace.random_scalars.r1_tilde }}
-r3_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof005.trace.random_scalars.r3_tilde }}
-m_tilde_scalars = {{ $proofFixtures.bls12-381-shake-256.nymProof005.trace.random_scalars.m_tilde_scalars }}
+r1 = {{ $proofFixtures.bls12-381-shake-256.nymProof005.trace.randomScalars.r1 }}
+r2 = {{ $proofFixtures.bls12-381-shake-256.nymProof005.trace.randomScalars.r2 }}
+e_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof005.trace.randomScalars.e_Tilde }}
+r1_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof005.trace.randomScalars.r1_Tilde }}
+r3_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof005.trace.randomScalars.r3_Tilde }}
+m_tilde_scalars = {{ $proofFixtures.bls12-381-shake-256.nymProof005.trace.randomScalars.m_tilde_scalars }}
+
+Abar = {{ $proofFixtures.bls12-381-shake-256.nymProof005.trace.Abar }}
+Bbar = {{ $proofFixtures.bls12-381-shake-256.nymProof005.trace.Bbar }}
+D = {{ $proofFixtures.bls12-381-shake-256.nymProof005.trace.D }}
+T1 = {{ $proofFixtures.bls12-381-shake-256.nymProof005.trace.T1 }}
+T2 = {{ $proofFixtures.bls12-381-shake-256.nymProof005.trace.T2 }}
+Ut = {{ $proofFixtures.bls12-381-shake-256.nymProof005.trace.Ut }}
 
 domain = {{ $proofFixtures.bls12-381-shake-256.nymProof005.trace.domain }}
 challenge = {{ $proofFixtures.bls12-381-shake-256.nymProof005.trace.challenge }}
 
-
 L = {{ $proofFixtures.bls12-381-shake-256.nymProof005.L }}
 
+pseudonym = {{ $proofFixtures.bls12-381-shake-256.nymProof005.pseudonym }}
 proof = {{ $proofFixtures.bls12-381-shake-256.nymProof005.proof }}
 ```
 
-#### valid half prover committed messages and no signer messages revealed proof
+#### {{ # $proofFixtures.bls12-381-shake-256.nymProof006.caseName }}
 
 ```
+Based on signature: {{ $proofFixtures.bls12-381-shake-256.nymProof006.signatureFile }}
 signerPublicKey = {{ $proofFixtures.bls12-381-shake-256.nymProof006.signerPublicKey }}
-signature = {{ $proofFixtures.bls12-381-shake-256.nymProof006.signature }}
-
-commitmentWithProof = {{ $proofFixtures.bls12-381-shake-256.nymProof006.commitmentWithProof }}
-proverBlind = {{ $proofFixtures.bls12-381-shake-256.nymProof006.proverBlind }}
 
 header = {{ $proofFixtures.bls12-381-shake-256.nymProof006.header }}
-presentationHeader =  {{ $proofFixtures.bls12-381-shake-256.nymProof006.presentationHeader }}
+presentationHeader = {{ $proofFixtures.bls12-381-shake-256.nymProof006.presentationHeader }}
+context_id = {{ $proofFixtures.bls12-381-shake-256.nymProof006.context_id }}
 
-signer_nym_entropy =  {{ $proofFixtures.bls12-381-shake-256.nymProof006.signer_nym_entropy }}
-proverNym =  {{ $proofFixtures.bls12-381-shake-256.nymProof006.proverNym }}
-nym_secret =  {{ $proofFixtures.bls12-381-shake-256.nymProof006.nym_secret }}
-proverBlind =  {{ $proofFixtures.bls12-381-shake-256.nymProof006.proverBlind }}
-
-context_id =  {{ $proofFixtures.bls12-381-shake-256.nymProof006.context_id }}
-pseudonym =  {{ $proofFixtures.bls12-381-shake-256.nymProof006.pseudonym }}
-
-revealedMessages = {}
-
-revealedCommittedMessages  =
-
-0: {{ $proofFixtures.bls12-381-shake-256.nymProof006.revealedCommittedMessages[0] }}
-2: {{ $proofFixtures.bls12-381-shake-256.nymProof006.revealedCommittedMessages[2] }}
-4: {{ $proofFixtures.bls12-381-shake-256.nymProof006.revealedCommittedMessages[4] }}
+messageDisclosures = {{ $proofFixtures.bls12-381-shake-256.nymProof006.messageDisclosures }}
+blindMessageDisclosures = {{ $proofFixtures.bls12-381-shake-256.nymProof006.blindMessageDisclosures }}
 
 Trace:
 
 random_scalars:
 
-r_1 = {{ $proofFixtures.bls12-381-shake-256.nymProof006.trace.random_scalars.r1 }}
-r_2 = {{ $proofFixtures.bls12-381-shake-256.nymProof006.trace.random_scalars.r2 }}
-e_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof006.trace.random_scalars.e_tilde }}
-r1_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof006.trace.random_scalars.r1_tilde }}
-r3_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof006.trace.random_scalars.r3_tilde }}
-m_tilde_scalars = {{ $proofFixtures.bls12-381-shake-256.nymProof006.trace.random_scalars.m_tilde_scalars }}
+r1 = {{ $proofFixtures.bls12-381-shake-256.nymProof006.trace.randomScalars.r1 }}
+r2 = {{ $proofFixtures.bls12-381-shake-256.nymProof006.trace.randomScalars.r2 }}
+e_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof006.trace.randomScalars.e_Tilde }}
+r1_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof006.trace.randomScalars.r1_Tilde }}
+r3_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof006.trace.randomScalars.r3_Tilde }}
+m_tilde_scalars = {{ $proofFixtures.bls12-381-shake-256.nymProof006.trace.randomScalars.m_tilde_scalars }}
+
+Abar = {{ $proofFixtures.bls12-381-shake-256.nymProof006.trace.Abar }}
+Bbar = {{ $proofFixtures.bls12-381-shake-256.nymProof006.trace.Bbar }}
+D = {{ $proofFixtures.bls12-381-shake-256.nymProof006.trace.D }}
+T1 = {{ $proofFixtures.bls12-381-shake-256.nymProof006.trace.T1 }}
+T2 = {{ $proofFixtures.bls12-381-shake-256.nymProof006.trace.T2 }}
+Ut = {{ $proofFixtures.bls12-381-shake-256.nymProof006.trace.Ut }}
 
 domain = {{ $proofFixtures.bls12-381-shake-256.nymProof006.trace.domain }}
 challenge = {{ $proofFixtures.bls12-381-shake-256.nymProof006.trace.challenge }}
 
-
 L = {{ $proofFixtures.bls12-381-shake-256.nymProof006.L }}
 
+pseudonym = {{ $proofFixtures.bls12-381-shake-256.nymProof006.pseudonym }}
 proof = {{ $proofFixtures.bls12-381-shake-256.nymProof006.proof }}
 ```
 
-#### valid all prover committed messages and signer messages revealed proof
+#### {{ # $proofFixtures.bls12-381-shake-256.nymProof007.caseName }}
 
 ```
+Based on signature: {{ $proofFixtures.bls12-381-shake-256.nymProof007.signatureFile }}
 signerPublicKey = {{ $proofFixtures.bls12-381-shake-256.nymProof007.signerPublicKey }}
-signature = {{ $proofFixtures.bls12-381-shake-256.nymProof007.signature }}
-
-commitmentWithProof = {{ $proofFixtures.bls12-381-shake-256.nymProof007.commitmentWithProof }}
-proverBlind = {{ $proofFixtures.bls12-381-shake-256.nymProof007.proverBlind }}
 
 header = {{ $proofFixtures.bls12-381-shake-256.nymProof007.header }}
-presentationHeader =  {{ $proofFixtures.bls12-381-shake-256.nymProof007.presentationHeader }}
+presentationHeader = {{ $proofFixtures.bls12-381-shake-256.nymProof007.presentationHeader }}
+context_id = {{ $proofFixtures.bls12-381-shake-256.nymProof007.context_id }}
 
-signer_nym_entropy =  {{ $proofFixtures.bls12-381-shake-256.nymProof007.signer_nym_entropy }}
-proverNym =  {{ $proofFixtures.bls12-381-shake-256.nymProof007.proverNym }}
-nym_secret =  {{ $proofFixtures.bls12-381-shake-256.nymProof007.nym_secret }}
-proverBlind =  {{ $proofFixtures.bls12-381-shake-256.nymProof007.proverBlind }}
-
-context_id =  {{ $proofFixtures.bls12-381-shake-256.nymProof007.context_id }}
-pseudonym =  {{ $proofFixtures.bls12-381-shake-256.nymProof007.pseudonym }}
-
-revealedMessages = {}
-
-revealedCommittedMessages  = {}
+messageDisclosures = {{ $proofFixtures.bls12-381-shake-256.nymProof007.messageDisclosures }}
+blindMessageDisclosures = {{ $proofFixtures.bls12-381-shake-256.nymProof007.blindMessageDisclosures }}
 
 Trace:
 
 random_scalars:
 
-r_1 = {{ $proofFixtures.bls12-381-shake-256.nymProof007.trace.random_scalars.r1 }}
-r_2 = {{ $proofFixtures.bls12-381-shake-256.nymProof007.trace.random_scalars.r2 }}
-e_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof007.trace.random_scalars.e_tilde }}
-r1_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof007.trace.random_scalars.r1_tilde }}
-r3_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof007.trace.random_scalars.r3_tilde }}
-m_tilde_scalars = {{ $proofFixtures.bls12-381-shake-256.nymProof007.trace.random_scalars.m_tilde_scalars }}
+r1 = {{ $proofFixtures.bls12-381-shake-256.nymProof007.trace.randomScalars.r1 }}
+r2 = {{ $proofFixtures.bls12-381-shake-256.nymProof007.trace.randomScalars.r2 }}
+e_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof007.trace.randomScalars.e_Tilde }}
+r1_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof007.trace.randomScalars.r1_Tilde }}
+r3_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof007.trace.randomScalars.r3_Tilde }}
+m_tilde_scalars = {{ $proofFixtures.bls12-381-shake-256.nymProof007.trace.randomScalars.m_tilde_scalars }}
+
+Abar = {{ $proofFixtures.bls12-381-shake-256.nymProof007.trace.Abar }}
+Bbar = {{ $proofFixtures.bls12-381-shake-256.nymProof007.trace.Bbar }}
+D = {{ $proofFixtures.bls12-381-shake-256.nymProof007.trace.D }}
+T1 = {{ $proofFixtures.bls12-381-shake-256.nymProof007.trace.T1 }}
+T2 = {{ $proofFixtures.bls12-381-shake-256.nymProof007.trace.T2 }}
+Ut = {{ $proofFixtures.bls12-381-shake-256.nymProof007.trace.Ut }}
 
 domain = {{ $proofFixtures.bls12-381-shake-256.nymProof007.trace.domain }}
 challenge = {{ $proofFixtures.bls12-381-shake-256.nymProof007.trace.challenge }}
 
-
 L = {{ $proofFixtures.bls12-381-shake-256.nymProof007.L }}
 
+pseudonym = {{ $proofFixtures.bls12-381-shake-256.nymProof007.pseudonym }}
 proof = {{ $proofFixtures.bls12-381-shake-256.nymProof007.proof }}
+```
+
+#### {{ # $proofFixtures.bls12-381-shake-256.nymProof008.caseName }}
+
+```
+Based on signature: {{ $proofFixtures.bls12-381-shake-256.nymProof008.signatureFile }}
+signerPublicKey = {{ $proofFixtures.bls12-381-shake-256.nymProof008.signerPublicKey }}
+
+header = {{ $proofFixtures.bls12-381-shake-256.nymProof008.header }}
+presentationHeader = {{ $proofFixtures.bls12-381-shake-256.nymProof008.presentationHeader }}
+context_id = {{ $proofFixtures.bls12-381-shake-256.nymProof008.context_id }}
+
+messageDisclosures = {{ $proofFixtures.bls12-381-shake-256.nymProof008.messageDisclosures }}
+blindMessageDisclosures = {{ $proofFixtures.bls12-381-shake-256.nymProof008.blindMessageDisclosures }}
+
+Trace:
+
+random_scalars:
+
+r1 = {{ $proofFixtures.bls12-381-shake-256.nymProof008.trace.randomScalars.r1 }}
+r2 = {{ $proofFixtures.bls12-381-shake-256.nymProof008.trace.randomScalars.r2 }}
+e_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof008.trace.randomScalars.e_Tilde }}
+r1_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof008.trace.randomScalars.r1_Tilde }}
+r3_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof008.trace.randomScalars.r3_Tilde }}
+m_tilde_scalars = {{ $proofFixtures.bls12-381-shake-256.nymProof008.trace.randomScalars.m_tilde_scalars }}
+s_i = {{ $proofFixtures.bls12-381-shake-256.nymProof008.trace.randomScalars.s_i }}
+s_tilde_i = {{ $proofFixtures.bls12-381-shake-256.nymProof008.trace.randomScalars.s_tilde_i }}
+
+Abar = {{ $proofFixtures.bls12-381-shake-256.nymProof008.trace.Abar }}
+Bbar = {{ $proofFixtures.bls12-381-shake-256.nymProof008.trace.Bbar }}
+D = {{ $proofFixtures.bls12-381-shake-256.nymProof008.trace.D }}
+T1 = {{ $proofFixtures.bls12-381-shake-256.nymProof008.trace.T1 }}
+T2 = {{ $proofFixtures.bls12-381-shake-256.nymProof008.trace.T2 }}
+C_i = {{ $proofFixtures.bls12-381-shake-256.nymProof008.trace.C_i }}
+C_tilde_i = {{ $proofFixtures.bls12-381-shake-256.nymProof008.trace.C_tilde_i }}
+Ut = {{ $proofFixtures.bls12-381-shake-256.nymProof008.trace.Ut }}
+
+domain = {{ $proofFixtures.bls12-381-shake-256.nymProof008.trace.domain }}
+challenge = {{ $proofFixtures.bls12-381-shake-256.nymProof008.trace.challenge }}
+
+add_zkp_info:
+
+committed_message_scalars = {{ $proofFixtures.bls12-381-shake-256.nymProof008.add_zkp_info.committed_message_scalars }}
+commitment_rands = {{ $proofFixtures.bls12-381-shake-256.nymProof008.add_zkp_info.commitment_rands }}
+
+L = {{ $proofFixtures.bls12-381-shake-256.nymProof008.L }}
+
+pseudonym = {{ $proofFixtures.bls12-381-shake-256.nymProof008.pseudonym }}
+proof = {{ $proofFixtures.bls12-381-shake-256.nymProof008.proof }}
+```
+
+#### {{ # $proofFixtures.bls12-381-shake-256.nymProof009.caseName }}
+
+```
+Based on signature: {{ $proofFixtures.bls12-381-shake-256.nymProof009.signatureFile }}
+signerPublicKey = {{ $proofFixtures.bls12-381-shake-256.nymProof009.signerPublicKey }}
+
+header = {{ $proofFixtures.bls12-381-shake-256.nymProof009.header }}
+presentationHeader = {{ $proofFixtures.bls12-381-shake-256.nymProof009.presentationHeader }}
+context_id = {{ $proofFixtures.bls12-381-shake-256.nymProof009.context_id }}
+
+messageDisclosures = {{ $proofFixtures.bls12-381-shake-256.nymProof009.messageDisclosures }}
+blindMessageDisclosures = {{ $proofFixtures.bls12-381-shake-256.nymProof009.blindMessageDisclosures }}
+
+Trace:
+
+random_scalars:
+
+r1 = {{ $proofFixtures.bls12-381-shake-256.nymProof009.trace.randomScalars.r1 }}
+r2 = {{ $proofFixtures.bls12-381-shake-256.nymProof009.trace.randomScalars.r2 }}
+e_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof009.trace.randomScalars.e_Tilde }}
+r1_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof009.trace.randomScalars.r1_Tilde }}
+r3_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof009.trace.randomScalars.r3_Tilde }}
+m_tilde_scalars = {{ $proofFixtures.bls12-381-shake-256.nymProof009.trace.randomScalars.m_tilde_scalars }}
+s_i = {{ $proofFixtures.bls12-381-shake-256.nymProof009.trace.randomScalars.s_i }}
+s_tilde_i = {{ $proofFixtures.bls12-381-shake-256.nymProof009.trace.randomScalars.s_tilde_i }}
+
+Abar = {{ $proofFixtures.bls12-381-shake-256.nymProof009.trace.Abar }}
+Bbar = {{ $proofFixtures.bls12-381-shake-256.nymProof009.trace.Bbar }}
+D = {{ $proofFixtures.bls12-381-shake-256.nymProof009.trace.D }}
+T1 = {{ $proofFixtures.bls12-381-shake-256.nymProof009.trace.T1 }}
+T2 = {{ $proofFixtures.bls12-381-shake-256.nymProof009.trace.T2 }}
+C_i = {{ $proofFixtures.bls12-381-shake-256.nymProof009.trace.C_i }}
+C_tilde_i = {{ $proofFixtures.bls12-381-shake-256.nymProof009.trace.C_tilde_i }}
+Ut = {{ $proofFixtures.bls12-381-shake-256.nymProof009.trace.Ut }}
+
+domain = {{ $proofFixtures.bls12-381-shake-256.nymProof009.trace.domain }}
+challenge = {{ $proofFixtures.bls12-381-shake-256.nymProof009.trace.challenge }}
+
+add_zkp_info:
+
+committed_message_scalars = {{ $proofFixtures.bls12-381-shake-256.nymProof009.add_zkp_info.committed_message_scalars }}
+commitment_rands = {{ $proofFixtures.bls12-381-shake-256.nymProof009.add_zkp_info.commitment_rands }}
+
+L = {{ $proofFixtures.bls12-381-shake-256.nymProof009.L }}
+
+pseudonym = {{ $proofFixtures.bls12-381-shake-256.nymProof009.pseudonym }}
+proof = {{ $proofFixtures.bls12-381-shake-256.nymProof009.proof }}
+```
+
+#### {{ # $proofFixtures.bls12-381-shake-256.nymProof010.caseName }}
+
+```
+Based on signature: {{ $proofFixtures.bls12-381-shake-256.nymProof010.signatureFile }}
+signerPublicKey = {{ $proofFixtures.bls12-381-shake-256.nymProof010.signerPublicKey }}
+
+header = {{ $proofFixtures.bls12-381-shake-256.nymProof010.header }}
+presentationHeader = {{ $proofFixtures.bls12-381-shake-256.nymProof010.presentationHeader }}
+context_id = {{ $proofFixtures.bls12-381-shake-256.nymProof010.context_id }}
+
+messageDisclosures = {{ $proofFixtures.bls12-381-shake-256.nymProof010.messageDisclosures }}
+blindMessageDisclosures = {{ $proofFixtures.bls12-381-shake-256.nymProof010.blindMessageDisclosures }}
+
+Trace:
+
+random_scalars:
+
+r1 = {{ $proofFixtures.bls12-381-shake-256.nymProof010.trace.randomScalars.r1 }}
+r2 = {{ $proofFixtures.bls12-381-shake-256.nymProof010.trace.randomScalars.r2 }}
+e_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof010.trace.randomScalars.e_Tilde }}
+r1_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof010.trace.randomScalars.r1_Tilde }}
+r3_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof010.trace.randomScalars.r3_Tilde }}
+m_tilde_scalars = {{ $proofFixtures.bls12-381-shake-256.nymProof010.trace.randomScalars.m_tilde_scalars }}
+s_i = {{ $proofFixtures.bls12-381-shake-256.nymProof010.trace.randomScalars.s_i }}
+s_tilde_i = {{ $proofFixtures.bls12-381-shake-256.nymProof010.trace.randomScalars.s_tilde_i }}
+
+Abar = {{ $proofFixtures.bls12-381-shake-256.nymProof010.trace.Abar }}
+Bbar = {{ $proofFixtures.bls12-381-shake-256.nymProof010.trace.Bbar }}
+D = {{ $proofFixtures.bls12-381-shake-256.nymProof010.trace.D }}
+T1 = {{ $proofFixtures.bls12-381-shake-256.nymProof010.trace.T1 }}
+T2 = {{ $proofFixtures.bls12-381-shake-256.nymProof010.trace.T2 }}
+C_i = {{ $proofFixtures.bls12-381-shake-256.nymProof010.trace.C_i }}
+C_tilde_i = {{ $proofFixtures.bls12-381-shake-256.nymProof010.trace.C_tilde_i }}
+Ut = {{ $proofFixtures.bls12-381-shake-256.nymProof010.trace.Ut }}
+
+domain = {{ $proofFixtures.bls12-381-shake-256.nymProof010.trace.domain }}
+challenge = {{ $proofFixtures.bls12-381-shake-256.nymProof010.trace.challenge }}
+
+add_zkp_info:
+
+committed_message_scalars = {{ $proofFixtures.bls12-381-shake-256.nymProof010.add_zkp_info.committed_message_scalars }}
+commitment_rands = {{ $proofFixtures.bls12-381-shake-256.nymProof010.add_zkp_info.commitment_rands }}
+
+L = {{ $proofFixtures.bls12-381-shake-256.nymProof010.L }}
+
+pseudonym = {{ $proofFixtures.bls12-381-shake-256.nymProof010.pseudonym }}
+proof = {{ $proofFixtures.bls12-381-shake-256.nymProof010.proof }}
+```
+
+#### {{ # $proofFixtures.bls12-381-shake-256.nymProof011.caseName }}
+
+```
+Based on signature: {{ $proofFixtures.bls12-381-shake-256.nymProof011.signatureFile }}
+signerPublicKey = {{ $proofFixtures.bls12-381-shake-256.nymProof011.signerPublicKey }}
+
+header = {{ $proofFixtures.bls12-381-shake-256.nymProof011.header }}
+presentationHeader = {{ $proofFixtures.bls12-381-shake-256.nymProof011.presentationHeader }}
+context_id = {{ $proofFixtures.bls12-381-shake-256.nymProof011.context_id }}
+
+messageDisclosures = {{ $proofFixtures.bls12-381-shake-256.nymProof011.messageDisclosures }}
+blindMessageDisclosures = {{ $proofFixtures.bls12-381-shake-256.nymProof011.blindMessageDisclosures }}
+
+Trace:
+
+random_scalars:
+
+r1 = {{ $proofFixtures.bls12-381-shake-256.nymProof011.trace.randomScalars.r1 }}
+r2 = {{ $proofFixtures.bls12-381-shake-256.nymProof011.trace.randomScalars.r2 }}
+e_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof011.trace.randomScalars.e_Tilde }}
+r1_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof011.trace.randomScalars.r1_Tilde }}
+r3_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof011.trace.randomScalars.r3_Tilde }}
+m_tilde_scalars = {{ $proofFixtures.bls12-381-shake-256.nymProof011.trace.randomScalars.m_tilde_scalars }}
+s_i = {{ $proofFixtures.bls12-381-shake-256.nymProof011.trace.randomScalars.s_i }}
+s_tilde_i = {{ $proofFixtures.bls12-381-shake-256.nymProof011.trace.randomScalars.s_tilde_i }}
+
+Abar = {{ $proofFixtures.bls12-381-shake-256.nymProof011.trace.Abar }}
+Bbar = {{ $proofFixtures.bls12-381-shake-256.nymProof011.trace.Bbar }}
+D = {{ $proofFixtures.bls12-381-shake-256.nymProof011.trace.D }}
+T1 = {{ $proofFixtures.bls12-381-shake-256.nymProof011.trace.T1 }}
+T2 = {{ $proofFixtures.bls12-381-shake-256.nymProof011.trace.T2 }}
+C_i = {{ $proofFixtures.bls12-381-shake-256.nymProof011.trace.C_i }}
+C_tilde_i = {{ $proofFixtures.bls12-381-shake-256.nymProof011.trace.C_tilde_i }}
+Ut = {{ $proofFixtures.bls12-381-shake-256.nymProof011.trace.Ut }}
+
+domain = {{ $proofFixtures.bls12-381-shake-256.nymProof011.trace.domain }}
+challenge = {{ $proofFixtures.bls12-381-shake-256.nymProof011.trace.challenge }}
+
+add_zkp_info:
+
+committed_message_scalars = {{ $proofFixtures.bls12-381-shake-256.nymProof011.add_zkp_info.committed_message_scalars }}
+commitment_rands = {{ $proofFixtures.bls12-381-shake-256.nymProof011.add_zkp_info.commitment_rands }}
+
+L = {{ $proofFixtures.bls12-381-shake-256.nymProof011.L }}
+
+pseudonym = {{ $proofFixtures.bls12-381-shake-256.nymProof011.pseudonym }}
+proof = {{ $proofFixtures.bls12-381-shake-256.nymProof011.proof }}
+```
+
+#### {{ # $proofFixtures.bls12-381-shake-256.nymProof101.caseName }}
+
+```
+Based on signature: {{ $proofFixtures.bls12-381-shake-256.nymProof101.signatureFile }}
+signerPublicKey = {{ $proofFixtures.bls12-381-shake-256.nymProof101.signerPublicKey }}
+
+header = {{ $proofFixtures.bls12-381-shake-256.nymProof101.header }}
+presentationHeader = {{ $proofFixtures.bls12-381-shake-256.nymProof101.presentationHeader }}
+context_id = {{ $proofFixtures.bls12-381-shake-256.nymProof101.context_id }}
+
+messageDisclosures = {{ $proofFixtures.bls12-381-shake-256.nymProof101.messageDisclosures }}
+blindMessageDisclosures = {{ $proofFixtures.bls12-381-shake-256.nymProof101.blindMessageDisclosures }}
+
+Trace:
+
+random_scalars:
+
+r1 = {{ $proofFixtures.bls12-381-shake-256.nymProof101.trace.randomScalars.r1 }}
+r2 = {{ $proofFixtures.bls12-381-shake-256.nymProof101.trace.randomScalars.r2 }}
+e_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof101.trace.randomScalars.e_Tilde }}
+r1_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof101.trace.randomScalars.r1_Tilde }}
+r3_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof101.trace.randomScalars.r3_Tilde }}
+m_tilde_scalars = {{ $proofFixtures.bls12-381-shake-256.nymProof101.trace.randomScalars.m_tilde_scalars }}
+
+Abar = {{ $proofFixtures.bls12-381-shake-256.nymProof101.trace.Abar }}
+Bbar = {{ $proofFixtures.bls12-381-shake-256.nymProof101.trace.Bbar }}
+D = {{ $proofFixtures.bls12-381-shake-256.nymProof101.trace.D }}
+T1 = {{ $proofFixtures.bls12-381-shake-256.nymProof101.trace.T1 }}
+T2 = {{ $proofFixtures.bls12-381-shake-256.nymProof101.trace.T2 }}
+Ut = {{ $proofFixtures.bls12-381-shake-256.nymProof101.trace.Ut }}
+
+domain = {{ $proofFixtures.bls12-381-shake-256.nymProof101.trace.domain }}
+challenge = {{ $proofFixtures.bls12-381-shake-256.nymProof101.trace.challenge }}
+
+L = {{ $proofFixtures.bls12-381-shake-256.nymProof101.L }}
+
+pseudonym = {{ $proofFixtures.bls12-381-shake-256.nymProof101.pseudonym }}
+proof = {{ $proofFixtures.bls12-381-shake-256.nymProof101.proof }}
+```
+
+#### {{ # $proofFixtures.bls12-381-shake-256.nymProof102.caseName }}
+
+```
+Based on signature: {{ $proofFixtures.bls12-381-shake-256.nymProof102.signatureFile }}
+signerPublicKey = {{ $proofFixtures.bls12-381-shake-256.nymProof102.signerPublicKey }}
+
+header = {{ $proofFixtures.bls12-381-shake-256.nymProof102.header }}
+presentationHeader = {{ $proofFixtures.bls12-381-shake-256.nymProof102.presentationHeader }}
+context_id = {{ $proofFixtures.bls12-381-shake-256.nymProof102.context_id }}
+
+messageDisclosures = {{ $proofFixtures.bls12-381-shake-256.nymProof102.messageDisclosures }}
+blindMessageDisclosures = {{ $proofFixtures.bls12-381-shake-256.nymProof102.blindMessageDisclosures }}
+
+Trace:
+
+random_scalars:
+
+r1 = {{ $proofFixtures.bls12-381-shake-256.nymProof102.trace.randomScalars.r1 }}
+r2 = {{ $proofFixtures.bls12-381-shake-256.nymProof102.trace.randomScalars.r2 }}
+e_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof102.trace.randomScalars.e_Tilde }}
+r1_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof102.trace.randomScalars.r1_Tilde }}
+r3_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof102.trace.randomScalars.r3_Tilde }}
+m_tilde_scalars = {{ $proofFixtures.bls12-381-shake-256.nymProof102.trace.randomScalars.m_tilde_scalars }}
+
+Abar = {{ $proofFixtures.bls12-381-shake-256.nymProof102.trace.Abar }}
+Bbar = {{ $proofFixtures.bls12-381-shake-256.nymProof102.trace.Bbar }}
+D = {{ $proofFixtures.bls12-381-shake-256.nymProof102.trace.D }}
+T1 = {{ $proofFixtures.bls12-381-shake-256.nymProof102.trace.T1 }}
+T2 = {{ $proofFixtures.bls12-381-shake-256.nymProof102.trace.T2 }}
+Ut = {{ $proofFixtures.bls12-381-shake-256.nymProof102.trace.Ut }}
+
+domain = {{ $proofFixtures.bls12-381-shake-256.nymProof102.trace.domain }}
+challenge = {{ $proofFixtures.bls12-381-shake-256.nymProof102.trace.challenge }}
+
+L = {{ $proofFixtures.bls12-381-shake-256.nymProof102.L }}
+
+pseudonym = {{ $proofFixtures.bls12-381-shake-256.nymProof102.pseudonym }}
+proof = {{ $proofFixtures.bls12-381-shake-256.nymProof102.proof }}
+```
+
+#### {{ # $proofFixtures.bls12-381-shake-256.nymProof103.caseName }}
+
+```
+Based on signature: {{ $proofFixtures.bls12-381-shake-256.nymProof103.signatureFile }}
+signerPublicKey = {{ $proofFixtures.bls12-381-shake-256.nymProof103.signerPublicKey }}
+
+header = {{ $proofFixtures.bls12-381-shake-256.nymProof103.header }}
+presentationHeader = {{ $proofFixtures.bls12-381-shake-256.nymProof103.presentationHeader }}
+context_id = {{ $proofFixtures.bls12-381-shake-256.nymProof103.context_id }}
+
+messageDisclosures = {{ $proofFixtures.bls12-381-shake-256.nymProof103.messageDisclosures }}
+blindMessageDisclosures = {{ $proofFixtures.bls12-381-shake-256.nymProof103.blindMessageDisclosures }}
+
+Trace:
+
+random_scalars:
+
+r1 = {{ $proofFixtures.bls12-381-shake-256.nymProof103.trace.randomScalars.r1 }}
+r2 = {{ $proofFixtures.bls12-381-shake-256.nymProof103.trace.randomScalars.r2 }}
+e_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof103.trace.randomScalars.e_Tilde }}
+r1_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof103.trace.randomScalars.r1_Tilde }}
+r3_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof103.trace.randomScalars.r3_Tilde }}
+m_tilde_scalars = {{ $proofFixtures.bls12-381-shake-256.nymProof103.trace.randomScalars.m_tilde_scalars }}
+
+Abar = {{ $proofFixtures.bls12-381-shake-256.nymProof103.trace.Abar }}
+Bbar = {{ $proofFixtures.bls12-381-shake-256.nymProof103.trace.Bbar }}
+D = {{ $proofFixtures.bls12-381-shake-256.nymProof103.trace.D }}
+T1 = {{ $proofFixtures.bls12-381-shake-256.nymProof103.trace.T1 }}
+T2 = {{ $proofFixtures.bls12-381-shake-256.nymProof103.trace.T2 }}
+Ut = {{ $proofFixtures.bls12-381-shake-256.nymProof103.trace.Ut }}
+
+domain = {{ $proofFixtures.bls12-381-shake-256.nymProof103.trace.domain }}
+challenge = {{ $proofFixtures.bls12-381-shake-256.nymProof103.trace.challenge }}
+
+L = {{ $proofFixtures.bls12-381-shake-256.nymProof103.L }}
+
+pseudonym = {{ $proofFixtures.bls12-381-shake-256.nymProof103.pseudonym }}
+proof = {{ $proofFixtures.bls12-381-shake-256.nymProof103.proof }}
+```
+
+#### {{ # $proofFixtures.bls12-381-shake-256.nymProof104.caseName }}
+
+```
+Based on signature: {{ $proofFixtures.bls12-381-shake-256.nymProof104.signatureFile }}
+signerPublicKey = {{ $proofFixtures.bls12-381-shake-256.nymProof104.signerPublicKey }}
+
+header = {{ $proofFixtures.bls12-381-shake-256.nymProof104.header }}
+presentationHeader = {{ $proofFixtures.bls12-381-shake-256.nymProof104.presentationHeader }}
+context_id = {{ $proofFixtures.bls12-381-shake-256.nymProof104.context_id }}
+
+messageDisclosures = {{ $proofFixtures.bls12-381-shake-256.nymProof104.messageDisclosures }}
+blindMessageDisclosures = {{ $proofFixtures.bls12-381-shake-256.nymProof104.blindMessageDisclosures }}
+
+Trace:
+
+random_scalars:
+
+r1 = {{ $proofFixtures.bls12-381-shake-256.nymProof104.trace.randomScalars.r1 }}
+r2 = {{ $proofFixtures.bls12-381-shake-256.nymProof104.trace.randomScalars.r2 }}
+e_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof104.trace.randomScalars.e_Tilde }}
+r1_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof104.trace.randomScalars.r1_Tilde }}
+r3_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof104.trace.randomScalars.r3_Tilde }}
+m_tilde_scalars = {{ $proofFixtures.bls12-381-shake-256.nymProof104.trace.randomScalars.m_tilde_scalars }}
+
+Abar = {{ $proofFixtures.bls12-381-shake-256.nymProof104.trace.Abar }}
+Bbar = {{ $proofFixtures.bls12-381-shake-256.nymProof104.trace.Bbar }}
+D = {{ $proofFixtures.bls12-381-shake-256.nymProof104.trace.D }}
+T1 = {{ $proofFixtures.bls12-381-shake-256.nymProof104.trace.T1 }}
+T2 = {{ $proofFixtures.bls12-381-shake-256.nymProof104.trace.T2 }}
+Ut = {{ $proofFixtures.bls12-381-shake-256.nymProof104.trace.Ut }}
+
+domain = {{ $proofFixtures.bls12-381-shake-256.nymProof104.trace.domain }}
+challenge = {{ $proofFixtures.bls12-381-shake-256.nymProof104.trace.challenge }}
+
+L = {{ $proofFixtures.bls12-381-shake-256.nymProof104.L }}
+
+pseudonym = {{ $proofFixtures.bls12-381-shake-256.nymProof104.pseudonym }}
+proof = {{ $proofFixtures.bls12-381-shake-256.nymProof104.proof }}
+```
+
+#### {{ # $proofFixtures.bls12-381-shake-256.nymProof105.caseName }}
+
+```
+Based on signature: {{ $proofFixtures.bls12-381-shake-256.nymProof105.signatureFile }}
+signerPublicKey = {{ $proofFixtures.bls12-381-shake-256.nymProof105.signerPublicKey }}
+
+header = {{ $proofFixtures.bls12-381-shake-256.nymProof105.header }}
+presentationHeader = {{ $proofFixtures.bls12-381-shake-256.nymProof105.presentationHeader }}
+context_id = {{ $proofFixtures.bls12-381-shake-256.nymProof105.context_id }}
+
+messageDisclosures = {{ $proofFixtures.bls12-381-shake-256.nymProof105.messageDisclosures }}
+blindMessageDisclosures = {{ $proofFixtures.bls12-381-shake-256.nymProof105.blindMessageDisclosures }}
+
+Trace:
+
+random_scalars:
+
+r1 = {{ $proofFixtures.bls12-381-shake-256.nymProof105.trace.randomScalars.r1 }}
+r2 = {{ $proofFixtures.bls12-381-shake-256.nymProof105.trace.randomScalars.r2 }}
+e_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof105.trace.randomScalars.e_Tilde }}
+r1_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof105.trace.randomScalars.r1_Tilde }}
+r3_tilde = {{ $proofFixtures.bls12-381-shake-256.nymProof105.trace.randomScalars.r3_Tilde }}
+m_tilde_scalars = {{ $proofFixtures.bls12-381-shake-256.nymProof105.trace.randomScalars.m_tilde_scalars }}
+s_i = {{ $proofFixtures.bls12-381-shake-256.nymProof105.trace.randomScalars.s_i }}
+s_tilde_i = {{ $proofFixtures.bls12-381-shake-256.nymProof105.trace.randomScalars.s_tilde_i }}
+
+Abar = {{ $proofFixtures.bls12-381-shake-256.nymProof105.trace.Abar }}
+Bbar = {{ $proofFixtures.bls12-381-shake-256.nymProof105.trace.Bbar }}
+D = {{ $proofFixtures.bls12-381-shake-256.nymProof105.trace.D }}
+T1 = {{ $proofFixtures.bls12-381-shake-256.nymProof105.trace.T1 }}
+T2 = {{ $proofFixtures.bls12-381-shake-256.nymProof105.trace.T2 }}
+C_i = {{ $proofFixtures.bls12-381-shake-256.nymProof105.trace.C_i }}
+C_tilde_i = {{ $proofFixtures.bls12-381-shake-256.nymProof105.trace.C_tilde_i }}
+Ut = {{ $proofFixtures.bls12-381-shake-256.nymProof105.trace.Ut }}
+
+domain = {{ $proofFixtures.bls12-381-shake-256.nymProof105.trace.domain }}
+challenge = {{ $proofFixtures.bls12-381-shake-256.nymProof105.trace.challenge }}
+
+add_zkp_info:
+
+committed_message_scalars = {{ $proofFixtures.bls12-381-shake-256.nymProof105.add_zkp_info.committed_message_scalars }}
+commitment_rands = {{ $proofFixtures.bls12-381-shake-256.nymProof105.add_zkp_info.commitment_rands }}
+
+L = {{ $proofFixtures.bls12-381-shake-256.nymProof105.L }}
+
+pseudonym = {{ $proofFixtures.bls12-381-shake-256.nymProof105.pseudonym }}
+proof = {{ $proofFixtures.bls12-381-shake-256.nymProof105.proof }}
 ```
 
 # IANA Considerations
