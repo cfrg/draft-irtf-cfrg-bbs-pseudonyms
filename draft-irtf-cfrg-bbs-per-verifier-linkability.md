@@ -1048,7 +1048,7 @@ Parameters:
 
 Outputs:
 
-- a tuple consisting of trip of items (element from the G1 group, octet string, element from the G1  group), or INVALID.
+- a triple of items (element from the G1 group, octet string, element from the G1  group), or INVALID.
 
 Procedure:
 
@@ -1093,7 +1093,7 @@ Parameters:
 
 Outputs:
 
-- a tuple consisting of three elements from the G1 group, or INVALID.
+- a triple of items (element from the G1 group, octet string, element from the G1  group), or INVALID.
 
 Procedure:
 
