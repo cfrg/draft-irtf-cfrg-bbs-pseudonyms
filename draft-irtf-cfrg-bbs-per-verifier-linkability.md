@@ -4,7 +4,7 @@ abbrev = "BBS per Verifier Linkability"
 ipr= "trust200902"
 area = "Internet"
 workgroup = "CFRG"
-submissiontype = "IETF"
+submissiontype = "IRTF"
 keyword = [""]
 
 [seriesInfo]
