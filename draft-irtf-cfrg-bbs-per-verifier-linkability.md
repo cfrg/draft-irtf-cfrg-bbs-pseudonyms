@@ -3289,6 +3289,12 @@ TODO acknowledge.
 * Spelling and BCP14 editorial fixes.
 * Add note about potential update for "committed disclosure" functionality.
 
+-04
+
+* Update to align with Blind BBS and support committed disclosure functionality.
+* Update and add test vectors.
+* Editorial fixes and improvements.
+
 
 <reference anchor="BBS04" target="https://link.springer.com/chapter/10.1007/978-3-540-28628-8_3">
  <front>
