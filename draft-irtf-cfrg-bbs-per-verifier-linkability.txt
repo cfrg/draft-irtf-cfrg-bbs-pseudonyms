@@ -5,8 +5,8 @@
 CFRG                                                            V. Kalos
 Internet-Draft                                                     MATTR
 Intended status: Informational                              G. Bernstein
-Expires: 15 May 2027                                   Grotto Networking
-                                                        11 November 2026
+Expires: 20 May 2027                                   Grotto Networking
+                                                        16 November 2026
 
 
                       BBS per Verifier Linkability
@@ -45,7 +45,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 15 May 2027.
+   This Internet-Draft will expire on 20 May 2027.
 
 Copyright Notice
 
@@ -251,15 +251,15 @@ Table of Contents
 1.2.  Cryptographic Pseudonyms: A Short History
 
    The discussion of cryptographic pseudonyms for privacy preservation
-   has a long history, with Chaum's 1985 popular article “
-   (U+201C)Security without identification: transaction systems to make
-   big brother obsolete” (U+201D) [Chaum85] addressesing many of the
-   features of such systems such as unlinkability and constraints on
-   their use such as one pseudonym per organization and accountability
-   for pseudonym use.  Although Chaum's proposal makes use of different
-   cryptographic primitives than we will use here, one can see
-   similarities in the use of both secret and "public" information being
-   combined to create a cryptographic pseudonym.
+   has a long history, with Chaum's 1985 popular article "Security
+   without identification: transaction systems to make big brother
+   obsolete" [Chaum85] addressesing many of the features of such systems
+   such as unlinkability and constraints on their use such as one
+   pseudonym per organization and accountability for pseudonym use.
+   Although Chaum's proposal makes use of different cryptographic
+   primitives than we will use here, one can see similarities in the use
+   of both secret and "public" information being combined to create a
+   cryptographic pseudonym.
 
    Lysyanskaya's 2000 paper [Lys00] also addresses the unlinkable
    aspects of pseudonyms but also provides protections against dishonest
@@ -459,11 +459,21 @@ Table of Contents
       [I-D.irtf-cfrg-bbs-blind-signatures].
    *  Blind.CoreCommit: Refers to the CoreCommit operation defined in
       Section 4.3.1 of [I-D.irtf-cfrg-bbs-blind-signatures].
+   *  Blind.deserialize_and_validate_commit: Refers to the
+      deserialize_and_validate_commit operation defined in Section 4.1.2
+      of [I-D.irtf-cfrg-bbs-blind-signatures].
    *  Blind.B_calculate: Refers to the B_calculate operation defined in
       Section 5.2 of [I-D.irtf-cfrg-bbs-blind-signatures].
-   *  BBS.create_generators:
-   *  BBS.CoreVerify:
-   *  Blind.proof_to_octets:
+   *  BBS.create_generators: Refers to the create_generators operation
+      defined in Section 4.1.1 of [I-D.irtf-cfrg-bbs-signatures].
+   *  Blind.FinalizeBlindSign: Refers to the FinalizeBlindSign operation
+      defined in Section 4.3.3 of [I-D.irtf-cfrg-bbs-blind-signatures].
+   *  BBS.CoreVerify: Refers to the CoreVerify operation defined in
+      Section 3.6.2 of [I-D.irtf-cfrg-bbs-signatures].
+   *  Blind.proof_to_octets: Refers to the proof_to_octets operation
+      defined in Section 5.5.3 of [I-D.irtf-cfrg-bbs-blind-signatures].
+   *  Blind.octets_to_proof: Refers to the octets_to_proof operation
+      defined in Section 5.5.4 of [I-D.irtf-cfrg-bbs-blind-signatures].
 
 4.  Key Concepts
 
@@ -1598,8 +1608,6 @@ Procedure:
    example, for N different Verifiers), unlinkability of the pseudonyms
    will hold, even in the presence of a CRQC.
 
-   TODO: Proof/Discussion to be furnished
-
 11.  Security Considerations
 
 11.1.  Preventing Impersonation Attacks
@@ -1619,8 +1627,6 @@ Procedure:
    verifying the proof of the pseudonym the verifier will be checking
    that the N values of the nym_secrets vector was actually used in the
    computation.
-
-   TODO Security
 
 12.  Ciphersuites
 
@@ -6566,9 +6572,9 @@ proof = "00000000000003d0a6dd87e9247092e5d50e03635ba5f2e8feb739b957251bc
    [I-D.irtf-cfrg-pairing-friendly-curves]
               Sakemi, Y., Kanno, S., and R. S. Wahby, "Pairing-Friendly
               Curves", Work in Progress, Internet-Draft, draft-irtf-
-              cfrg-pairing-friendly-curves-14, 7 September 2026,
+              cfrg-pairing-friendly-curves-16, 16 November 2026,
               <https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-
-              pairing-friendly-curves-14>.
+              pairing-friendly-curves-16>.
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119,
@@ -6631,6 +6637,17 @@ Appendix B.  Document History
    *  Spelling and BCP14 editorial fixes.
    *  Add note about potential update for "committed disclosure"
       functionality.
+
+   -04
+
+   *  Update to align with Blind BBS and support committed disclosure
+      functionality.
+   *  Update and add test vectors.
+   *  Editorial fixes and improvements.
+
+   -05
+
+   *  Update cross references to other BBS documents.
 
 Authors' Addresses
 

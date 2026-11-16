@@ -1048,7 +1048,7 @@ svg {
 </tr></thead>
 <tfoot><tr>
 <td class="left">Kalos &amp; Bernstein</td>
-<td class="center">Expires 15 May 2027</td>
+<td class="center">Expires 20 May 2027</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1061,12 +1061,12 @@ svg {
 <dd class="internet-draft">draft-irtf-cfrg-bbs-per-verifier-linkability-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2026-11-11" class="published">11 November 2026</time>
+<time datetime="2026-11-16" class="published">16 November 2026</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Informational</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2027-05-15">15 May 2027</time></dd>
+<dd class="expires"><time datetime="2027-05-20">20 May 2027</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1104,7 +1104,7 @@ svg {
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 15 May 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 20 May 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1377,7 +1377,7 @@ svg {
         <h3 id="name-cryptographic-pseudonyms-a-">
 <a href="#section-1.2" class="section-number selfRef">1.2. </a><a href="#name-cryptographic-pseudonyms-a-" class="section-name selfRef">Cryptographic Pseudonyms: A Short History</a>
         </h3>
-<p id="section-1.2-1">The discussion of cryptographic pseudonyms for privacy preservation has a long history, with Chaum's 1985 popular article <span class="unicode">“ (U+201C)</span>Security without identification: transaction systems to make big brother obsolete<span class="unicode">” (U+201D)</span> <span>[<a href="#Chaum85" class="cite xref">Chaum85</a>]</span> addressesing many of the features of such systems such as unlinkability and constraints on their use such as one pseudonym per organization and accountability for pseudonym use. Although Chaum's proposal makes use of different cryptographic primitives than we will use here, one can see similarities in the use of both secret and "public" information being combined to create a cryptographic pseudonym.<a href="#section-1.2-1" class="pilcrow">¶</a></p>
+<p id="section-1.2-1">The discussion of cryptographic pseudonyms for privacy preservation has a long history, with Chaum's 1985 popular article "Security without identification: transaction systems to make big brother obsolete" <span>[<a href="#Chaum85" class="cite xref">Chaum85</a>]</span> addressesing many of the features of such systems such as unlinkability and constraints on their use such as one pseudonym per organization and accountability for pseudonym use. Although Chaum's proposal makes use of different cryptographic primitives than we will use here, one can see similarities in the use of both secret and "public" information being combined to create a cryptographic pseudonym.<a href="#section-1.2-1" class="pilcrow">¶</a></p>
 <p id="section-1.2-2">Lysyanskaya's 2000 paper <span>[<a href="#Lys00" class="cite xref">Lys00</a>]</span> also addresses the unlinkable aspects of pseudonyms but also provides protections against dishonest users. In addition they provide practical contructions similar to those used in our draft based on discrete logarithm and sigma protocol based ZKPs. Finally as part of the ABC4Trust project <span>[<a href="#ABC14" class="cite xref">ABC14</a>]</span> three flavors of pseudonyms were defined:<a href="#section-1.2-2" class="pilcrow">¶</a></p>
 <ol start="1" type="1" class="compact type-1" id="section-1.2-3">
 <li id="section-1.2-3.1">
@@ -1583,16 +1583,25 @@ svg {
           <code>Blind.CoreCommit</code>: Refers to the <code>CoreCommit</code> operation defined in <span><a href="https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-bbs-blind-signatures-05" class="relref">Section 4.3.1</a> of [<a href="#I-D.irtf-cfrg-bbs-blind-signatures" class="cite xref">I-D.irtf-cfrg-bbs-blind-signatures</a>]</span>.<a href="#section-3-2.2" class="pilcrow">¶</a>
 </li>
         <li class="compact" id="section-3-2.3">
-          <code>Blind.B_calculate</code>: Refers to the <code>B_calculate</code> operation defined in <span><a href="https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-bbs-blind-signatures-05" class="relref">Section 5.2</a> of [<a href="#I-D.irtf-cfrg-bbs-blind-signatures" class="cite xref">I-D.irtf-cfrg-bbs-blind-signatures</a>]</span>.<a href="#section-3-2.3" class="pilcrow">¶</a>
+          <code>Blind.deserialize_and_validate_commit</code>: Refers to the <code>deserialize_and_validate_commit</code>  operation defined in <span><a href="https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-bbs-blind-signatures-05" class="relref">Section 4.1.2</a> of [<a href="#I-D.irtf-cfrg-bbs-blind-signatures" class="cite xref">I-D.irtf-cfrg-bbs-blind-signatures</a>]</span>.<a href="#section-3-2.3" class="pilcrow">¶</a>
 </li>
         <li class="compact" id="section-3-2.4">
-          <code>BBS.create_generators</code>:<a href="#section-3-2.4" class="pilcrow">¶</a>
+          <code>Blind.B_calculate</code>: Refers to the <code>B_calculate</code> operation defined in <span><a href="https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-bbs-blind-signatures-05" class="relref">Section 5.2</a> of [<a href="#I-D.irtf-cfrg-bbs-blind-signatures" class="cite xref">I-D.irtf-cfrg-bbs-blind-signatures</a>]</span>.<a href="#section-3-2.4" class="pilcrow">¶</a>
 </li>
         <li class="compact" id="section-3-2.5">
-          <code>BBS.CoreVerify</code>:<a href="#section-3-2.5" class="pilcrow">¶</a>
+          <code>BBS.create_generators</code>: Refers to the <code>create_generators</code> operation defined in <span><a href="https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-bbs-signatures-14" class="relref">Section 4.1.1</a> of [<a href="#I-D.irtf-cfrg-bbs-signatures" class="cite xref">I-D.irtf-cfrg-bbs-signatures</a>]</span>.<a href="#section-3-2.5" class="pilcrow">¶</a>
 </li>
         <li class="compact" id="section-3-2.6">
-          <code>Blind.proof_to_octets</code>:<a href="#section-3-2.6" class="pilcrow">¶</a>
+          <code>Blind.FinalizeBlindSign</code>: Refers to the <code>FinalizeBlindSign</code> operation defined in <span><a href="https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-bbs-blind-signatures-05" class="relref">Section 4.3.3</a> of [<a href="#I-D.irtf-cfrg-bbs-blind-signatures" class="cite xref">I-D.irtf-cfrg-bbs-blind-signatures</a>]</span>.<a href="#section-3-2.6" class="pilcrow">¶</a>
+</li>
+        <li class="compact" id="section-3-2.7">
+          <code>BBS.CoreVerify</code>: Refers to the <code>CoreVerify</code> operation defined in <span><a href="https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-bbs-signatures-14" class="relref">Section 3.6.2</a> of [<a href="#I-D.irtf-cfrg-bbs-signatures" class="cite xref">I-D.irtf-cfrg-bbs-signatures</a>]</span>.<a href="#section-3-2.7" class="pilcrow">¶</a>
+</li>
+        <li class="compact" id="section-3-2.8">
+          <code>Blind.proof_to_octets</code>: Refers to the <code>proof_to_octets</code> operation defined in <span><a href="https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-bbs-blind-signatures-05" class="relref">Section 5.5.3</a> of [<a href="#I-D.irtf-cfrg-bbs-blind-signatures" class="cite xref">I-D.irtf-cfrg-bbs-blind-signatures</a>]</span>.<a href="#section-3-2.8" class="pilcrow">¶</a>
+</li>
+        <li class="compact" id="section-3-2.9">
+          <code>Blind.octets_to_proof</code>: Refers to the <code>octets_to_proof</code> operation defined in <span><a href="https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-bbs-blind-signatures-05" class="relref">Section 5.5.4</a> of [<a href="#I-D.irtf-cfrg-bbs-blind-signatures" class="cite xref">I-D.irtf-cfrg-bbs-blind-signatures</a>]</span>.<a href="#section-3-2.9" class="pilcrow">¶</a>
 </li>
       </ul>
 </section>
@@ -2676,7 +2685,6 @@ Procedure:
         </h3>
 <p id="section-10.1-1">BBS pseudonyms are computationally unlinkable under the assumption of the hardness of the discrete log problem. In the presence of a Cryptographically Relevant Quantum Computer (CRQC) BBS pseudonyms can provide "limited" everlasting unlinkability. This is similar to how BBS proofs provide everlasting unlinkability in the presence of a CRQC.<a href="#section-10.1-1" class="pilcrow">¶</a></p>
 <p id="section-10.1-2">Let <code>N</code> be the length of the secret <code>prover_nyms</code> vector, let <code>M</code> be the number of pseudonyms gathered from colluding verifiers each possessing a unique <code>context_id</code>. In the presence of a CRQC if <code>N &gt; M</code> the pseudonyms will be unlinkable. In other words, as long as the <em>Prover</em> does not generate (different) pseudonyms for more than <code>N</code> unique context identifiers (i.e., <code>N</code> different <code>context_id</code> values, for example, for <code>N</code> different Verifiers), unlinkability of the pseudonyms will hold, even in the presence of a CRQC.<a href="#section-10.1-2" class="pilcrow">¶</a></p>
-<p id="section-10.1-3">TODO:  Proof/Discussion to be furnished<a href="#section-10.1-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -2700,7 +2708,6 @@ Procedure:
 <a href="#section-11.2" class="section-number selfRef">11.2. </a><a href="#name-preventing-sybil-attacks" class="section-name selfRef">Preventing Sybil Attacks</a>
         </h3>
 <p id="section-11.2-1">Assuming an honest issuer, to prevent sybil attacks by a malicious prover, we require that the prover use the same set of nym_secrets in computing pseudonyms. In particular, the prover declares the length of the prover_nyms/nym_secrets vectors, N, in their commitment with proof and this value gets bound to the signature from the issuer. In verifying the proof of the pseudonym the verifier will be checking that the N values of the nym_secrets vector was actually used in the computation.<a href="#section-11.2-1" class="pilcrow">¶</a></p>
-<p id="section-11.2-2">TODO Security<a href="#section-11.2-2" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -8065,7 +8072,7 @@ proof = "00000000000003d0a6dd87e9247092e5d50e03635ba5f2e8feb739b957251bc
 <dd class="break"></dd>
 <dt id="I-D.irtf-cfrg-pairing-friendly-curves">[I-D.irtf-cfrg-pairing-friendly-curves]</dt>
       <dd>
-<span class="refAuthor">Sakemi, Y.</span>, <span class="refAuthor">Kanno, S.</span>, and <span class="refAuthor">R. S. Wahby</span>, <span class="refTitle">"Pairing-Friendly Curves"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-irtf-cfrg-pairing-friendly-curves-14</span>, <time datetime="2026-09-07" class="refDate">7 September 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-pairing-friendly-curves-14">https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-pairing-friendly-curves-14</a>&gt;</span>. </dd>
+<span class="refAuthor">Sakemi, Y.</span>, <span class="refAuthor">Kanno, S.</span>, and <span class="refAuthor">R. S. Wahby</span>, <span class="refTitle">"Pairing-Friendly Curves"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-irtf-cfrg-pairing-friendly-curves-16</span>, <time datetime="2026-11-16" class="refDate">16 November 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-pairing-friendly-curves-16">https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-pairing-friendly-curves-16</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="RFC2119">[RFC2119]</dt>
       <dd>
@@ -8142,6 +8149,20 @@ commitments<a href="#appendix-B-6.1" class="pilcrow">¶</a>
 <li class="compact" id="appendix-B-8.1">Spelling and BCP14 editorial fixes.<a href="#appendix-B-8.1" class="pilcrow">¶</a>
 </li>
         <li class="compact" id="appendix-B-8.2">Add note about potential update for "committed disclosure" functionality.<a href="#appendix-B-8.2" class="pilcrow">¶</a>
+</li>
+      </ul>
+<p id="appendix-B-9">-04<a href="#appendix-B-9" class="pilcrow">¶</a></p>
+<ul class="compact">
+<li class="compact" id="appendix-B-10.1">Update to align with Blind BBS and support committed disclosure functionality.<a href="#appendix-B-10.1" class="pilcrow">¶</a>
+</li>
+        <li class="compact" id="appendix-B-10.2">Update and add test vectors.<a href="#appendix-B-10.2" class="pilcrow">¶</a>
+</li>
+        <li class="compact" id="appendix-B-10.3">Editorial fixes and improvements.<a href="#appendix-B-10.3" class="pilcrow">¶</a>
+</li>
+      </ul>
+<p id="appendix-B-11">-05<a href="#appendix-B-11" class="pilcrow">¶</a></p>
+<ul class="compact">
+<li class="compact" id="appendix-B-12.1">Update cross references to other BBS documents.<a href="#appendix-B-12.1" class="pilcrow">¶</a>
 </li>
       </ul>
 </section>
