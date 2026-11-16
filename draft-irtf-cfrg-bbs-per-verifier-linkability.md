@@ -76,7 +76,7 @@ This document will define new BBS Interfaces for use with pseudonyms, however it
 
 ## Cryptographic Pseudonyms: A Short History
 
-The discussion of cryptographic pseudonyms for privacy preservation has a long history, with Chaum's 1985 popular article “Security without identification: transaction systems to make big brother obsolete” [@?Chaum85] addressesing many of the features of such systems such as unlinkability and constraints on their use such as one pseudonym per organization and accountability for pseudonym use. Although Chaum's proposal makes use of different cryptographic primitives than we will use here, one can see similarities in the use of both secret and "public" information being combined to create a cryptographic pseudonym.
+The discussion of cryptographic pseudonyms for privacy preservation has a long history, with Chaum's 1985 popular article "Security without identification: transaction systems to make big brother obsolete" [@?Chaum85] addressesing many of the features of such systems such as unlinkability and constraints on their use such as one pseudonym per organization and accountability for pseudonym use. Although Chaum's proposal makes use of different cryptographic primitives than we will use here, one can see similarities in the use of both secret and "public" information being combined to create a cryptographic pseudonym.
 
 Lysyanskaya's 2000 paper [@?Lys00] also addresses the unlinkable aspects of pseudonyms but also provides protections against dishonest users. In addition they provide practical contructions similar to those used in our draft based on discrete logarithm and sigma protocol based ZKPs. Finally as part of the ABC4Trust project [@?ABC14] three flavors of pseudonyms were defined:
 
