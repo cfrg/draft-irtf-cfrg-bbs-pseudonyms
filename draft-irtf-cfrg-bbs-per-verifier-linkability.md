@@ -214,10 +214,14 @@ This document makes use of various operations defined by the BBS Signature Schem
 
 - `Blind.messages_to_scalars`: Refers to the `messages_to_scalars` operation defined in [@!I-D.irtf-cfrg-bbs-blind-signatures, section 5.1].
 - `Blind.CoreCommit`: Refers to the `CoreCommit` operation defined in [@!I-D.irtf-cfrg-bbs-blind-signatures, section 4.3.1].
+- `Blind.deserialize_and_validate_commit`: Refers to the `deserialize_and_validate_commit`  operation defined in [@!I-D.irtf-cfrg-bbs-blind-signatures, section 4.1.2].
 - `Blind.B_calculate`: Refers to the `B_calculate` operation defined in [@!I-D.irtf-cfrg-bbs-blind-signatures, section 5.2].
-- `BBS.create_generators`:
-- `BBS.CoreVerify`:
-- `Blind.proof_to_octets`:
+- `BBS.create_generators`: Refers to the `create_generators` operation defined in [@!I-D.irtf-cfrg-bbs-signatures, section 4.1.1].
+- `Blind.FinalizeBlindSign`: Refers to the `FinalizeBlindSign` operation defined in [@!I-D.irtf-cfrg-bbs-blind-signatures, section 4.3.3].
+- `BBS.CoreVerify`: Refers to the `CoreVerify` operation defined in [@!I-D.irtf-cfrg-bbs-signatures, section 3.6.2].
+- `Blind.proof_to_octets`: Refers to the `proof_to_octets` operation defined in [@!I-D.irtf-cfrg-bbs-blind-signatures, section 5.5.3].
+- `Blind.octets_to_proof`: Refers to the `octets_to_proof` operation defined in [@!I-D.irtf-cfrg-bbs-blind-signatures, section 5.5.4].
+
 
 # Key Concepts
 
@@ -1206,8 +1210,6 @@ BBS pseudonyms are computationally unlinkable under the assumption of the hardne
 
 Let `N` be the length of the secret `prover_nyms` vector, let `M` be the number of pseudonyms gathered from colluding verifiers each possessing a unique `context_id`. In the presence of a CRQC if `N > M` the pseudonyms will be unlinkable. In other words, as long as the *Prover* does not generate (different) pseudonyms for more than `N` unique context identifiers (i.e., `N` different `context_id` values, for example, for `N` different Verifiers), unlinkability of the pseudonyms will hold, even in the presence of a CRQC.
 
- TODO:  Proof/Discussion to be furnished
-
 # Security Considerations
 
 ## Preventing Impersonation Attacks
@@ -1217,8 +1219,6 @@ Assuming an honest issuer, to prevent impersonation attacks by a malicious prove
 ## Preventing Sybil Attacks
 
 Assuming an honest issuer, to prevent sybil attacks by a malicious prover, we require that the prover use the same set of nym_secrets in computing pseudonyms. In particular, the prover declares the length of the prover_nyms/nym_secrets vectors, N, in their commitment with proof and this value gets bound to the signature from the issuer. In verifying the proof of the pseudonym the verifier will be checking that the N values of the nym_secrets vector was actually used in the computation.
-
-TODO Security
 
 # Ciphersuites
 
@@ -3294,6 +3294,10 @@ TODO acknowledge.
 * Update to align with Blind BBS and support committed disclosure functionality.
 * Update and add test vectors.
 * Editorial fixes and improvements.
+
+-05
+
+* Update cross references to other BBS documents.
 
 
 <reference anchor="BBS04" target="https://link.springer.com/chapter/10.1007/978-3-540-28628-8_3">
